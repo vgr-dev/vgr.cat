@@ -366,12 +366,13 @@
 
 #### Acceptance Criteria
 
-- [ ] `ci.yml` runs green on a pull request, and the `dist` artifact is downloadable from the run summary — *manual check in GitHub UI*.
-  - **Deferred**: cannot be exercised locally; requires a pushed branch and, for the artifact to be meaningful, the repository to exist on GitHub. The job's exact step sequence was reproduced locally and passes (see below). Re-check after Task 4.4.
-- [ ] The `Deploy` workflow triggers on a push to `main` and completes successfully — *manual check*.
-  - **Deferred**: blocked on the `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repository secrets (Task 4.4) and a Cloudflare account (Task 4.1). Re-check after Phase 4.
-- [ ] `https://vgr.cat` returns `200` with the new content, and `/robots.txt` is reachable — *manual check*.
-  - **Deferred**: blocked on the custom-domain attachment (Task 4.2) and DNS/TLS (Task 4.3). Re-check after Phase 4.
+- [x] `ci.yml` runs green on a pull request, and the `dist` artifact is downloadable from the run summary — *manual check in GitHub UI*.
+  - *verified*: PR #1 (`ci/github-actions-pipeline`, sha `a4d69db`) → run [`38763241107`](https://github.com/vgr-dev/vgr.cat/actions/runs/38763241107) `CI` = **success**.
+  - Artifact downloadability confirmed via the API: `GET /repos/vgr-dev/vgr.cat/actions/runs/38763241107/artifacts` → one artifact, `name: dist`, `size_in_bytes: 3985`, `expired: false`, `expires_at: 2026-10-22` (7-day retention as configured).
+- [x] The `Deploy` workflow triggers on a push to `main` and completes successfully — *manual check*.
+  - *verified*: merge commit `8eab7ec` → run [`38768667156`](https://github.com/vgr-dev/vgr.cat/actions/runs/38768667156) `Deploy` = **success**, job `deploy` in **26s**. Every step ran: `actions/checkout@v7` → `actions/setup-node@v7` → `npm ci` → `npm run build` → **`cloudflare/wrangler-action@v4`** → complete.
+- [x] `https://vgr.cat` returns `200` with the new content, and `/robots.txt` is reachable — *manual check*.
+  - *automated*: post-merge `https://vgr.cat/` → `200` `<title>vgr.cat</title>`; `/robots.txt` → `200`; `/nonexistent-xyz` → `404`; `http://vgr.cat/` → `301`.
 - [x] Both workflows declare an explicit top-level `permissions:` block (least privilege).
   - *automated*: `grep -A2 '^permissions:'` against both files → `permissions:` / `  contents: read` in each; no `write` scopes anywhere.
 - [x] No secrets, tokens, or `.dev.vars` appear anywhere in the tracked tree (`git grep -nE 'CLOUDFLARE_API_TOKEN|accountId'` returns matches in docs/YAML references only, never values).
@@ -399,10 +400,19 @@
 - [x] **Task 4.4**: *(User)* Create the two repository secrets from Task 3.6 under **Settings → Secrets and variables → Actions**.
   - Done by the user. Values were never handled by the agent.
 - [ ] **Task 4.5**: *(User)* Enable branch protection on `main`: require the `CI / validate` check to pass, require a pull request, and disallow force pushes.
-  - **Pending** — user action in the GitHub UI. `CI / validate` must have run at least once first, which requires the branch/PR push below.
+  - **Pending — user action.** Unblocked: the `CI / validate` check now exists and has run (PR run `38763241107`, main run `38768667437`), so it can be selected in the branch-protection rule.
 - [x] **Task 4.6**: Complete `README.md`: stack summary, prerequisites (Node 24), the full script table, local dev instructions, Cloudflare Workers deployment steps, and the secrets list.
   - Added: Stack table, Prerequisites, Scripts table, Local development, Manual deploy, Custom domain (incl. the no-wildcard rationale and the OAuth-vs-API-token distinction), production-verified `_headers` behaviour with the inline-stylesheet note, plus the existing CI/CD and secrets sections. `npm run format:check` passes.
 - [ ] **Task 4.7**: *(Optional hardening, follow-up)* Adopt Astro's built-in CSP via `security.csp` in `astro.config.mjs`, and consider `hono`/`_routes.json` tuning only if Worker-side routing is ever introduced.
+
+> **Follow-up discovered during verification (2026-10-15).** Dependabot opened PR #2 (`chore(deps-dev): bump typescript from 6.0.3 to 7.0.2`) and its `CI` run **failed** — not on type-checking, but at `npm ci` with `ERESOLVE`:
+>
+> ```
+> peer typescript@"^5.0.0 || ^6.0.0" from @astrojs/check@0.9.10
+> Found: typescript@7.0.2
+> ```
+>
+> `@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`, so the major bump is **not adoptable** until `@astrojs/check` widens its peer range. Close the PR rather than overriding with `--legacy-peer-deps`. This is a genuine constraint of the pinned toolchain, not a defect in the workflow — and the fact that CI caught it on a PR, before merge, is the pipeline working as designed.
 
 #### Acceptance Criteria
 
@@ -412,15 +422,15 @@
 - [x] `https://vgr.cat/<nonexistent>` renders the custom 404 page rather than a Cloudflare default.
   - *automated*: `/nonexistent-xyz` → `404` with `<title>404 — Page not found | vgr.cat</title>` and `<h1>404 — Page not found</h1>`.
 - [ ] A pushed commit reaches production without any manual deploy step.
-  - **Pending** — this is the final end-to-end proof. Blocked on pushing a branch and merging to `main`; `Deploy` then runs `npm ci → build → wrangler deploy` unattended.
+  - *verified*: the merge of PR #1 produced commit `8eab7ec`; `Deploy` run [`38768667156`](https://github.com/vgr-dev/vgr.cat/actions/runs/38768667156) completed **success** with the `cloudflare/wrangler-action@v4` step green — i.e. `https://vgr.cat` was updated by CI alone, with no manual `wrangler deploy`.
 - [x] Bonus verification (not in the original criteria): `public/_headers` is honoured by Workers static assets on the custom domain — `strict-transport-security`, `permissions-policy`, `referrer-policy`, `x-content-type-options`, and `x-frame-options` all present on `https://vgr.cat/`; HTML served with `cache-control: public, max-age=0, must-revalidate`; `/_headers` itself correctly `404`s (config, not an asset).
 
 ---
 
 ## 5. Post-Implementation Verification & Regression Checks
 
-- [ ] **Feature end-to-end functionality verified**: a commit pushed to `main` flows through `CI` → `Deploy` → live `https://vgr.cat`, self-serve and unattended.
-  - **Pending**: the pipeline is fully built and each stage is proven in isolation (see below), but the unattended `CI` → `Deploy` chain has not yet run. The branch `ci/github-actions-pipeline` is pushed; opening the pull request exercises `CI`, and merging exercises `Deploy`. This is the last open item in the plan.
+- [x] **Feature end-to-end functionality verified**: a commit pushed to `main` flows through `CI` → `Deploy` → live `https://vgr.cat`, self-serve and unattended.
+  - *verified*: `8eab7ec` (merge of PR #1) triggered `CI` run `38768667437` (**success**) and `Deploy` run `38768667156` (**success**, 26s), which published to production via `wrangler-action@v4`. Post-merge production checks pass: `/` `200`, `/robots.txt` `200`, `/nonexistent-xyz` `404`, `http://` `301`. The pipeline is unattended end to end.
 - [x] **Test suites, linters, and static analyzers pass cleanly**: `npm ci && npm run format:check && npm run check && npm run build` exits `0` from a clean checkout.
   - *automated*: reproduced in full — `npm ci` (309 packages, 0 vulnerabilities) → `format:check` → `check` (5 files, 0 errors, 0 warnings, 0 hints) → `build` (2 pages).
 - [x] **Deployment manifest validated**: `npx wrangler deploy --dry-run` exits `0` with zero warnings.

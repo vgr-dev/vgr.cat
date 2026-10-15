@@ -1,0 +1,23 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { locales, defaultLocale, type Locale } from '../../i18n/config';
+
+export const getStaticPaths = (() =>
+  locales
+    .filter((locale) => locale !== defaultLocale)
+    .map((locale) => ({ params: { lang: locale } }))) satisfies GetStaticPaths;
+
+const { lang } = Astro.params as { lang: Locale };
+---
+
+<BaseLayout
+  lang={lang}
+  title="vgr.cat"
+  description="vgr.cat — a static site built with Astro and served from Cloudflare Workers."
+>
+  <h1>vgr.cat</h1>
+  <p>
+    Localized routing skeleton for <code>{lang}</code>.
+  </p>
+</BaseLayout>

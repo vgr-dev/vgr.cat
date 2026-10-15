@@ -6,6 +6,11 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'ca', 'es'],
+    routing: { prefixDefaultLocale: false },
+  },
   security: {
     // Emits a build-time <meta http-equiv="content-security-policy"> tag on every
     // prerendered page. Astro hashes the inline <style>/<script> blocks it emits and
@@ -21,5 +26,12 @@ export default defineConfig({
       ],
     },
   },
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: { en: 'en', ca: 'ca', es: 'es' },
+      },
+    }),
+  ],
 });

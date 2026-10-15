@@ -21,9 +21,9 @@ Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
 ```bash
 npm ci                                        # lockfile is authoritative; CI uses --ci
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
-npm run check                                 # astro check → expect "5 files, 0 errors, 0 warnings, 0 hints"
-npm run build                                 # astro check && astro build → 2 pages
-npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 8 files", no warnings
+npm run check                                 # astro check → expect "7 files, 0 errors, 0 warnings, 0 hints"
+npm run build                                 # astro check && astro build → 4 pages
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 12 files", no warnings
 ```
 
 `npm run check` alone is not enough — `astro build` transpiles with esbuild and performs **no** type
@@ -95,10 +95,11 @@ wrong, raise it with the user rather than silently reverting it.
 
 - **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
   `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
-- **The whole site is tiny.** `src/` contains exactly 4 files — 3 `.astro` components plus
-  `global.css` — and the build emits 2 pages (`index.html`, `404.html`) alongside `robots.txt`,
-  `favicon.*`, `sitemap-*.xml` and `_headers`. `astro check` reports **5 files**, which is therefore
-  expected; don't go hunting for a missing page.
+- **The whole site is small.** `src/` contains 6 files — `BaseLayout.astro`, `pages/index.astro`,
+  `pages/404.astro`, `pages/[lang]/index.astro`, `i18n/config.ts` and `styles/global.css` — and the
+  build emits 4 pages (`index.html`, `404.html`, `ca/index.html`, `es/index.html`) alongside
+  `robots.txt`, `favicon.*`, `sitemap-*.xml` and `_headers`. `astro check` reports **7 files**, which is
+  therefore expected; don't go hunting for a missing page.
 - **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
   empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching

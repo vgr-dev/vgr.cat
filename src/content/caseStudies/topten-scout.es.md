@@ -3,6 +3,9 @@ translationKey: topten-scout
 locale: es
 title: 'TODO(copy) [es] — Lorem ipsum'
 summary: 'TODO(copy) [es] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+problem: 'TODO(copy) [es] — Lorem ipsum dolor'
+approach: 'TODO(copy) [es] — Lorem ipsum dolor sit amet'
+outcome: 'TODO(copy) [es] — Lorem ipsum'
 pillar: entity-resolution
 ---
 

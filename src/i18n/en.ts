@@ -41,6 +41,12 @@ export const en = {
     body: 'TODO(copy) — contact intro.',
     bookingLabel: 'TODO(copy) — Book a call',
   },
+  notFound: {
+    title: 'TODO(copy) — 404 | vgr.cat',
+    heading: 'TODO(copy) — Page not found',
+    body: 'TODO(copy) — The page you requested could not be found.',
+    back: 'TODO(copy) — Return to the home page',
+  },
   footer: { note: 'TODO(copy) — footer note' },
 };
 

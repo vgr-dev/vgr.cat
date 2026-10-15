@@ -1,14 +1,58 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { dictionaries } from '../i18n';
+import { defaultLocale, locales } from '../i18n/config';
+
+const fallback = dictionaries[defaultLocale].notFound;
+const variants = locales.map((locale) => ({
+  locale,
+  copy: dictionaries[locale].notFound,
+  isDefault: locale === defaultLocale,
+  href: locale === defaultLocale ? '/' : `/${locale}/`,
+}));
 ---
 
 <BaseLayout
-  title="404 — Page not found | vgr.cat"
-  description="The page you requested could not be found."
+  lang={defaultLocale}
+  title={fallback.title}
+  description={fallback.body}
 >
-  <h1>404 — Page not found</h1>
-  <p>The page you requested could not be found.</p>
-  <p>
-    <a href="/">Return to the home page</a>
-  </p>
+  {variants.map(({ locale, copy, isDefault, href }) => (
+    <section
+      data-notfound={locale}
+      data-title={copy.title}
+      data-description={copy.body}
+      hidden={!isDefault}
+    >
+      <h1>{copy.heading}</h1>
+      <p>{copy.body}</p>
+      <p>
+        <a href={href}>{copy.back}</a>
+      </p>
+    </section>
+  ))}
 </BaseLayout>
+
+<script>
+  // A static 404 is one file for every path, so the requested locale only exists at runtime.
+  import { defaultLocale, locales } from '../i18n/config';
+
+  const requested = window.location.pathname.split('/')[1] ?? '';
+  const target = (locales as readonly string[]).includes(requested)
+    ? requested
+    : defaultLocale;
+
+  document.documentElement.lang = target;
+  const description = document.querySelector('meta[name="description"]');
+  for (const section of document.querySelectorAll('[data-notfound]')) {
+    if (section.getAttribute('data-notfound') !== target) {
+      section.setAttribute('hidden', '');
+      continue;
+    }
+    section.removeAttribute('hidden');
+    const title = section.getAttribute('data-title');
+    const body = section.getAttribute('data-description');
+    if (title) document.title = title;
+    if (body && description) description.setAttribute('content', body);
+  }
+</script>

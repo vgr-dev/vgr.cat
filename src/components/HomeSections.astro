@@ -1,5 +1,5 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Hero from './Hero.astro';
 import ServiceCard from './ServiceCard.astro';
 import CaseStudy from './CaseStudy.astro';
@@ -31,6 +31,20 @@ const caseStudies = await getCollection(
   'caseStudies',
   ({ data }) => data.locale === lang,
 );
+
+const serviceCards = await Promise.all(
+  services.map(async (entry) => ({
+    entry,
+    Content: (await render(entry)).Content,
+  })),
+);
+
+const studyCards = await Promise.all(
+  caseStudies.map(async (entry) => ({
+    entry,
+    Content: (await render(entry)).Content,
+  })),
+);
 ---
 
 <Hero
@@ -48,9 +62,10 @@ const caseStudies = await getCollection(
 <section id="services" class="mx-auto max-w-5xl px-6 py-12">
   <h2 class="text-2xl font-semibold tracking-tight">{t.services.heading}</h2>
   <div class="mt-8 grid gap-6 sm:grid-cols-3">
-    {services.map((service) => (
-      <ServiceCard title={service.data.title}>
-        <p>{service.data.summary}</p>
+    {serviceCards.map(({ entry, Content }) => (
+      <ServiceCard title={entry.data.title}>
+        <p>{entry.data.summary}</p>
+        <Content />
       </ServiceCard>
     ))}
   </div>
@@ -58,8 +73,19 @@ const caseStudies = await getCollection(
 
 <section id="work" class="mx-auto max-w-5xl px-6 py-12">
   <h2 class="text-2xl font-semibold tracking-tight">{t.work.heading}</h2>
-  {caseStudies.map((study) => (
-    <CaseStudy title={study.data.title} summary={study.data.summary} />
+  {studyCards.map(({ entry, Content }) => (
+    <CaseStudy
+      title={entry.data.title}
+      summary={entry.data.summary}
+      problemLabel={t.caseStudy.problem}
+      approachLabel={t.caseStudy.approach}
+      outcomeLabel={t.caseStudy.outcome}
+      problem={entry.data.problem}
+      approach={entry.data.approach}
+      outcome={entry.data.outcome}
+    >
+      <Content />
+    </CaseStudy>
   ))}
 </section>
 

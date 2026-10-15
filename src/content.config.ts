@@ -22,7 +22,11 @@ const services = defineCollection({
 
 const caseStudies = defineCollection({
   loader: glob({ base: './src/content/caseStudies', pattern: '**/*.md' }),
-  schema: localizedEntry,
+  schema: localizedEntry.extend({
+    problem: z.string(),
+    approach: z.string(),
+    outcome: z.string(),
+  }),
 });
 
 export const collections = { services, caseStudies };

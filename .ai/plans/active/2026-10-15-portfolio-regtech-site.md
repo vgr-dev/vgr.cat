@@ -504,6 +504,33 @@ on is written down and agreed.
 > locale detection is impossible server-side; this needs a decision (accept English, or add a small
 > inline script) and is left to Phase 5/6 rather than guessed at here. (b) The plan's Phase 1 file list
 > described `404.astro` as "localize" — that is now explicitly **not done**, for the reason above.
+>
+> **Correction (2026-10-15, same day).** Both deviations and the 404 residual were subsequently
+> resolved at the user's request, using Astro's current APIs. The superseded text above is left in
+> place per the evidence standard rather than rewritten; the fixes are:
+>
+> 1. **`CaseStudy` restored to three parts.** `caseStudies` now extends the shared schema with
+>    `problem` / `approach` / `outcome`, so the problem → approach → outcome card described in the IA
+>    exists again. All 9 case-study entries were given the three fields.
+> 2. **Markdown bodies now render.** Both collections render their body through Astro's current content
+>    API — `render(entry)` from `astro:content` (the modern replacement for `entry.render()`), awaited
+>    per entry and rendered as `<Content />`. Verified: **6** `.prose` blocks on each home page
+>    (3 services + 3 case studies).
+> 3. **The 404 is localized** (previously "residual / deferred"). A static 404 is a single prerendered
+>    file, so the locale only exists at runtime; the page now emits all three variants, defaults to
+>    English with JavaScript disabled, and an Astro-bundled inline script reveals the variant matching
+>    the path prefix and corrects `lang`, `<title>` and the meta description. Verified in a browser:
+>    `/missing-page` → `en`, `/ca/missing-page` → `ca` (Catalan title and description),
+>    `/es/missing-page` → `es` — all with **zero CSP violations**.
+> 4. **JSON-LD required no change.** `set:html` on an inline `<script type="application/ld+json">` is
+>    Astro's documented approach, and search engines require JSON-LD to be inline rather than an
+>    external file. Zero violations were measured, so forcing it through a hash would add complexity for
+>    no benefit.
+>
+> Re-run after the fixes: `astro check` **22 files, 0 errors, 0 warnings, 0 hints**; `npm run build`
+> 4 pages; `wrangler deploy --dry-run` **Read 21 files**, no warnings; `npm run check:placeholders` now
+> reports **168** sentinels across 21 files and still **exit 1** — the guard stays armed by explicit
+> user decision, so placeholders cannot ship.
 
 ### Phase 4: Contact endpoint, CI/CD and Cloudflare infrastructure
 

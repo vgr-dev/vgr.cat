@@ -92,7 +92,7 @@
 ### GitHub CI/CD
 - `.github/workflows/ci.yml` — `[Create]` — Validate on PR + push to `main`.
 - `.github/workflows/deploy.yml` — `[Create]` — Build + deploy production on push to `main`.
-- `.github/workflows/preview.yml` — `[Create]` — *(optional, Phase 3)* Per-PR preview deployment.
+- `.github/workflows/preview.yml` — `[Not created]` — *(optional, Phase 3)* Per-PR preview deployment — **resolved as an explicit non-goal on 2026-10-15**; see `.ai/plans/active/2026-10-15-task-3.4-preview-decision.md` (option C).
 - `.github/dependabot.yml` — `[Create]` — Weekly npm + GitHub Actions updates.
 - `.github/pull_request_template.md` — `[Create]` — Checklist: `npm run check`, `npm run build`.
 
@@ -354,8 +354,9 @@
   ```
   `cancel-in-progress: false` is deliberate: interrupting a production deploy can leave the Worker in an inconsistent state.
 
-- [ ] **Task 3.4**: *(Optional — deferred)* Create `.github/workflows/preview.yml` for per-PR previews. For a static-assets Worker, define a separate `preview` environment in `wrangler.jsonc` (`env.preview`) and deploy to it with `npx wrangler deploy --env preview`, so previews never touch the production Worker.
-  - **Deferred pending Architect input**: this task requires introducing an `env.preview` block into `wrangler.jsonc`, a Phase 2 artifact, which is a cross-phase architectural change that also interacts with Task 4.2 (`routes` / custom domain). Builder Operating Rule 1 forbids implementing it unilaterally. No `preview.yml` was created.
+- [x] **Task 3.4**: *(Optional)* Per-PR preview deployments — **resolved 2026-10-15 as an explicit non-goal; not implemented.** Decision record: `.ai/plans/active/2026-10-15-task-3.4-preview-decision.md` (option **C**). No `env.preview` block, no `previews` block, no `preview_urls`, no `preview.yml`, and no Cloudflare account change. The review path is `npm run preview` locally plus the 7-day `dist` artifact already produced by `ci.yml`.
+  - Rationale in brief: the originally specified `env.preview` + `wrangler deploy --env preview` mechanism creates **one persistent** `vgr-cat-preview` Worker that every PR overwrites (last-write-wins, no per-PR URL), so it does not deliver per-PR previews; and the modern equivalent (`npx wrangler preview`) is flagged `[open beta]` by the pinned CLI, would not run on this repo's actual PR traffic (Dependabot-triggered workflows cannot read Actions secrets), and would buy a rendered preview of a single static page whose only PRs are dependency bumps.
+  - **Revisit trigger**: a PR that changes rendering/layout/styling, or the introduction of SSR / `@astrojs/content` / an adapter. Appendix A of the decision record holds the complete, ready-to-implement spec for the modern mechanism (`previews` block + `preview_urls` + `npx wrangler preview --name pr-<N>` via `cloudflare/wrangler-action@v4`), so the research is preserved rather than discarded.
 
 - [x] **Task 3.5**: Create `.github/dependabot.yml` (weekly, `npm` + `github-actions` ecosystems, grouped minor/patch) and `.github/pull_request_template.md`.
 
@@ -366,12 +367,14 @@
 
 #### Acceptance Criteria
 
-- [ ] `ci.yml` runs green on a pull request, and the `dist` artifact is downloadable from the run summary — *manual check in GitHub UI*.
-  - **Deferred**: cannot be exercised locally; requires a pushed branch and, for the artifact to be meaningful, the repository to exist on GitHub. The job's exact step sequence was reproduced locally and passes (see below). Re-check after Task 4.4.
-- [ ] The `Deploy` workflow triggers on a push to `main` and completes successfully — *manual check*.
-  - **Deferred**: blocked on the `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repository secrets (Task 4.4) and a Cloudflare account (Task 4.1). Re-check after Phase 4.
-- [ ] `https://vgr.cat` returns `200` with the new content, and `/robots.txt` is reachable — *manual check*.
-  - **Deferred**: blocked on the custom-domain attachment (Task 4.2) and DNS/TLS (Task 4.3). Re-check after Phase 4.
+- [x] `ci.yml` runs green on a pull request, and the `dist` artifact is downloadable from the run summary — *manual check in GitHub UI*.
+  - *verified*: PR #1 (`ci/github-actions-pipeline`, sha `a4d69db`) → run [`38763241107`](https://github.com/vgr-dev/vgr.cat/actions/runs/38763241107) `CI` = **success**.
+  - Artifact downloadability confirmed via the API: `GET /repos/vgr-dev/vgr.cat/actions/runs/38763241107/artifacts` → one artifact, `name: dist`, `size_in_bytes: 3985`, `expired: false`, `expires_at: 2026-10-22` (7-day retention as configured).
+  - *re-verified on a second PR, 2026-10-15*: PR [#3](https://github.com/vgr-dev/vgr.cat/pull/3) (`feat/csp-hardening`) → run [`38773629259`](https://github.com/vgr-dev/vgr.cat/actions/runs/38773629259) `CI` = **success**, `✓ validate in 26s`. Artifact: `name: dist`, `size_in_bytes: 4671`, `expired: false`, `expires_at: 2026-10-22`. Criterion met on two independent PRs, not just one; the +686 bytes are the newly added CSP `<meta>` tag.
+- [x] The `Deploy` workflow triggers on a push to `main` and completes successfully — *manual check*.
+  - *verified*: merge commit `8eab7ec` → run [`38768667156`](https://github.com/vgr-dev/vgr.cat/actions/runs/38768667156) `Deploy` = **success**, job `deploy` in **26s**. Every step ran: `actions/checkout@v7` → `actions/setup-node@v7` → `npm ci` → `npm run build` → **`cloudflare/wrangler-action@v4`** → complete.
+- [x] `https://vgr.cat` returns `200` with the new content, and `/robots.txt` is reachable — *manual check*.
+  - *automated*: post-merge `https://vgr.cat/` → `200` `<title>vgr.cat</title>`; `/robots.txt` → `200`; `/nonexistent-xyz` → `404`; `http://vgr.cat/` → `301`.
 - [x] Both workflows declare an explicit top-level `permissions:` block (least privilege).
   - *automated*: `grep -A2 '^permissions:'` against both files → `permissions:` / `  contents: read` in each; no `write` scopes anywhere.
 - [x] No secrets, tokens, or `.dev.vars` appear anywhere in the tracked tree (`git grep -nE 'CLOUDFLARE_API_TOKEN|accountId'` returns matches in docs/YAML references only, never values).
@@ -398,11 +401,28 @@
   - *automated*: `curl -sI http://vgr.cat/` → `301 Moved Permanently` with `Location: https://vgr.cat/`, then `200` when followed. Valid TLS certificate (curl verified it without `-k`). Note: HSTS alone would not have covered this — it only applies after a browser has already seen the header over HTTPS.
 - [x] **Task 4.4**: *(User)* Create the two repository secrets from Task 3.6 under **Settings → Secrets and variables → Actions**.
   - Done by the user. Values were never handled by the agent.
-- [ ] **Task 4.5**: *(User)* Enable branch protection on `main`: require the `CI / validate` check to pass, require a pull request, and disallow force pushes.
-  - **Pending** — user action in the GitHub UI. `CI / validate` must have run at least once first, which requires the branch/PR push below.
+- [x] **Task 4.5**: *(User)* Enable branch protection on `main`: require the `CI / validate` check to pass, require a pull request, and disallow force pushes.
+  - Done by the user on 2026-10-15. Previously unblocked: the `CI / validate` check exists and has run (PR run `38763241107`, main run `38768667437`), so it was selectable in the branch-protection rule.
+  - *automated (independent verification)*: `GET https://api.github.com/repos/vgr-dev/vgr.cat/branches/main` → `"protected": true`. **Limit of this check, recorded deliberately**: that endpoint is anonymously readable on public repos and confirms protection is **on**, but the per-rule detail (`/branches/main/protection`, i.e. the required check names and force-push setting) returns **HTTP 401** without an admin-scoped token — so the *specific* rules were **not** re-verified by the agent and are taken on the user's word.
+  - *automated (stronger, end-to-end proof, same day)*: PR [#3](https://github.com/vgr-dev/vgr.cat/pull/3) then exercised the rule for real — `gh pr view 3 --json mergeStateStatus` → **`CLEAN`**, which is only reachable when *both* conditions hold: a pull request exists **and** the required status check has passed. That also proves the required-check name the user selected actually **matches** the emitted check (`validate`, workflow `CI`) — something a bare `protected: true` could not have shown, and the one failure mode that would have left every PR permanently unmergeable.
 - [x] **Task 4.6**: Complete `README.md`: stack summary, prerequisites (Node 24), the full script table, local dev instructions, Cloudflare Workers deployment steps, and the secrets list.
   - Added: Stack table, Prerequisites, Scripts table, Local development, Manual deploy, Custom domain (incl. the no-wildcard rationale and the OAuth-vs-API-token distinction), production-verified `_headers` behaviour with the inline-stylesheet note, plus the existing CI/CD and secrets sections. `npm run format:check` passes.
-- [ ] **Task 4.7**: *(Optional hardening, follow-up)* Adopt Astro's built-in CSP via `security.csp` in `astro.config.mjs`, and consider `hono`/`_routes.json` tuning only if Worker-side routing is ever introduced.
+- [x] **Task 4.7**: *(Optional hardening, follow-up)* Adopt Astro's built-in CSP via `security.csp` in `astro.config.mjs`, and consider `hono`/`_routes.json` tuning only if Worker-side routing is ever introduced.
+  - **Implemented 2026-10-15**: `security: { csp: { directives: [...] } }` added to `astro.config.mjs`, with `default-src 'self'`, `img-src 'self' data:`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. `security.csp` is **stable** (added in `astro@6.0.0`; project runs `7.3.8`) and emits a build-time `<meta http-equiv="content-security-policy">` on every prerendered page — no adapter or SSR required, so `output: 'static'` is unaffected.
+  - `script-src`/`style-src` are **not** configured by hand: Astro hashes the inline blocks it emits and places those hashes on those directives. Verified the emitted `style-src` hash is an exact `sha256` match for the inlined `global.css` on **both** `index.html` and `404.html` (`MATCH=True`), so the stylesheet keeps working without `'unsafe-inline'`.
+  - *automated (browser)*: loaded the served build with a `securitypolicyviolation` listener installed via an init script, then reloaded. **`violations: []`** on both `/` and a 404 route. Stylesheet confirmed genuinely applied, not merely present: `bodyMargin: 0px` (UA default would be `8px`), `fontFamily` resolved to the custom stack, and `backgroundColor: rgb(16, 17, 20)` / `h1Color: rgb(242, 243, 245)` prove the `@media (prefers-color-scheme: dark)` block inside the inlined CSS executed. Only failing response across both routes was the intentionally-requested missing path (404); every declared asset returned `200`.
+  - Static analysis passes without errors: `format:check`, `check` (5 files, 0 errors/0 warnings/0 hints), clean `rm -rf dist && build` (2 pages), and `wrangler deploy --dry-run` (exit `0`, 8 files, no warnings).
+  - **`hono` / `_routes.json` tuning: not applicable — nothing changed.** This is a static-assets Worker with no `main` script, so there is no Worker-side routing to tune. Revisit only if a Worker script is ever introduced.
+  - **Recorded deviations / notes**: (1) `frame-ancestors` is deliberately **omitted** — browsers ignore it when CSP is delivered via `<meta>`, and `X-Frame-Options: DENY` in `public/_headers` already covers clickjacking. (2) Astro emits **5 orphan `script-src` hashes** although the built pages contain zero `<script>` elements; harmless (extra specific hashes cannot be satisfied by injected content), just noisy. (3) CSP here is a `<meta>` policy, which is inherently weaker than an HTTP header (it cannot cover `frame-ancestors`/`report-uri`, and applies only after the tag is parsed). A header-based CSP is **not** hand-maintainable because the hashes change on every build — this is the trade-off `security.csp` buys. (4) **`npm run dev` does not emit the CSP `<meta>` tag at all** (`grep -c` → `0`), so CSP only takes effect in `build`/`preview`/production — a violation introduced during local development will not surface until a build is run.
+
+> **Follow-up discovered during verification (2026-10-15).** Dependabot opened PR #2 (`chore(deps-dev): bump typescript from 6.0.3 to 7.0.2`) and its `CI` run **failed** — not on type-checking, but at `npm ci` with `ERESOLVE`:
+>
+> ```
+> peer typescript@"^5.0.0 || ^6.0.0" from @astrojs/check@0.9.10
+> Found: typescript@7.0.2
+> ```
+>
+> `@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`, so the major bump is **not adoptable** until `@astrojs/check` widens its peer range. Close the PR rather than overriding with `--legacy-peer-deps`. This is a genuine constraint of the pinned toolchain, not a defect in the workflow — and the fact that CI caught it on a PR, before merge, is the pipeline working as designed.
 
 #### Acceptance Criteria
 
@@ -411,16 +431,17 @@
   - *automated*: `200` with `Sitemap: https://vgr.cat/sitemap-index.xml`; `https://vgr.cat/sitemap-index.xml` → `200` pointing at an absolute `https://vgr.cat/sitemap-0.xml`.
 - [x] `https://vgr.cat/<nonexistent>` renders the custom 404 page rather than a Cloudflare default.
   - *automated*: `/nonexistent-xyz` → `404` with `<title>404 — Page not found | vgr.cat</title>` and `<h1>404 — Page not found</h1>`.
-- [ ] A pushed commit reaches production without any manual deploy step.
-  - **Pending** — this is the final end-to-end proof. Blocked on pushing a branch and merging to `main`; `Deploy` then runs `npm ci → build → wrangler deploy` unattended.
+- [x] A pushed commit reaches production without any manual deploy step.
+  - *verified*: the merge of PR #1 produced commit `8eab7ec`; `Deploy` run [`38768667156`](https://github.com/vgr-dev/vgr.cat/actions/runs/38768667156) completed **success** with the `cloudflare/wrangler-action@v4` step green — i.e. `https://vgr.cat` was updated by CI alone, with no manual `wrangler deploy`.
+  - **Plan-state correction (2026-10-15)**: this box was still unchecked although the evidence above was already recorded, i.e. the criterion was verified during Phase 4 close-out but never flipped. Corrected on review; no new verification was performed.
 - [x] Bonus verification (not in the original criteria): `public/_headers` is honoured by Workers static assets on the custom domain — `strict-transport-security`, `permissions-policy`, `referrer-policy`, `x-content-type-options`, and `x-frame-options` all present on `https://vgr.cat/`; HTML served with `cache-control: public, max-age=0, must-revalidate`; `/_headers` itself correctly `404`s (config, not an asset).
 
 ---
 
 ## 5. Post-Implementation Verification & Regression Checks
 
-- [ ] **Feature end-to-end functionality verified**: a commit pushed to `main` flows through `CI` → `Deploy` → live `https://vgr.cat`, self-serve and unattended.
-  - **Pending**: the pipeline is fully built and each stage is proven in isolation (see below), but the unattended `CI` → `Deploy` chain has not yet run. The branch `ci/github-actions-pipeline` is pushed; opening the pull request exercises `CI`, and merging exercises `Deploy`. This is the last open item in the plan.
+- [x] **Feature end-to-end functionality verified**: a commit pushed to `main` flows through `CI` → `Deploy` → live `https://vgr.cat`, self-serve and unattended.
+  - *verified*: `8eab7ec` (merge of PR #1) triggered `CI` run `38768667437` (**success**) and `Deploy` run `38768667156` (**success**, 26s), which published to production via `wrangler-action@v4`. Post-merge production checks pass: `/` `200`, `/robots.txt` `200`, `/nonexistent-xyz` `404`, `http://` `301`. The pipeline is unattended end to end.
 - [x] **Test suites, linters, and static analyzers pass cleanly**: `npm ci && npm run format:check && npm run check && npm run build` exits `0` from a clean checkout.
   - *automated*: reproduced in full — `npm ci` (309 packages, 0 vulnerabilities) → `format:check` → `check` (5 files, 0 errors, 0 warnings, 0 hints) → `build` (2 pages).
 - [x] **Deployment manifest validated**: `npx wrangler deploy --dry-run` exits `0` with zero warnings.
@@ -428,10 +449,16 @@
 - [ ] **Performance sanity**: Lighthouse run against production reports green Core Web Vitals; `/_astro/*` responses carry `Cache-Control: public, max-age=31536000, immutable`.
   - **Partially deferred**: Lighthouse has not been run. The `/_astro/*` half is **superseded** — no `_astro` asset is emitted at this scale, so there is nothing to measure until the stylesheet exceeds Astro's inline threshold.
 - [x] **No unintended modifications outside the listed affected files**: `git status --short` contains only paths enumerated in §3; `LICENSE` is byte-identical to its original (verify with `git diff --stat LICENSE` → empty).
-  - *automated*: `git diff --stat LICENSE` empty. All committed paths are in §3. `.vscode/mcp.json` is left untracked — it is not in §3 and was deliberately excluded.
+  - *automated*: `git diff --stat LICENSE` empty. All committed paths are in §3. **Correction (2026-10-15)**: the earlier note that `.vscode/mcp.json` "is left untracked" is stale — it was subsequently committed in `a14f79c` (`chore(vscode): add cloudflare mcp server configuration`), a conscious amendment to §3 rather than a stray change.
 - [ ] **Rollback path exists**: `npx wrangler deployments list` shows prior Worker versions, and `npx wrangler rollback` reverts to the previous one.
-  - **Not verified**: requires an authenticated Wrangler session, which the agent's sandbox cannot read. User to confirm.
+  - **First clause verified 2026-10-15; second clause deliberately *not* exercised.**
+  - *automated*: `npx wrangler deployments list` succeeds and returns **two** prior deployments — version `e8f8ecb3-b2bf-4ad1-8452-1bded1807a5c` (2026-10-15T15:30:23Z, manual upload) and version `6e9c9fed-c631-4533-8456-5aa0eb64e017` (2026-10-15T16:24:24Z, the CI deploy). A rollback target therefore exists.
+  - **Correction to the previous note**: it claimed the agent's sandbox "cannot read" an authenticated Wrangler session. That is **wrong** — `npx wrangler whoami` authenticates successfully (exit `0`) and reports the account's permission set. It does warn about missing *optional* OAuth scopes (`ssl_certs:write`, `secrets_store:write`, `challenge-widgets.write`), none of which affect deployment or rollback.
+  - **Why still unchecked**: `npx wrangler rollback` is a *destructive production deploy* — it would republish an older version to the live `vgr.cat`. Running it was neither requested nor authorized, so the second clause remains unproven. Close it by explicitly authorizing a rollback-then-redeploy, or by accepting the first clause as sufficient.
 - [x] **Secrets hygiene**: no credential, token, or `.dev.vars` value is present in the tracked tree or in build artifacts (`rg -n 'CLOUDFLARE_API_TOKEN' dist/` → no matches).
   - *automated*: `grep -rIl 'CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' dist/` → no matches; `git grep` hits are `${{ secrets.* }}` expressions and prose only.
-- [ ] **Documentation accuracy**: every command in `README.md` was executed verbatim during verification (commands that were never run are not documented as verified).
-  - **Partially verified**: `npm ci`, `npm run format:check`, `npm run check`, `npm run build`, `npm run preview`, `npx wrangler deploy --dry-run`, and `npx wrangler login` were all executed. `npm run dev` and a real `npx wrangler deploy` were not run by the agent (the latter was run by the user).
+- [x] **Documentation accuracy**: every command in `README.md` was executed verbatim during verification (commands that were never run are not documented as verified).
+  - *automated (2026-10-15)*: verified the full runnable set — `nvm use` (resolves `Now using node v24.15.0 (npm v11.12.1)` from `.nvmrc`; exit `0`), `npm ci`, `npm run dev` (`/` → `200`, `/robots.txt` → `200`, `<title>vgr.cat</title>`, then `astro dev stop`), `npm run build`, `npm run preview`, `npm run format:check`, `npm run check`, and `npx wrangler deploy --dry-run`.
+  - `fnm use` is documented as the *alternative* to `nvm use` and is not installed in this environment; since `nvm use` is verified, the README's "or" is satisfied.
+  - `npx wrangler login` and a real `npx wrangler deploy` were executed by the **user**, not the agent (Task 4.1). The README presents `npx wrangler deploy` as the manual path and the CI workflow as the primary one, so this is consistent.
+  - **Finding worth keeping**: `npm run dev` does **not** emit the CSP `<meta>` tag (`grep -c 'content-security-policy'` → `0`). `security.csp` is exercised only by `build`/`preview`/production, so a CSP violation introduced during development will not surface locally until a build is run.

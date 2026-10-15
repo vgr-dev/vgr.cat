@@ -446,11 +446,11 @@
   - *automated*: reproduced in full — `npm ci` (309 packages, 0 vulnerabilities) → `format:check` → `check` (5 files, 0 errors, 0 warnings, 0 hints) → `build` (2 pages).
 - [x] **Deployment manifest validated**: `npx wrangler deploy --dry-run` exits `0` with zero warnings.
   - *automated*: exit `0`, `Read 8 files from the assets directory`, no warnings — re-run after adding the `routes` block.
-- [ ] **Performance sanity**: Lighthouse run against production reports green Core Web Vitals; `/_astro/*` responses carry `Cache-Control: public, max-age=31536000, immutable`.
+- [ ] **Performance sanity**: Lighthouse run against production reports green Core Web Vitals; `/_astro/*` responses carry `Cache-Control: public, max-age=31536000, immutable`. — **DEFERRED**: accepted as-outstanding at archive time (2026-10-15); see Archive Metadata.
   - **Partially deferred**: Lighthouse has not been run. The `/_astro/*` half is **superseded** — no `_astro` asset is emitted at this scale, so there is nothing to measure until the stylesheet exceeds Astro's inline threshold.
 - [x] **No unintended modifications outside the listed affected files**: `git status --short` contains only paths enumerated in §3; `LICENSE` is byte-identical to its original (verify with `git diff --stat LICENSE` → empty).
   - *automated*: `git diff --stat LICENSE` empty. All committed paths are in §3. **Correction (2026-10-15)**: the earlier note that `.vscode/mcp.json` "is left untracked" is stale — it was subsequently committed in `a14f79c` (`chore(vscode): add cloudflare mcp server configuration`), a conscious amendment to §3 rather than a stray change.
-- [ ] **Rollback path exists**: `npx wrangler deployments list` shows prior Worker versions, and `npx wrangler rollback` reverts to the previous one.
+- [ ] **Rollback path exists**: `npx wrangler deployments list` shows prior Worker versions, and `npx wrangler rollback` reverts to the previous one. — **DEFERRED**: accepted as-outstanding at archive time (2026-10-15); see Archive Metadata.
   - **First clause verified 2026-10-15; second clause deliberately *not* exercised.**
   - *automated*: `npx wrangler deployments list` succeeds and returns **two** prior deployments — version `e8f8ecb3-b2bf-4ad1-8452-1bded1807a5c` (2026-10-15T15:30:23Z, manual upload) and version `6e9c9fed-c631-4533-8456-5aa0eb64e017` (2026-10-15T16:24:24Z, the CI deploy). A rollback target therefore exists.
   - **Correction to the previous note**: it claimed the agent's sandbox "cannot read" an authenticated Wrangler session. That is **wrong** — `npx wrangler whoami` authenticates successfully (exit `0`) and reports the account's permission set. It does warn about missing *optional* OAuth scopes (`ssl_certs:write`, `secrets_store:write`, `challenge-widgets.write`), none of which affect deployment or rollback.
@@ -462,3 +462,22 @@
   - `fnm use` is documented as the *alternative* to `nvm use` and is not installed in this environment; since `nvm use` is verified, the README's "or" is satisfied.
   - `npx wrangler login` and a real `npx wrangler deploy` were executed by the **user**, not the agent (Task 4.1). The README presents `npx wrangler deploy` as the manual path and the CI workflow as the primary one, so this is consistent.
   - **Finding worth keeping**: `npm run dev` does **not** emit the CSP `<meta>` tag (`grep -c 'content-security-policy'` → `0`). `security.csp` is exercised only by `build`/`preview`/production, so a CSP violation introduced during development will not surface locally until a build is run.
+
+---
+## Archive Metadata
+- **Completed Date**: 2026-10-15
+- **Verified Commit**: 6baf0f4
+- **Sign-off**: Manual Review Passed
+
+### Deferred Checks
+
+Two §5 criteria were accepted as **deliberately outstanding** at archive time. Both are post-implementation *verification* items, not implementation tasks — **all 27 tasks in this plan are complete**.
+
+- **Performance sanity** — Lighthouse has not been run. The `/_astro/*` cache-header half is *superseded*: `dist/_astro/` does not exist at this scale, because `src/styles/global.css` minifies below Astro's inline threshold and ships as an inline `<style>` block instead. There is nothing to measure until an asset exceeds that threshold.
+- **Rollback path exists** — the first clause is **verified**: `npx wrangler deployments list` returned two prior Worker versions (`e8f8ecb3-b2bf-4ad1-8452-1bded1807a5c`, `6e9c9fed-c631-4533-8456-5aa0eb64e017`). The second clause is **unexercised** because `npx wrangler rollback` is a destructive production deploy that was never authorized.
+
+Neither blocks the plan's objectives: the site is live at `https://vgr.cat`, published unattended by CI, with CSP verified in production.
+
+### Path note
+
+This plan was moved from `.ai/plans/active/` to `.ai/plans/archive/` on 2026-10-15, together with its companion decision record `.ai/plans/archive/2026-10-15-task-3.4-preview-decision.md`. Paths written in the body above as `.ai/plans/active/...` are **historical references to their pre-move location** and were deliberately left unedited — several occur inside recorded command output and verification evidence, where rewriting them would falsify the record.

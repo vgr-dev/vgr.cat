@@ -1,0 +1,14 @@
+node_modules/
+
+# build output
+dist/
+.wrangler/
+
+# generated types
+.astro/
+
+# lockfile
+package-lock.json
+
+# agent plan documents are authored by tooling, not formatted
+.ai/

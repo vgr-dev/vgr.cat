@@ -1,0 +1,10 @@
+{
+  "name": "vgr-cat",
+  "compatibility_date": "2026-10-15",
+  "routes": [{ "pattern": "vgr.cat", "custom_domain": true }],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+  },
+  "observability": { "enabled": true },
+}

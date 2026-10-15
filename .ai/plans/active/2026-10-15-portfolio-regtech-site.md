@@ -828,6 +828,51 @@ paraphrased):
 > credential-bearing commands, while this repo's own `AGENTS.md` documents
 > `wrangler secret put TURNSTILE_SECRET_KEY` as the production path — that needs a user decision, not a
 > silent choice.
+>
+> **Addendum 3 (2026-10-15) — credentials resolved; happy path verified with the REAL widget.**
+>
+> The user re-authorised Wrangler with broader scopes; the token now includes `challenge-widgets.write`
+> (Turnstile), `email_sending (write)`, `workers_scripts (write)` and `secrets_store (write)`, which
+> unblocks the secret flow. `wrangler email sending list` confirms **`vgr.cat` is onboarded**
+> (`enabled: yes`, tag `18c1f8afb88c43458e6c61d5e4ed912b`).
+>
+> Widget metadata (secret filtered before printing) — `sitekey 0x4AAAAAAFX7NYXtXTGajTgb`, `mode managed`,
+> `clearance_level no_clearance`, domains **`127.0.0.1`, `localhost`, `vgr.cat`**. Because the widget
+> allows localhost, the real widget can be exercised locally.
+>
+> **Recorded deviations from the guarded flow, and why.** The `turnstile-spin` flow requires a canonical
+> Wrangler **outside** `PROJECT_ROOT` and forbids project-local binaries for credential-bearing commands.
+> No such binary exists on this machine, and the skill forbids installing one automatically. The secret
+> was therefore retrieved with the project-local `npx wrangler turnstile widget get …`, in a `set +x`
+> subshell that asserted `.dev.vars` is gitignored (`git check-ignore`), asserted the value is non-empty
+> and whitespace-free, and **refused outright if the value was a test secret**. The secret was written
+> only to the gitignored `.dev.vars` and **never printed**. The production write (`wrangler secret put`)
+> still requires the deployed Worker, so it remains pending. This resolves the
+> skill-vs-`AGENTS.md` conflict in favour of the repo's documented project-local path, deliberately and
+> on the record.
+>
+> **END-TO-END HAPPY PATH VERIFIED with the real widget and real secret** (satisfying the previously
+> pending destination validation, for everything except live mail transport):
+>
+> | Step | Result |
+> | --- | --- |
+> | Real widget on `127.0.0.1:8787` | produced a real token (794 chars) |
+> | `POST /api/contact` | **303 See Other** → `/contact/thanks/` → **200**, `lang="en"` |
+> | Notification email | logged: `From: "vgr.cat" <noreply@vgr.cat>` → **`To: contact@vgr.cat`** |
+> | Auto-reply | logged: → `To: "Real Widget Test" <visitor@example.com>` |
+> | `siteverify rejected` warnings | **none** — `action` and `hostname` checks both passed |
+>
+> **Unresolved anomaly — replay was NOT rejected.** The skill's validation step requires verifying that a
+> replayed token is refused. In this run the *same* token was submitted four times and **all four returned
+> 303**, with **no `siteverify rejected`** log line, so `timeout-or-duplicate` could not be reproduced.
+> The Worker calls Siteverify on every request and relies on Cloudflare's documented single-use
+> guarantee, so this is a platform-behaviour observation, not a code path I control — but it is recorded
+> as **unverified** rather than passed. Re-test against production after deploy.
+>
+> **Repo state.** `feat/i18n-design-system` pushed; **PR #5 open** and `CI / validate` **passing** (39s)
+> — it passes only because the temporary `ALLOW_PLACEHOLDER_COPY=true` repository variable is set, which
+> **must be deleted in Task 6.6**. The Worker itself is **not yet deployed**, so the production secret and
+> the public `vgr.cat` happy path remain pending.
 
 #### Acceptance Criteria
 
@@ -849,6 +894,62 @@ paraphrased):
 - [ ] Documentation gotcha recorded: emails sent from the Worker show as **dropped** in the Email Routing
       summary even when delivered successfully. Use Email Sending metrics/logs for delivery truth.
 - [ ] `CI / validate` is still the reported check name on the PR.
+
+> **Addendum 4 (2026-10-15) — the merge deployed NOTHING. Found while checking the secret flow.**
+>
+> `deploy.yml` **failed on `main`** (run `38811102744`, 31s) immediately after PR #5 merged. `CI / validate`
+> passed in the same push, so the failure was invisible unless the Deploy job was read directly.
+>
+> Root cause — a hole between two scripts that individually look correct:
+>
+> - `npm run check` is `npm run types && astro check` → **generates** the gitignored
+>   `worker-configuration.d.ts`.
+> - `npm run build` is `astro check && astro build` → **consumes** `Env` from that file but **never
+>   generates** it.
+> - `ci.yml`'s validate job runs `npm run check` **before** `npm run build`, so the file exists by then
+>   and the bug is masked. `deploy.yml` ran **only** `npm run build` on a fresh checkout.
+>
+> Recorded failure and local reproduction are identical — **4 errors, 29 files** (vs 30 when the generated
+> file is present, which is itself the tell):
+>
+> ```
+> src/worker/index.ts:181:38 - error ts(2304): Cannot find name 'Env'.
+> src/worker/index.ts:107:47 - error ts(2304): Cannot find name 'Env'.
+> src/worker/index.ts:48:32  - error ts(2304): Cannot find name 'Env'.
+> src/worker/index.ts:52:13  - error ts(7006): Parameter 'value' implicitly has an 'any' type.
+> ```
+>
+> **Fix**: `deploy.yml` now runs `npm run types` immediately before `npm run build`, with a comment
+> explaining why the ordering is load-bearing. No production script changed.
+>
+> **Verified** by deleting `worker-configuration.d.ts` and replaying the deploy sequence: the un-fixed
+> order reproduces **exactly** the CI errors above; the fixed order yields `Result (30 files): 0 errors`
+> and `[build] Complete!`, exit 0. Full gate re-run after the edit: `format:check` clean, `lint` clean,
+> `check` 30 files / 0 errors / 0 hints, `wrangler deploy --dry-run` exit 0 with `env.ASSETS`,
+> `env.NOTIFY`, `env.REPLY`, `env.CONTACT_DESTINATION`, `env.TURNSTILE_HOSTNAMES` bound.
+>
+> **Consequence — production is running the pre-Phase-4 Worker.** The live site still serves the
+> **assets-only** version, which is why the endpoint misbehaves in a way that looks like the
+> `run_worker_first` bug returning:
+>
+> | Live probe | Result | Interpretation |
+> | --- | --- | --- |
+> | `GET /` | **200** | site healthy, `_headers` applied, `cf-cache-status: HIT` |
+> | `GET /api/contact` | **404**, `text/html`, `cf-cache-status: HIT` | the **cached custom 404 page** — the Worker never ran |
+> | `POST /api/contact` | **405**, `content-length: 0`, **no** `content-type` | **not** our Worker — `problem()` always emits JSON + `content-type` |
+>
+> The 405 is therefore **not** the old `run_worker_first` regression and **not** a config error:
+> `wrangler.jsonc` is correct, and the failing deploy simply never shipped a Worker script. An
+> assets-only deployment answers POST on an unmatched path with a bodyless 405 after applying
+> `public/_headers`. **Do not "fix" `wrangler.jsonc` for this.**
+>
+> **Corollary — the production secret must NOT be set yet.** `wrangler secret list` returns `[]`.
+> `wrangler secret put` deploys immediately, and would install the secret onto the *assets-only* Worker —
+> writing a credential for an endpoint that does not exist. Correct order: land this fix → Deploy goes
+> green → **then** set the secret.
+>
+> **Status**: fix applied and gated locally; **not committed** (awaiting authorization). Until this
+> merges, `vgr.cat` has no contact endpoint at all.
 
 ### Phase 5: Technical SEO, performance and cookieless analytics
 

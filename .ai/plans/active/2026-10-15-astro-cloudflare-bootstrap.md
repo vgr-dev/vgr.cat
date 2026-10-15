@@ -420,10 +420,18 @@
 ## 5. Post-Implementation Verification & Regression Checks
 
 - [ ] **Feature end-to-end functionality verified**: a commit pushed to `main` flows through `CI` → `Deploy` → live `https://vgr.cat`, self-serve and unattended.
-- [ ] **Test suites, linters, and static analyzers pass cleanly**: `npm ci && npm run format:check && npm run check && npm run build` exits `0` from a clean checkout.
-- [ ] **Deployment manifest validated**: `npx wrangler deploy --dry-run` exits `0` with zero warnings.
+  - **Pending**: the pipeline is fully built and each stage is proven in isolation (see below), but the unattended `CI` → `Deploy` chain has not yet run. The branch `ci/github-actions-pipeline` is pushed; opening the pull request exercises `CI`, and merging exercises `Deploy`. This is the last open item in the plan.
+- [x] **Test suites, linters, and static analyzers pass cleanly**: `npm ci && npm run format:check && npm run check && npm run build` exits `0` from a clean checkout.
+  - *automated*: reproduced in full — `npm ci` (309 packages, 0 vulnerabilities) → `format:check` → `check` (5 files, 0 errors, 0 warnings, 0 hints) → `build` (2 pages).
+- [x] **Deployment manifest validated**: `npx wrangler deploy --dry-run` exits `0` with zero warnings.
+  - *automated*: exit `0`, `Read 8 files from the assets directory`, no warnings — re-run after adding the `routes` block.
 - [ ] **Performance sanity**: Lighthouse run against production reports green Core Web Vitals; `/_astro/*` responses carry `Cache-Control: public, max-age=31536000, immutable`.
-- [ ] **No unintended modifications outside the listed affected files**: `git status --short` contains only paths enumerated in §3; `LICENSE` is byte-identical to its original (verify with `git diff --stat LICENSE` → empty).
+  - **Partially deferred**: Lighthouse has not been run. The `/_astro/*` half is **superseded** — no `_astro` asset is emitted at this scale, so there is nothing to measure until the stylesheet exceeds Astro's inline threshold.
+- [x] **No unintended modifications outside the listed affected files**: `git status --short` contains only paths enumerated in §3; `LICENSE` is byte-identical to its original (verify with `git diff --stat LICENSE` → empty).
+  - *automated*: `git diff --stat LICENSE` empty. All committed paths are in §3. `.vscode/mcp.json` is left untracked — it is not in §3 and was deliberately excluded.
 - [ ] **Rollback path exists**: `npx wrangler deployments list` shows prior Worker versions, and `npx wrangler rollback` reverts to the previous one.
-- [ ] **Secrets hygiene**: no credential, token, or `.dev.vars` value is present in the tracked tree or in build artifacts (`rg -n 'CLOUDFLARE_API_TOKEN' dist/` → no matches).
+  - **Not verified**: requires an authenticated Wrangler session, which the agent's sandbox cannot read. User to confirm.
+- [x] **Secrets hygiene**: no credential, token, or `.dev.vars` value is present in the tracked tree or in build artifacts (`rg -n 'CLOUDFLARE_API_TOKEN' dist/` → no matches).
+  - *automated*: `grep -rIl 'CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' dist/` → no matches; `git grep` hits are `${{ secrets.* }}` expressions and prose only.
 - [ ] **Documentation accuracy**: every command in `README.md` was executed verbatim during verification (commands that were never run are not documented as verified).
+  - **Partially verified**: `npm ci`, `npm run format:check`, `npm run check`, `npm run build`, `npm run preview`, `npx wrangler deploy --dry-run`, and `npx wrangler login` were all executed. `npm run dev` and a real `npx wrangler deploy` were not run by the agent (the latter was run by the user).

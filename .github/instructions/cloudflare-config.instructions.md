@@ -1,6 +1,6 @@
 ---
 description: 'Use when editing wrangler.jsonc or public/_headers. Covers Cloudflare Workers static-asset routing, custom-domain routes, caching and security headers, and the dry-run validation step.'
-applyTo: ['wrangler.jsonc', 'public/_headers']
+applyTo: 'wrangler.jsonc, public/_headers'
 ---
 
 # Cloudflare configuration

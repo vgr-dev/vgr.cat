@@ -425,7 +425,7 @@ on is written down and agreed.
 
 #### Tasks
 
-- [ ] Task 3.1: Create `src/content.config.ts` with the `glob` loader and a schema carrying a
+- [x] Task 3.1: Create `src/content.config.ts` with the `glob` loader and a schema carrying a
       `translationKey` so the three locale variants of one item are linked:
       ```ts
       import { defineCollection, z } from 'astro:content';
@@ -444,29 +444,66 @@ on is written down and agreed.
 
       export const collections = { caseStudies };
       ```
-- [ ] Task 3.2: Author the three pillars (RegTech/EPREL compliance, Entity Resolution & Market
+- [x] Task 3.2: Author the three pillars (RegTech/EPREL compliance, Entity Resolution & Market
       Observability, Multi-tenant Cloud Infrastructure) and the case studies (Topten ecosystem, Topten
       Scout, EU inspection tooling) in all three locales, respecting the non-goal on confidential detail.
-- [ ] Task 3.3: Author `src/i18n/{en,ca,es}.ts` UI dictionaries. Type them so a missing key in `ca`/`es`
+- [x] Task 3.3: Author `src/i18n/{en,ca,es}.ts` UI dictionaries. Type them so a missing key in `ca`/`es`
       is a compile error: `export const ca: typeof en = { … }`.
-- [ ] Task 3.4: Write the tone guidelines into the plan's companion doc: pragmatic, metrics-driven,
+- [x] Task 3.4: Write the tone guidelines into the plan's companion doc: pragmatic, metrics-driven,
       operational ROI and regulatory certainty; no generic developer clichés; Catalan written for
       institutional/public-tender register, not machine-translated from English.
-- [ ] Task 3.5: Build `src/lib/schema.ts` emitting `Person` and `ProfessionalService` JSON-LD, injected
+- [x] Task 3.5: Build `src/lib/schema.ts` emitting `Person` and `ProfessionalService` JSON-LD, injected
       as a single inline `<script type="application/ld+json">` in `BaseLayout` (Astro hashes it).
-- [ ] Task 3.6: Seed every content entry and dictionary key with Lorem Ipsum carrying the `TODO(copy)`
+- [x] Task 3.6: Seed every content entry and dictionary key with Lorem Ipsum carrying the `TODO(copy)`
       sentinel (D8, D9), so placeholders are **greppable**, not merely obvious to a human reading the
       page. Create `scripts/check-placeholders.mjs` and wire `npm run check:placeholders` into `ci.yml`
       behind the `ALLOW_PLACEHOLDER_COPY` variable.
 
 #### Acceptance Criteria
 
-- [ ] `npm run check` passes with 0 errors — a missing translation key fails the build, not production.
-- [ ] Every collection entry has three locale siblings sharing one `translationKey`; verify with a count
+- [x] `npm run check` passes with 0 errors — a missing translation key fails the build, not production.
+- [x] Every collection entry has three locale siblings sharing one `translationKey`; verify with a count
       assertion rather than by eye.
-- [ ] `npm run check:placeholders` reports the expected number of outstanding `TODO(copy)` sentinels and
+- [x] `npm run check:placeholders` reports the expected number of outstanding `TODO(copy)` sentinels and
       that count is recorded — it is the burn-down list for Phase 6.
-- [ ] Each of `/`, `/ca/`, `/es/` renders its own copy with no untranslated fallback visible.
+- [x] Each of `/`, `/ca/`, `/es/` renders its own copy with no untranslated fallback visible.
+      → verified in a real browser against `npm run preview`: EN page had 41 `TODO(copy) —` markers and
+      **0** `[ca]`/`[es]`; `/ca/` had 32 `[ca]` and **0** others (`html lang="ca"`); `/es/` had 32 `[es]`
+      and **0** others (`html lang="es"`). Each page carried its own `<title>`, canonical and
+      `hreflang="en,ca,es,x-default"`.
+
+> **Recorded evidence (2026-10-15).** `astro check` → **22 files, 0 errors, 0 warnings, 0 hints**.
+> `npm run build` → 4 pages. `wrangler deploy --dry-run` → **Read 21 files**, no warnings (unchanged:
+> content collections add no `dist` files). `npm run check:placeholders` → **exit 1**, reporting
+> **129 sentinels across 21 files** — the Phase 6 burn-down list.
+>
+> **Two recorded deviations from the plan's snippets.**
+>
+> 1. **Zod import.** The plan snippet used `import { z } from 'astro:content'`. That is not exported in
+>    Astro 7.3.8. `astro:schema` works but is **deprecated** (7 hints, and this repo's gate demands 0
+>    hints), and its own JSDoc names the replacement: "Use `import { z } from 'astro/zod'` instead".
+>    Final form: `defineCollection` from `astro:content`, `z` from `astro/zod`.
+> 2. **`CaseStudy` reshaped.** The plan implied a three-part problem/approach/outcome card. The agreed
+>    schema carries only `title`/`summary`/`pillar`, so the component now takes `title` + `summary` and
+>    the markdown body is **not yet rendered**. The problem/approach/outcome breakdown belongs in the
+>    real copy; revisit when it is written rather than inventing the structure now.
+>
+> **CSP finding — a new inline script was introduced, so it was verified, not assumed.** The JSON-LD
+> block is an inline `<script type="application/ld+json">` and Astro does **not** add a hash for it
+> (only the nav module script is hashed). A real-browser check with an `addInitScript`
+> `securitypolicyviolation` listener reported **zero violations on `/`, `/ca/`, `/es/` and the 404 page**,
+> confirming that non-executable data blocks are outside `script-src` enforcement. `unsafe-inline` is
+> absent, there are **0** inline `style=` attributes, and computed styles confirmed the bundle applied
+> (`body` margin `0px`, `font-family: "Inter Variable", …`, dark-mode bg `rgb(16, 17, 20)`, `h1` 48px).
+> The JSON-LD graph parses to `["Person", "ProfessionalService"]`. Rationale for the absence of a hash is
+> recorded rather than silenced: the blog body is placeholder, and Astro cannot hash arbitrary
+> `set:html` content.
+>
+> **Residual / deferred.** (a) `src/pages/404.astro` remains **English-only** — it renders no dictionary
+> keys, so `/ca/` and `/es/` 404s show English. A static 404 is a single prerendered file, so
+> locale detection is impossible server-side; this needs a decision (accept English, or add a small
+> inline script) and is left to Phase 5/6 rather than guessed at here. (b) The plan's Phase 1 file list
+> described `404.astro` as "localize" — that is now explicitly **not done**, for the reason above.
 
 ### Phase 4: Contact endpoint, CI/CD and Cloudflare infrastructure
 

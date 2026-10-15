@@ -21,7 +21,7 @@ Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
 ```bash
 npm ci                                        # lockfile is authoritative; CI uses --ci
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
-npm run check                                 # astro check → expect "15 files, 0 errors, 0 warnings, 0 hints"
+npm run check                                 # astro check → expect "22 files, 0 errors, 0 warnings, 0 hints"
 npm run build                                 # astro check && astro build → 4 pages
 npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 21 files", no warnings
 ```

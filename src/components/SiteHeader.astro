@@ -11,10 +11,19 @@ interface Props {
   lang?: Locale;
   brand: string;
   nav: NavItem[];
-  menuLabel?: string;
+  menuLabel: string;
+  primaryNavLabel: string;
+  languageNavLabel: string;
 }
 
-const { lang = defaultLocale, brand, nav, menuLabel = 'Menu' } = Astro.props;
+const {
+  lang = defaultLocale,
+  brand,
+  nav,
+  menuLabel,
+  primaryNavLabel,
+  languageNavLabel,
+} = Astro.props;
 ---
 
 <header class="border-b border-border">
@@ -48,7 +57,7 @@ const { lang = defaultLocale, brand, nav, menuLabel = 'Menu' } = Astro.props;
       id="site-nav"
       class="hidden w-full flex-col gap-4 sm:flex sm:w-auto sm:flex-row sm:items-center"
     >
-      <nav aria-label="Primary">
+      <nav aria-label={primaryNavLabel}>
         <ul class="flex flex-col gap-3 sm:flex-row sm:gap-6">
           {nav.map((item) => (
             <li>
@@ -59,7 +68,7 @@ const { lang = defaultLocale, brand, nav, menuLabel = 'Menu' } = Astro.props;
           ))}
         </ul>
       </nav>
-      <LanguagePicker current={lang} />
+      <LanguagePicker current={lang} label={languageNavLabel} />
     </div>
   </div>
 </header>

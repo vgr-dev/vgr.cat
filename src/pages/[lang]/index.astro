@@ -5,6 +5,7 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import HomeSections from '../../components/HomeSections.astro';
 import { locales, defaultLocale, type Locale } from '../../i18n/config';
+import { useTranslations } from '../../i18n';
 
 export const getStaticPaths = (() =>
   locales
@@ -12,26 +13,25 @@ export const getStaticPaths = (() =>
     .map((locale) => ({ params: { lang: locale } }))) satisfies GetStaticPaths;
 
 const { lang } = Astro.params as { lang: Locale };
+const t = useTranslations(lang);
 const nav = [
-  { href: '#services', label: 'TODO(copy) — Services' },
-  { href: '#work', label: 'TODO(copy) — Work' },
-  { href: '#about', label: 'TODO(copy) — About' },
-  { href: '#contact', label: 'TODO(copy) — Contact' },
+  { href: '#services', label: t.nav.services },
+  { href: '#work', label: t.nav.work },
+  { href: '#about', label: t.nav.about },
+  { href: '#contact', label: t.nav.contact },
 ];
 ---
 
-<BaseLayout
-  lang={lang}
-  title="vgr.cat"
-  description="TODO(copy) — site meta description"
->
+<BaseLayout lang={lang} title={t.meta.title} description={t.meta.description}>
   <SiteHeader
     slot="header"
     lang={lang}
-    brand="vgr.cat"
+    brand={t.header.brand}
     nav={nav}
-    menuLabel="TODO(copy) — Menu"
+    menuLabel={t.header.menuLabel}
+    primaryNavLabel={t.header.primaryNavLabel}
+    languageNavLabel={t.header.languageNavLabel}
   />
-  <HomeSections />
-  <SiteFooter slot="footer" note="TODO(copy) — footer note" />
+  <HomeSections lang={lang} />
+  <SiteFooter slot="footer" note={t.footer.note} />
 </BaseLayout>

@@ -7,6 +7,8 @@ import {
   stripLocale,
   type Locale,
 } from '../i18n/config';
+import { useTranslations } from '../i18n';
+import { buildJsonLd } from '../lib/schema';
 
 interface Props {
   title: string;
@@ -34,6 +36,8 @@ const ogLocale: Record<Locale, string> = {
   ca: 'ca_ES',
   es: 'es_ES',
 };
+
+const jsonLd = buildJsonLd({ locale: lang, t: useTranslations(lang) });
 ---
 
 <!doctype html>
@@ -70,6 +74,7 @@ const ogLocale: Record<Locale, string> = {
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
     <slot name="header" />

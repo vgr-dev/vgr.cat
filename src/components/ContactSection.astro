@@ -1,18 +1,17 @@
 ---
 interface Props {
   heading: string;
+  body: string;
   bookingLabel: string;
   bookingHref: string;
 }
 
-const { heading, bookingLabel, bookingHref } = Astro.props;
+const { heading, body, bookingLabel, bookingHref } = Astro.props;
 ---
 
 <section id="contact" class="mx-auto max-w-5xl px-6 py-20">
   <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
-  <div class="mt-4 max-w-2xl text-muted">
-    <slot />
-  </div>
+  <p class="mt-4 max-w-2xl text-muted">{body}</p>
 
   <a
     href={bookingHref}

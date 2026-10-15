@@ -8,13 +8,14 @@ import {
 
 interface Props {
   current: Locale;
+  label: string;
 }
 
-const { current } = Astro.props;
+const { current, label } = Astro.props;
 
 const logicalPath = stripLocale(Astro.url.pathname);
 
-const label: Record<Locale, string> = { en: 'EN', ca: 'CA', es: 'ES' };
+const code: Record<Locale, string> = { en: 'EN', ca: 'CA', es: 'ES' };
 const name: Record<Locale, string> = {
   en: 'English',
   ca: 'Català',
@@ -22,7 +23,7 @@ const name: Record<Locale, string> = {
 };
 ---
 
-<nav aria-label="Language">
+<nav aria-label={label}>
   <ul class="flex items-center gap-1">
     {locales.map((locale) => {
       const isCurrent = locale === current;
@@ -35,7 +36,7 @@ const name: Record<Locale, string> = {
             aria-current={isCurrent ? 'true' : undefined}
             class="rounded px-2 py-1 text-sm aria-[current]:font-semibold aria-[current]:text-accent hover:text-accent"
           >
-            {label[locale]}
+            {code[locale]}
             <span class="sr-only"> — {name[locale]}</span>
           </a>
         </li>

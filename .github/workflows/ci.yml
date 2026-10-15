@@ -24,6 +24,9 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run check
+      - name: Check for placeholder copy
+        if: vars.ALLOW_PLACEHOLDER_COPY != 'true'
+        run: npm run check:placeholders
       - run: npm run build
       - uses: actions/upload-artifact@v7
         with:

@@ -30,8 +30,27 @@ typographic reference direction and the component set already named in the plan.
 7. **Contact** — `ContactSection`: spam-protected form (Phase 4) + calendar booking link.
 8. **Footer** — minimal legal / social / language links. (`SiteFooter.astro`)
 
-## Open questions for the user (block Phase 2 confirmation, not Phase 1)
+## Resolved (2026-10-15)
 
-- Is a single long page correct, or should Selected work / About become their own routes?
-- Should the calendar booking be primary (hero CTA) or live only in the Contact section?
-- Any section to drop for a leaner first launch (e.g. merge Positioning into Hero)?
+The user accepted the defaults ("go"): a single long page, calendar booking as the hero CTA *and* in the
+Contact section, all eight sections kept. No section was dropped.
+
+## Tone guidelines for the copy phase (Task 3.4)
+
+House style for the final EN/CA/ES copy. Until then every string carries a `TODO(copy)` sentinel (D8/D9).
+
+- **Pragmatic and authoritative, never salesy.** State what was built and what it changed. No
+  "passionate", "rockstar", "ninja", or "I love solving problems".
+- **Metrics-driven where public.** Operational ROI, regulatory certainty, system resilience — and only
+  numbers that are already public or that you own. See the confidentiality non-goal.
+- **No generic developer clichés.** No "full-stack", no "10x", no "clean-code advocate".
+- **Regulatory precision is the credibility signal.** Cite frameworks by real name and scope: EPREL,
+  ecodesign, energy labelling, ESPR/DPP, GTIN/EAN, MSAs. For this audience, correct terminology
+  outperforms polished marketing.
+- **Audience-first framing.** Public agencies (ICAEN, IDAE, EU MSAs) care about mandate and
+  verifiability; marketplaces, distributors and manufacturers care about the cost of non-compliance and
+  automation.
+- **Catalan is written, not translated.** Institutional / public-tender register — "administració",
+  "compliment normatiu", "supervisió de mercat" — not a machine gloss of the English. Same for Spanish.
+  Where a phrase only works in English, rewrite it per locale rather than translate it.
+- **Keep sentences short.** The layout is typographic and single-column; long clauses read badly in it.

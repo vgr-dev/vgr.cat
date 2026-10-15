@@ -951,6 +951,64 @@ paraphrased):
 > **Status**: fix applied and gated locally; **not committed** (awaiting authorization). Until this
 > merges, `vgr.cat` has no contact endpoint at all.
 
+> **Addendum 5 (2026-10-15) — deploy fixed, production verified, replay anomaly CLOSED as platform
+> behaviour.**
+>
+> PR #6 merged; **Deploy succeeded (39s)**, all steps green including the new `npm run types`. Production
+> is now the Phase 4 Worker.
+>
+> Recorded production evidence:
+>
+> | Probe | Result |
+> | --- | --- |
+> | `GET /` | 200, serving the new build (`TODO(copy) — Principal engineer value proposition`); `/ca/` serves the Catalan copy |
+> | `GET /api/contact` | **405** `application/json` `{"error":"Method not allowed"}` — the Worker now runs for `/api/*` |
+> | `POST`, no token | **403** `{"error":"Challenge missing"}` |
+> | `POST`, dummy token ×3 | **403** `{"error":"Challenge failed"}` |
+> | `POST`, **real widget** | **303** → `https://vgr.cat/contact/thanks/`, `lang="en"`, title `… | vgr.cat` |
+> | Email delivery | **confirmed by the user** — "email received correctly" |
+>
+> The dummy-token 403 (not 500) proves the secret is readable, and because the handler returns **502** on
+> any send failure, the 303 proves `env.NOTIFY.send()` **and** `env.REPLY.send()` were both accepted.
+>
+> The production CSP meta is exactly as designed — `default-src 'self'`, `frame-src https://challenges.cloudflare.com`,
+> `script-src` with the Turnstile origin plus Astro's hashes. Console `connect-src 'data:,'` violations
+> name a directive that **includes challenge-platform hosts we never declare** and that we do not declare
+> `connect-src` at all, so those originate in Cloudflare's challenge-platform document, not our page. The
+> widget minted a valid 794-char token and the form submitted, so this is benign third-party noise.
+>
+> **Replay anomaly — root cause isolated. It is Siteverify, not the Worker.** The anomaly reproduced on
+> production (same token, three submissions, three 303s), so it was isolated by calling Siteverify
+> **directly**, bypassing our Worker:
+>
+> ```
+> POST https://challenges.cloudflare.com/turnstile/v0/siteverify   (same token, three times)
+> {"action":"contact","hostname":"vgr.cat","error-codes":[],"success":true,
+>  "challenge_ts":"2026-10-15T21:48:02.000Z","metadata":{"interactive":false}}
+> ```
+>
+> Repeated for a second, independently minted token — identical result. **Neither returned
+> `timeout-or-duplicate`**, and `error-codes` was empty every time. Recorded without printing the secret.
+>
+> Conclusion: `success === true` is genuinely what Cloudflare reports, so `challengePasses()` is behaving
+> exactly as designed — it is not an application bug, and there is nothing to "fix" in the check. Widget
+> config: `mode managed`, `clearance_level no_clearance`, `metadata.interactive: false`.
+>
+> **Open risk (needs an Architect decision, not a Builder change).** Inside the token's validity window a
+> single solved token can be replayed, so a token held by an attacker still passes. Combined with the
+> still-absent rate limiting, one solved challenge can drive repeated submissions for the life of the
+> token. Cloudflare documents tokens as single-use with a 300-second life; that is not what was observed
+> here. Server-side replay defence (KV/DO token store) plus rate limiting would both be *new* work, not a
+> correction — hence escalated rather than implemented.
+>
+> **Explicitly NOT verified:** the 300-second expiry bound. Both tokens were still inside it (≈70s and
+> ≈90s old) when tested, so expiry was never observed. Retest deferred; do **not** record the window as
+> confirmed.
+>
+> `wrangler secret list` confirms `TURNSTILE_SECRET_KEY` is set. It was written *before* the fix — i.e.
+> onto the assets-only Worker — and survived the PR #6 deploy, which is why the endpoint returns 403 and
+> not 500. No further secret action is required.
+
 ### Phase 5: Technical SEO, performance and cookieless analytics
 
 **Goal**: Locale-correct discovery metadata and privacy-safe measurement.

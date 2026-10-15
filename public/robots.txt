@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vgr.cat/sitemap-index.xml

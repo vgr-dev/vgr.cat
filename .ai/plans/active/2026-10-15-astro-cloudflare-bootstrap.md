@@ -199,9 +199,9 @@
 
 #### Tasks
 
-- [ ] **Task 2.1**: **Deployment target — Cloudflare Workers (static assets).** The site is deployed as a Workers static-assets project (`wrangler` serves `dist/` directly; no Worker script, no adapter). This is the canonical path for new Astro projects and the only one that keeps `@astrojs/cloudflare` (SSR/actions/sessions) available as a future, non-breaking addition. Record this in a "Deployment" section of `README.md`.
+- [x] **Task 2.1**: **Deployment target — Cloudflare Workers (static assets).** The site is deployed as a Workers static-assets project (`wrangler` serves `dist/` directly; no Worker script, no adapter). This is the canonical path for new Astro projects and the only one that keeps `@astrojs/cloudflare` (SSR/actions/sessions) available as a future, non-breaking addition. Record this in a "Deployment" section of `README.md`.
 
-- [ ] **Task 2.2**: Author `astro.config.mjs`:
+- [x] **Task 2.2**: Author `astro.config.mjs`:
   ```js
   import { defineConfig } from 'astro/config';
   import sitemap from '@astrojs/sitemap';
@@ -216,7 +216,7 @@
   ```
   `site` is **mandatory** for `@astrojs/sitemap` to emit absolute URLs. `output: 'static'` is the explicit declaration that no adapter is in play.
 
-- [ ] **Task 2.3**: Create `wrangler.jsonc` (Workers static-assets project):
+- [x] **Task 2.3**: Create `wrangler.jsonc` (Workers static-assets project):
   ```jsonc
   {
     "name": "vgr-cat",
@@ -230,7 +230,7 @@
   ```
   `not_found_handling: "404-page"` is what makes `src/pages/404.astro` actually serve a custom 404 for Workers projects. (`wrangler` was already added to `devDependencies` in Task 1.2.)
 
-- [ ] **Task 2.4**: Author `public/_headers`:
+- [x] **Task 2.4**: Author `public/_headers`:
   ```
   /*
     X-Content-Type-Options: nosniff
@@ -244,21 +244,25 @@
   ```
   Astro hashes every bundled filename in `/_astro/`, which is precisely what makes `immutable` safe. Document in `README.md` that `_headers` applies to **static assets only**, not Worker-generated responses.
 
-- [ ] **Task 2.5**: Create `public/robots.txt` pointing at the sitemap index produced by `@astrojs/sitemap` (`sitemap-index.xml`), and replace `public/favicon.svg`.
+- [x] **Task 2.5**: Create `public/robots.txt` pointing at the sitemap index produced by `@astrojs/sitemap` (`sitemap-index.xml`), and replace `public/favicon.svg`.
 
-- [ ] **Task 2.6**: Implement `src/layouts/BaseLayout.astro` (typed `Props` interface, canonical URL from `Astro.site`, OG/Twitter meta, sitemap `<link>`), then rewrite `src/pages/index.astro` to use it, and add `src/pages/404.astro` plus `src/styles/global.css`.
+- [x] **Task 2.6**: Implement `src/layouts/BaseLayout.astro` (typed `Props` interface, canonical URL from `Astro.site`, OG/Twitter meta, sitemap `<link>`), then rewrite `src/pages/index.astro` to use it, and add `src/pages/404.astro` plus `src/styles/global.css`.
 
-- [ ] **Task 2.7**: Validate the Cloudflare configuration without deploying:
+- [x] **Task 2.7**: Validate the Cloudflare configuration without deploying:
   - `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` → must exit `0`.
   - Confirm `dist/404.html` exists after a build with a route that has `format: 'directory'`.
 
 #### Acceptance Criteria
 
-- [ ] `npm run build` produces `dist/index.html`, `dist/404.html`, `dist/sitemap-index.xml`, `dist/robots.txt`, `dist/_headers`.
-- [ ] `npx wrangler deploy --dry-run` exits `0` with no configuration warnings — *automated*.
-- [ ] `npm run preview` serves at `http://localhost:4321` and `/robots.txt` returns `200` — *manual check*.
-- [ ] Static analysis passes without errors: `npm run check`.
-- [ ] The Cloudflare Workers deployment target is documented in `README.md`.
+- [x] `npm run build` produces `dist/index.html`, `dist/404.html`, `dist/sitemap-index.xml`, `dist/robots.txt`, `dist/_headers`.
+  - *automated*: `find dist -type f` → `404.html`, `_headers`, `favicon.ico`, `favicon.svg`, `index.html`, `robots.txt`, `sitemap-0.xml`, `sitemap-index.xml`; all five asserted present with `test -f`.
+  - **Recorded deviation**: `dist/_astro/` is **not** produced. Astro's default `build.inlineStylesheets: 'auto'` inlines stylesheets below `VITE_ASSET_INLINE_LIMIT`, and `src/styles/global.css` minifies to well under 4 KB, so it ships as an inline `<style>` block in `<head>` instead of a hashed file. The Phase 1 criterion *"a populated `dist/_astro/` exists"* is therefore unsatisfiable with the `astro.config.mjs` specified verbatim in Task 2.2, and the `/_astro/*` `immutable` rule in `public/_headers` currently matches no file. See the open question below.
+- [x] `npx wrangler deploy --dry-run` exits `0` with no configuration warnings — *automated*: `WRANGLER_EXIT=0`; `grep -iE 'warn|error|invalid|deprecat'` against the run log → `(none)`; `✨ Read 8 files from the assets directory`.
+- [x] `npm run preview` serves at `http://localhost:4321` and `/robots.txt` returns `200` — *automated* (rather than left as a manual check): `/` → `200`, `/robots.txt` → `200`, `/sitemap-index.xml` → `200`, `/favicon.svg` → `200`, `/nope-does-not-exist` → `404` rendering `<h1>404 — Page not found</h1>`.
+- [x] Static analysis passes without errors: `npm run check` — *automated* (5 files, 0 errors, 0 warnings, 0 hints); `npm run format:check` → `All matched files use Prettier code style!`.
+- [x] The Cloudflare Workers deployment target is documented in `README.md` — a `## Deployment` section was added covering the Workers static-assets rationale and the `_headers`-applies-to-static-assets-only caveat. Task 4.6 expands this into the complete README.
+
+> **Open question for the Architect (Phase 2).** The `/_astro/*` immutable cache rule and the Phase 1 "populated `dist/_astro/`" criterion cannot both hold while `astro.config.mjs` keeps Astro's default `build.inlineStylesheets: 'auto'`. Resolve by either (a) adding `build: { format: 'directory', inlineStylesheets: 'never' }` to Task 2.2's config, or (b) dropping the `/_astro/*` rule from `public/_headers` and the `dist/_astro/` expectation from Phase 1. **Not changed here** — Task 2.2 specifies the config content verbatim and Builder Operating Rule 1 forbids unplanned edits.
 
 ---
 

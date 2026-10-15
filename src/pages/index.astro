@@ -1,16 +1,14 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Astro</title>
-  </head>
-  <body>
-    <h1>Astro</h1>
-  </body>
-</html>
+<BaseLayout
+  title="vgr.cat"
+  description="vgr.cat — a static site built with Astro and served from Cloudflare Workers."
+>
+  <h1>vgr.cat</h1>
+  <p>
+    This site is built with Astro, fully prerendered at build time, and deployed
+    to Cloudflare Workers as a static-assets project.
+  </p>
+</BaseLayout>

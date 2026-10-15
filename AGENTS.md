@@ -1,0 +1,138 @@
+# AGENTS.md
+
+Guidance for AI coding agents working in this repository. Read this before making changes.
+
+---
+
+## What this project is
+
+`vgr.cat` is a **fully static site** built with **Astro 7** and deployed to **Cloudflare Workers as a
+static-assets project** (no Worker script, no adapter, no SSR). Wrangler uploads `dist/` to the edge
+verbatim. Live at `https://vgr.cat`, deployed automatically by GitHub Actions on merge to `main`.
+
+Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
+
+---
+
+## Commands
+
+### The verification gate — run this before claiming any change works
+
+```bash
+npm ci                                        # lockfile is authoritative; CI uses --ci
+npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
+npm run check                                 # astro check → expect "5 files, 0 errors, 0 warnings, 0 hints"
+npm run build                                 # astro check && astro build → 2 pages
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 8 files", no warnings
+```
+
+`npm run check` alone is not enough — `astro build` transpiles with esbuild and performs **no** type
+checking, which is exactly why `check` is chained into `build`. Never remove that chaining.
+
+### Other commands
+
+| Command                         | Notes                                                                      |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`                   | Dev server on `:4321`. Does **not** emit the CSP meta tag (see gotchas).   |
+| `npm run preview`               | Serves the built `dist/` on `:4321`. Does **not** apply `public/_headers`. |
+| `npx wrangler whoami`           | Works in sandboxes; the Wrangler session is authenticated.                 |
+| `npx wrangler deployments list` | Read-only. Safe.                                                           |
+| `gh pr checks <n>` / `git push` | See the hard rules below.                                                  |
+
+Use `npx astro dev stop` / `npx astro preview stop` to shut servers down — they daemonise.
+
+---
+
+## Hard rules
+
+1. **Never `git commit`, `git push`, `git reset`, or `git rebase` without explicit user authorization.**
+   Make the edits, run the gate, then stop and _propose_ the commit message. This is a standing user
+   instruction, not a suggestion.
+2. **`main` is branch-protected.** Direct pushes are rejected. Every change — including docs-only —
+   needs a branch and a pull request, with the `CI / validate` check passing.
+3. **Never run destructive production commands.** In particular `npx wrangler rollback` republishes an
+   older version to live `vgr.cat`. `wrangler secret put/delete` also deploy immediately. Ask first.
+4. **Never commit secrets.** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are repository secrets;
+   reference them only as `${{ secrets.* }}`. `.dev.vars` and `.env` must stay gitignored.
+5. **Zero suppressions.** Never resolve a type/lint error with `@ts-ignore`, a baseline update, or a
+   disabled rule. Fix the cause.
+6. **Do not re-litigate settled architecture.** See the next section.
+
+---
+
+## Scoped instructions — read the matching file before editing those paths
+
+Path-specific rules live in `.github/instructions/`. VS Code Copilot auto-loads them when a matching file
+is in context; **other agents must read the matching file explicitly.**
+
+| When you touch                      | Read                                                     |
+| ----------------------------------- | -------------------------------------------------------- |
+| `.github/workflows/**`              | `.github/instructions/workflows.instructions.md`         |
+| `astro.config.mjs`                  | `.github/instructions/astro-config.instructions.md`      |
+| `wrangler.jsonc`, `public/_headers` | `.github/instructions/cloudflare-config.instructions.md` |
+| `src/**`                            | `.github/instructions/astro-src.instructions.md`         |
+| `.ai/plans/**`                      | `.github/instructions/plans.instructions.md`             |
+
+---
+
+## Settled decisions — do not undo these
+
+Each of these was decided deliberately and is documented in `.ai/plans/archive/`. If you think one is
+wrong, raise it with the user rather than silently reverting it.
+
+| Decision                                                                     | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Static output, no adapter.** `output: 'static'`, no `@astrojs/cloudflare`. | `@astrojs/cloudflare` dropped Pages support and Workers is the recommended target. Keeping it out leaves the door open to add SSR later without changing platform.                                                                                                                                                                                                                                                                                                                          |
+| **Workers static assets, not Pages.**                                        | The canonical path for new Astro projects.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **No per-PR preview workflow.**                                              | The originally-specified `env.preview` design created _one persistent_ Worker every PR overwrites — it never delivered per-PR previews. The modern `wrangler preview` alternative would not run on this repo's real PR traffic, because Dependabot-triggered workflows cannot read repository secrets. `ci.yml`'s 7-day `dist` artifact plus `npm run preview` is the review path. Full reasoning + a ready-to-implement spec: `.ai/plans/archive/2026-10-15-task-3.4-preview-decision.md`. |
+| **CSP via `security.csp`, not `public/_headers`.**                           | Astro computes build-time hashes for its inline styles/scripts; a hand-written header CSP cannot track hashes that change every build.                                                                                                                                                                                                                                                                                                                                                      |
+| **No Tailwind, no client-side framework, no CMS/DB/auth.**                   | Explicit bootstrap non-goals. Cheap to add later.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **No wildcard `*.vgr.cat/*` route.**                                         | A catch-all silently answers on every present _and future_ subdomain.                                                                                                                                                                                                                                                                                                                                                                                                                       |
+
+---
+
+## Gotchas that will otherwise waste your time
+
+- **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
+  `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
+- **The whole site is tiny.** `src/` contains exactly 4 files — 3 `.astro` components plus
+  `global.css` — and the build emits 2 pages (`index.html`, `404.html`) alongside `robots.txt`,
+  `favicon.*`, `sitemap-*.xml` and `_headers`. `astro check` reports **5 files**, which is therefore
+  expected; don't go hunting for a missing page.
+- **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
+  empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
+  and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching
+  config, headers, or anything under `src/`.
+
+---
+
+## Conventions
+
+- **Conventional Commits** in the history: `feat(scope):`, `fix(scope):`, `docs(scope):`, `chore(scope):`,
+  `ci(scope):`. Write substantive commit bodies — the project's history explains _why_, not just _what_.
+- **Action pinning, `permissions:` and `concurrency:` rules live in
+  `.github/instructions/workflows.instructions.md`** — read it before editing anything under
+  `.github/workflows/`.
+- **Prettier + `prettier-plugin-astro`** own formatting. Two-space indent, single quotes, LF, final
+  newline (see `.editorconfig` / `.prettierrc.json`). Run `npm run format` rather than hand-formatting.
+- **Astro components only.** No React/Vue/Svelte.
+
+---
+
+## Plan workflow
+
+Plans live in `.ai/plans/` — `active/` for the in-progress plan, `archive/` for completed ones. Check
+`active/` before starting work.
+
+Writing, verifying and archiving plans has its own rules — the evidence standard, the archive footer, and
+why recorded command output must never be rewritten — in `.github/instructions/plans.instructions.md`.
+
+---
+
+## Verification culture in this repo
+
+Evidence is recorded, not asserted. When you verify something, capture the **exact command and its
+output** in the plan, and state explicitly what you did _not_ verify and why. Plans here contain
+"Recorded deviations" and "Correction" notes — that is the expected standard. Do not write that
+something is verified unless you ran it, and do not flip a checkbox for work that was only partially
+completed (mark it deferred instead).

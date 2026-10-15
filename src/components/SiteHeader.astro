@@ -1,0 +1,75 @@
+---
+import LanguagePicker from './LanguagePicker.astro';
+import { defaultLocale, type Locale } from '../i18n/config';
+
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  lang?: Locale;
+  brand: string;
+  nav: NavItem[];
+  menuLabel?: string;
+}
+
+const { lang = defaultLocale, brand, nav, menuLabel = 'Menu' } = Astro.props;
+---
+
+<header class="border-b border-border">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
+    <a href="#top" class="font-semibold tracking-tight">
+      {brand}
+    </a>
+
+    <button
+      type="button"
+      id="nav-toggle"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      class="inline-flex items-center rounded border border-border p-2 sm:hidden"
+    >
+      <span class="sr-only">{menuLabel}</span>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"></path>
+      </svg>
+    </button>
+
+    <div
+      id="site-nav"
+      class="hidden w-full flex-col gap-4 sm:flex sm:w-auto sm:flex-row sm:items-center"
+    >
+      <nav aria-label="Primary">
+        <ul class="flex flex-col gap-3 sm:flex-row sm:gap-6">
+          {nav.map((item) => (
+            <li>
+              <a href={item.href} class="text-sm hover:text-accent">
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <LanguagePicker current={lang} />
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('site-nav');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    nav?.classList.toggle('hidden');
+  });
+</script>

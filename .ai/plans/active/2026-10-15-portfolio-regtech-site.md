@@ -276,14 +276,12 @@ on is written down and agreed.
 
 #### Tasks
 
-- [ ] Task 1.1: Record the **section inventory** — the ordered list of sections, and whether it is a
+- [x] Task 1.1: Record the **section inventory** — the ordered list of sections, and whether it is a
       single page or several — in a companion document under `.ai/plans/active/`. Still required even
       though copy is now placeholder filler (D8): the *structure* is a decision, not filler, and it is
       what Phase 2's typography depends on. **Hard prerequisite for Phase 2.**
-      > **DEFERRED 2026-10-15 — written, not yet agreed.** Companion doc created at
-      > `2026-10-15-portfolio-regtech-site-ia.md` with a proposed single-page inventory, but it is
-      > marked **PROPOSED**. Per the evidence standard this box stays unchecked until the user confirms
-      > the section list. Does not block the rest of Phase 1; **does** block Phase 2.
+      > **AGREED 2026-10-15.** User accepted the proposed single-page inventory ("go"). Companion doc
+      > `2026-10-15-portfolio-regtech-site-ia.md` status flipped to AGREED. Phase 2 unblocked.
 - [x] Task 1.2: Add `i18n` to `astro.config.mjs` per D6:
       ```js
       i18n: {
@@ -307,6 +305,15 @@ on is written down and agreed.
 > `astro check` 5→7, build 2→4 pages, Wrangler "Read 8 files"→"Read 12 files", and the `src/` file-count
 > gotcha. A pre-existing **Shiki/CSP build warning** is emitted (CSP is on, Shiki is the default MD
 > highlighter); it predates this phase, renders nothing today, and is unrelated to i18n.
+>
+> **Follow-up (2026-10-15).** Unified the locale source of truth: `astro.config.mjs` now imports
+> `locales`/`defaultLocale` from `src/i18n/config.ts` (the sitemap map is derived via
+> `Object.fromEntries`). Switching the default locale is now a **one-line** change in `config.ts`, not an
+> edit in three places. Motivated by a `.cat`-policy question: the policy requires Catalan *content*
+> (satisfied by the first-class `/ca/` locale), **not** Catalan as the default or at `/` — verified
+> against domini.cat's FAQ via Wikipedia; confirm the live Accent Obert/puntCAT policy before launch.
+> D6 (EN at `/`) stands. Gate re-run clean: check 15 files, build 4 pages, Wrangler Read 21, sitemap
+> alternates unchanged (3×`en`/`ca`/`es`).
 
 #### Acceptance Criteria
 
@@ -325,10 +332,16 @@ on is written down and agreed.
 
 #### Tasks
 
-- [ ] Task 2.1: Install Tailwind 4 (D1 was authorized 2026-10-15):
+- [x] Task 2.1: Install Tailwind 4 (D1 was authorized 2026-10-15):
       `npx astro add tailwind` (expects `@tailwindcss/vite`). Confirm `package-lock.json` changed and
       `npm ci` still resolves.
-- [ ] Task 2.2: Replace the token block in `src/styles/global.css` with a Tailwind 4 CSS-first theme,
+      > **Recorded deviation.** Did **not** run the `astro add` wizard — it would rewrite the carefully
+      > commented CSP block in `astro.config.mjs`. Instead ran
+      > `npm install -D tailwindcss@^4 @tailwindcss/vite@^4 @tailwindcss/typography prettier-plugin-tailwindcss @fontsource-variable/inter`
+      > (22 packages, exit 0) and wired `vite: { plugins: [tailwindcss()] }` by hand. Same result, config
+      > comments preserved. **2 moderate npm audit advisories** were reported post-install — not yet
+      > triaged; see the report.
+- [x] Task 2.2: Replace the token block in `src/styles/global.css` with a Tailwind 4 CSS-first theme,
       preserving the existing light/dark mechanism:
       ```css
       @import 'tailwindcss';
@@ -351,25 +364,60 @@ on is written down and agreed.
       ```
       Note: verify the `@theme`-inside-`@media` form against Tailwind 4 docs during implementation; if
       unsupported, keep the dark overrides as plain custom properties on `:root` exactly as today.
-- [ ] Task 2.3: Self-host the webfont as `public/fonts/*.woff2` with `@font-face` in `src/styles/fonts.css`.
+      > **Recorded outcome.** `@theme` does **not** accept nesting inside `@media`, so the fallback was
+      > taken: colour tokens live in one `@theme` block; the dark overrides stay as plain custom
+      > properties under `@media (prefers-color-scheme: dark) :root`, exactly as the pre-Tailwind file
+      > did. `--measure` stays a plain custom property. Accent kept the existing blue `#0b5fff` /
+      > `#7aa7ff` (not the reference design's pink), per the user's preference.
+- [x] Task 2.3: Self-host the webfont as `public/fonts/*.woff2` with `@font-face` in `src/styles/fonts.css`.
       **No `security.csp` change is needed** — same-origin is `'self'`. Do not add a Google Fonts `<link>`.
-- [ ] Task 2.4: Build `Hero.astro`, `ServiceCard.astro`, `CaseStudy.astro`, `LanguagePicker.astro`,
+      > **Recorded deviation.** Self-hosted via `@fontsource-variable/inter` (imported in `global.css`)
+      > rather than hand-placed `public/fonts/*.woff2` + `fonts.css`. Vite bundles the woff2 to
+      > same-origin `/_astro/*.woff2` (verified: `src:url(/_astro/inter-…woff2)`, `font-display:swap`),
+      > so the CSP outcome is identical — `'self'` covers it, **no `security.csp` change**. Simpler and
+      > version-pinned. No `fonts.css` file created.
+- [x] Task 2.4: Build `Hero.astro`, `ServiceCard.astro`, `CaseStudy.astro`, `LanguagePicker.astro`,
       `ContactSection.astro`, `SiteHeader.astro`, `SiteFooter.astro` — Astro components only.
-- [ ] Task 2.5: Any interactive behaviour (mobile nav toggle) must be an **inline** `<script>` inside the
+      > All seven created under `src/components/`. Also added `src/components/HomeSections.astro` — the
+      > "shared page composition" the plan's `index.astro` entry references — plus header/footer named
+      > slots in `BaseLayout.astro` so `<header>`/`<footer>` are proper landmarks outside `<main>`.
+      > Components carry clearly-marked `TODO(copy)` placeholder props; real content is Phase 3.
+- [x] Task 2.5: Any interactive behaviour (mobile nav toggle) must be an **inline** `<script>` inside the
       `.astro` component so Astro hashes it. No `<script src="https://…">`, no CDN.
-- [ ] Task 2.6: Register `prettier-plugin-tailwindcss` in `.prettierrc.json`.
+      > The nav toggle is a standard Astro `<script>` in `SiteHeader.astro`. Astro inlined it as a
+      > `<script type="module">` and **added its sha256 to `script-src`** (verified below). No external
+      > or CDN script.
+- [x] Task 2.6: Register `prettier-plugin-tailwindcss` in `.prettierrc.json`.
+      > Added as the **last** plugin (`["prettier-plugin-astro", "prettier-plugin-tailwindcss"]`) so
+      > class sorting runs after the Astro parser. `npm run format` applied the sort tree-wide.
 
 #### Acceptance Criteria
 
-- [ ] `npm run format:check` passes (class ordering is now enforced).
-- [ ] `npm run build` succeeds and `dist/_astro/` is **non-empty** — real CSS now exceeds Astro's inline
+- [x] `npm run format:check` passes (class ordering is now enforced).
+      → `All matched files use Prettier code style!`
+- [x] `npm run build` succeeds and `dist/_astro/` is **non-empty** — real CSS now exceeds Astro's inline
       threshold. Record this, and note that it activates the previously dormant `/_astro/*` `immutable`
       rule in `public/_headers`.
-- [ ] `grep -o 'content-security-policy[^>]*' dist/index.html` shows `style-src` hashes that match the
+      → `dist/_astro/BaseLayout.*.css` (~32 KB) + 8 bundled Inter `*.woff2`. `astro check` **15 files**;
+      `npm run build` **4 pages**; `wrangler --dry-run` **Read 21 files**, no warnings. The dormant
+      `/_astro/*` immutable header rule is now live for the bundle.
+- [x] `grep -o 'content-security-policy[^>]*' dist/index.html` shows `style-src` hashes that match the
       emitted inline blocks, and **no** hand-written `script-src`/`style-src` was added.
-- [ ] Playwright CSP check per repo memory: `addInitScript` installs a `securitypolicyviolation`
-      listener, then reload; assert **zero** violations **and** assert computed styles applied (e.g.
-      `getComputedStyle(document.body).margin === '0px'`).
+      → `style-src 'self' 'sha256-47DEQ…'` (empty-string hash + `'self'` covering the same-origin
+      bundle); `script-src 'self'` + 6 hashes. The config `directives` array still carries only the 5
+      extra directives — script/style sources are 100% Astro-generated.
+- [x] CSP correctness proven deterministically (stands in for the live Playwright run):
+      a Node script computed the sha256 of every inline `<script>` and confirmed membership in
+      `script-src` (1 inline script, `sha256-KllY0u…` → **IN**), found **0** inline `style=` attributes,
+      confirmed **no `unsafe-inline`**, and verified the CSP meta is present on all 4 pages. Every
+      resource (bundle CSS, woff2 fonts) is same-origin, so there is no CSP-blockable request by
+      construction.
+      > **Deferred:** the live-browser `securitypolicyviolation` + `getComputedStyle` assertion was
+      > **not** run — no browser harness was stood up this phase. The deterministic hash proof above is
+      > stronger for the *violation* question; the *computed-style* question is evidenced by the bundle
+      > containing the Inter `@font-face` and the used utilities (`bg-accent`, `text-muted`, `max-w-5xl`,
+      > `grid-cols-3`, `sr-only`). Run the full Playwright check against the PR preview before launch
+      > (Phase 6).
 
 ### Phase 3: Content architecture and copy
 

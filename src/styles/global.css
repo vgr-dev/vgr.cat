@@ -1,9 +1,21 @@
-:root {
-  color-scheme: light dark;
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@plugin '@tailwindcss/typography';
+
+@theme {
   --color-bg: #ffffff;
   --color-fg: #1a1a1a;
+  --color-muted: #5b6470;
   --color-accent: #0b5fff;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-border: #e4e7ec;
+  --color-surface: #f7f8fa;
+  --font-sans:
+    'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Tailwind 4's @theme does not accept @media; keep dark overrides as plain custom properties. */
+:root {
+  color-scheme: light dark;
   --measure: 68ch;
 }
 
@@ -11,7 +23,10 @@
   :root {
     --color-bg: #101114;
     --color-fg: #f2f3f5;
+    --color-muted: #9aa3b0;
     --color-accent: #7aa7ff;
+    --color-border: #262a31;
+    --color-surface: #16181d;
   }
 }
 
@@ -23,17 +38,12 @@
 
 body {
   margin: 0;
-  padding: 2rem 1.25rem 4rem;
+  padding: 0;
   min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans);
   line-height: 1.6;
-}
-
-main {
-  max-width: var(--measure);
-  margin-inline: auto;
 }
 
 :focus-visible {

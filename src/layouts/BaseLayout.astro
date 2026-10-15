@@ -72,8 +72,10 @@ const ogLocale: Record<Locale, string> = {
     <meta name="twitter:image" content={ogImageURL} />
   </head>
   <body>
-    <main>
+    <slot name="header" />
+    <main id="top">
       <slot />
     </main>
+    <slot name="footer" />
   </body>
 </html>

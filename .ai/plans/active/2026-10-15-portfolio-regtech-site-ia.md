@@ -4,10 +4,9 @@ Companion to `2026-10-15-portfolio-regtech-site.md` (Task 1.1). Move both togeth
 
 ## Status
 
-**PROPOSED — not yet user-agreed.** Task 1.1 requires this to be "written down and agreed". The
-structure below is the Builder's proposal, drafted so the Phase 1 routing skeleton is unblocked. Phase 2
-(design/typography) must not begin until the user confirms or amends this section list, because the
-typographic design is a function of the section count and order.
+**AGREED 2026-10-15.** The user accepted the proposed defaults ("go"): single long page per locale,
+calendar booking as the hero CTA *and* in the Contact section, all eight sections kept. Phase 2 is
+unblocked.
 
 ## Shape
 

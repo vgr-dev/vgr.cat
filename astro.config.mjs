@@ -1,14 +1,18 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
+// Single source of truth for locales so switching the default is a one-line change.
+import { locales, defaultLocale } from './src/i18n/config.ts';
 
 export default defineConfig({
   site: 'https://vgr.cat',
   output: 'static',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
+  vite: { plugins: [tailwindcss()] },
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'ca', 'es'],
+    defaultLocale,
+    locales: [...locales],
     routing: { prefixDefaultLocale: false },
   },
   security: {
@@ -29,8 +33,8 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: {
-        defaultLocale: 'en',
-        locales: { en: 'en', ca: 'ca', es: 'es' },
+        defaultLocale,
+        locales: Object.fromEntries(locales.map((locale) => [locale, locale])),
       },
     }),
   ],

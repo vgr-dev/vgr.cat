@@ -1,0 +1,25 @@
+---
+interface Props {
+  heading: string;
+  bookingLabel: string;
+  bookingHref: string;
+}
+
+const { heading, bookingLabel, bookingHref } = Astro.props;
+---
+
+<section id="contact" class="mx-auto max-w-5xl px-6 py-20">
+  <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
+  <div class="mt-4 max-w-2xl text-muted">
+    <slot />
+  </div>
+
+  <a
+    href={bookingHref}
+    class="mt-8 inline-block rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
+  >
+    {bookingLabel}
+  </a>
+
+  {/* The spam-protected inquiry form is added in Phase 4 (Worker + Turnstile). */}
+</section>

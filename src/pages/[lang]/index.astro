@@ -1,6 +1,9 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import HomeSections from '../../components/HomeSections.astro';
 import { locales, defaultLocale, type Locale } from '../../i18n/config';
 
 export const getStaticPaths = (() =>
@@ -9,15 +12,26 @@ export const getStaticPaths = (() =>
     .map((locale) => ({ params: { lang: locale } }))) satisfies GetStaticPaths;
 
 const { lang } = Astro.params as { lang: Locale };
+const nav = [
+  { href: '#services', label: 'TODO(copy) — Services' },
+  { href: '#work', label: 'TODO(copy) — Work' },
+  { href: '#about', label: 'TODO(copy) — About' },
+  { href: '#contact', label: 'TODO(copy) — Contact' },
+];
 ---
 
 <BaseLayout
   lang={lang}
   title="vgr.cat"
-  description="vgr.cat — a static site built with Astro and served from Cloudflare Workers."
+  description="TODO(copy) — site meta description"
 >
-  <h1>vgr.cat</h1>
-  <p>
-    Localized routing skeleton for <code>{lang}</code>.
-  </p>
+  <SiteHeader
+    slot="header"
+    lang={lang}
+    brand="vgr.cat"
+    nav={nav}
+    menuLabel="TODO(copy) — Menu"
+  />
+  <HomeSections />
+  <SiteFooter slot="footer" note="TODO(copy) — footer note" />
 </BaseLayout>

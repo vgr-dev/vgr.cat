@@ -1,0 +1,34 @@
+---
+interface Props {
+  title: string;
+  problemLabel: string;
+  approachLabel: string;
+  outcomeLabel: string;
+}
+
+const { title, problemLabel, approachLabel, outcomeLabel } = Astro.props;
+---
+
+<article class="border-t border-border py-10">
+  <h3 class="text-xl font-semibold tracking-tight">{title}</h3>
+  <dl class="mt-4 grid gap-4 sm:grid-cols-3">
+    <div>
+      <dt class="text-sm font-medium text-accent">{problemLabel}</dt>
+      <dd class="mt-1 text-muted">
+        <slot name="problem" />
+      </dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-accent">{approachLabel}</dt>
+      <dd class="mt-1 text-muted">
+        <slot name="approach" />
+      </dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-accent">{outcomeLabel}</dt>
+      <dd class="mt-1 text-muted">
+        <slot name="outcome" />
+      </dd>
+    </div>
+  </dl>
+</article>

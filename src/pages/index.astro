@@ -1,14 +1,31 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import HomeSections from '../components/HomeSections.astro';
+import { defaultLocale } from '../i18n/config';
+
+const lang = defaultLocale;
+const nav = [
+  { href: '#services', label: 'TODO(copy) — Services' },
+  { href: '#work', label: 'TODO(copy) — Work' },
+  { href: '#about', label: 'TODO(copy) — About' },
+  { href: '#contact', label: 'TODO(copy) — Contact' },
+];
 ---
 
 <BaseLayout
+  lang={lang}
   title="vgr.cat"
-  description="vgr.cat — a static site built with Astro and served from Cloudflare Workers."
+  description="TODO(copy) — site meta description"
 >
-  <h1>vgr.cat</h1>
-  <p>
-    This site is built with Astro, fully prerendered at build time, and deployed
-    to Cloudflare Workers as a static-assets project.
-  </p>
+  <SiteHeader
+    slot="header"
+    lang={lang}
+    brand="vgr.cat"
+    nav={nav}
+    menuLabel="TODO(copy) — Menu"
+  />
+  <HomeSections />
+  <SiteFooter slot="footer" note="TODO(copy) — footer note" />
 </BaseLayout>

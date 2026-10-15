@@ -10,6 +10,10 @@ applyTo: '.ai/plans/**'
 
 Check `active/` before starting work.
 
+`.ai/plans/active/` is kept in git by an empty `.gitkeep` even when no plan is in progress. **Do not
+delete it** — git does not track empty directories, so removing it makes `active/` vanish for everyone
+until the next plan happens to be created.
+
 ## The evidence standard — the important part
 
 This repository records evidence; it does not assert it.

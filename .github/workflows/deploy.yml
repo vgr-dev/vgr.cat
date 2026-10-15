@@ -28,6 +28,12 @@ jobs:
       - run: npm ci
       - name: Guard against a Turnstile test sitekey
         run: npm run check:production-env
+      # `npm run build` is `astro check && astro build`, and `astro check` needs the
+      # GENERATED worker-configuration.d.ts (gitignored) to resolve the `Env` binding
+      # type. Only `npm run check` chains `npm run types`, and CI's validate job runs
+      # that first — which is exactly why the missing step here stayed invisible until
+      # a deploy failed on a fresh checkout with "Cannot find name 'Env'".
+      - run: npm run types
       - run: npm run build
       - uses: cloudflare/wrangler-action@v4
         with:

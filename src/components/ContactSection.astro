@@ -20,5 +20,6 @@ const { heading, body, bookingLabel, bookingHref } = Astro.props;
     {bookingLabel}
   </a>
 
-  {/* The spam-protected inquiry form is added in Phase 4 (Worker + Turnstile). */}
+  {/* The booking link and the spam-protected form are supplied by the caller. */}
+  <slot />
 </section>

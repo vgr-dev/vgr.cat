@@ -21,9 +21,10 @@ Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
 ```bash
 npm ci                                        # lockfile is authoritative; CI uses --ci
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
-npm run check                                 # astro check → expect "22 files, 0 errors, 0 warnings, 0 hints"
-npm run build                                 # astro check && astro build → 4 pages
-npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 21 files", no warnings
+npm run lint                                  # ESLint 9 + eslint-plugin-astro (34 a11y rules)
+npm run check                                 # wrangler types && astro check → expect "30 files, 0 errors, 0 warnings, 0 hints"
+npm run build                                 # astro check && astro build → 7 pages
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 30 files", no warnings
 ```
 
 `npm run check` alone is not enough — `astro build` transpiles with esbuild and performs **no** type
@@ -95,12 +96,43 @@ wrong, raise it with the user rather than silently reverting it.
 
 - **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
   `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
+- **ESLint is pinned to `^9`, not 10.** `eslint-plugin-jsx-a11y@6.10.2` — a peer of
+  `eslint-plugin-astro`'s a11y configs — peers `eslint@^3 … ^9`, so an ESLint 10 major bump fails
+  `npm ci` with `ERESOLVE`. Same rule as the TypeScript cap above: align the version, never
+  `--legacy-peer-deps`. Astro's a11y rules appear under the `astro/jsx-a11y/*` namespace, several at
+  error level.
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), `i18n/config.ts`, the
-  component set under `components/`, the styles under `styles/`, and the pages (`index.astro`,
-  `404.astro`, `[lang]/index.astro`). The build emits 4 pages (`index.html`, `404.html`,
-  `ca/index.html`, `es/index.html`) alongside `robots.txt`, `favicon.*`, `sitemap-*.xml`, `_headers`
-  and the hashed `_astro/*` bundle. `astro check` reports **15 files**, which is
-  therefore expected; don't go hunting for a missing page.
+  component set under `components/`, the `src/worker` endpoint, the styles under `styles/`, and the pages
+  (`index.astro`, `404.astro`, `[lang]/index.astro`, `contact/thanks.astro`, `[lang]/contact/thanks.astro`).
+  The build emits 7 pages (`index.html`, `404.html`, `ca/`, `es/`, plus the three `contact/thanks`)
+  alongside `robots.txt`, `favicon.*`, `sitemap-*.xml`, `_headers` and the hashed `_astro/*` bundle.
+  `astro check` reports **30 files**, which is therefore expected; don't go hunting for a missing page.
+- **The Worker needs `assets.run_worker_first` or browser form POSTs break.** `not_found_handling:
+'404-page'` intercepts _navigation_ requests before the Worker runs, so a real browser POST to
+  `/api/contact` returned **405** while the identical `curl` request succeeded — curl does not send
+  `Sec-Fetch-Mode: navigate`. `run_worker_first: ["/api/*"]` is therefore mandatory, not an
+  optimisation. The tell is a request that works from curl and fails from a browser.
+- **Turnstile: the sitekey is committed, the secret never enters the repo.** Sitekeys are public — they
+  ship in the markup — so `src/config.ts` holds the production sitekey as the default and
+  `PUBLIC_TURNSTILE_SITE_KEY` overrides it (set that to the always-passes _test_ sitekey
+  `1x00000000000000000000AA` for automated runs). The secret lives only in
+  `wrangler secret put TURNSTILE_SECRET_KEY` (production) and `.dev.vars` (local test secret
+  `1x0000000000000000000000000000000AA`). `deploy.yml` runs `npm run check:production-env`, which
+  **refuses to deploy with a test sitekey**, since a test key silently disables bot protection.
+- **Siteverify checks `action` and `hostname`, and Cloudflare's test keys cannot satisfy them.** The
+  Worker requires `success === true` **plus** `action === 'contact'` **plus** a hostname in
+  `TURNSTILE_HOSTNAMES` (production: `vgr.cat`; never add `localhost` to a production value). The test
+  secret reports `hostname: "example.com"` and **omits `action` entirely**, so a test-key run clears the
+  hostname gate and is stopped by the action gate. **Consequence: the contact happy path cannot be
+  verified end-to-end with test keys** — only the rejection paths are locally exercisable. The Worker
+  logs the reason as `siteverify rejected { action, hostname, codes }`, never the secret or the token.
+- **`worker-configuration.d.ts` is generated, not committed.** It is gitignored and produced by
+  `npm run types` (`wrangler types`), which `npm run check` chains. Secrets must be declared under
+  `secrets.required` in `wrangler.jsonc` or `wrangler types` will not know about them.
+- **Local Worker testing needs `wrangler dev`, not `astro dev`.** `npm run dev` and `npm run preview`
+  serve static output only and never run the Worker, so `/api/contact` does not exist there.
+  `wrangler dev` also simulates the Email Service bindings, which is how the contact flow is testable
+  without a real sending domain.
 - **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
   empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching

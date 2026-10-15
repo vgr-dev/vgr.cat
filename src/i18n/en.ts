@@ -41,6 +41,19 @@ export const en = {
     body: 'TODO(copy) — contact intro.',
     bookingLabel: 'TODO(copy) — Book a call',
   },
+  form: {
+    name: 'TODO(copy) — Name',
+    email: 'TODO(copy) — Email',
+    message: 'TODO(copy) — Message',
+    submit: 'TODO(copy) — Send',
+    turnstile: 'TODO(copy) — Protected by Cloudflare Turnstile.',
+  },
+  thanks: {
+    title: 'TODO(copy) — Message sent | vgr.cat',
+    heading: 'TODO(copy) — Thank you',
+    body: 'TODO(copy) — Your message has been sent.',
+    back: 'TODO(copy) — Back to the home page',
+  },
   notFound: {
     title: 'TODO(copy) — 404 | vgr.cat',
     heading: 'TODO(copy) — Page not found',

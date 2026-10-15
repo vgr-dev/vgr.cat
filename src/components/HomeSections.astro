@@ -4,6 +4,7 @@ import Hero from './Hero.astro';
 import ServiceCard from './ServiceCard.astro';
 import CaseStudy from './CaseStudy.astro';
 import ContactSection from './ContactSection.astro';
+import ContactForm from './ContactForm.astro';
 import { useTranslations } from '../i18n';
 import type { Locale } from '../i18n/config';
 
@@ -99,4 +100,6 @@ const studyCards = await Promise.all(
   body={t.contact.body}
   bookingLabel={t.contact.bookingLabel}
   bookingHref="https://cal.example/REPLACE_ME"
-/>
+>
+  <ContactForm lang={lang} labels={t.form} />
+</ContactSection>

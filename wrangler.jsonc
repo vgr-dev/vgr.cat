@@ -1,10 +1,30 @@
 {
   "name": "vgr-cat",
   "compatibility_date": "2026-10-15",
+  "main": "./src/worker/index.ts",
   "routes": [{ "pattern": "vgr.cat", "custom_domain": true }],
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    // Required: not_found_handling intercepts *navigation* requests before the
+    // Worker, so a browser form POST to /api/contact never reached it (405).
+    "run_worker_first": ["/api/*"],
   },
+  "vars": {
+    // Public by design. Repeated in send_email below because the binding pins the
+    // same address as a hard cap while send() still requires an explicit `to`.
+    "CONTACT_DESTINATION": "contact@vgr.cat",
+    // Frontend hostname allowlist checked against siteverify's response. A
+    // production value must never include localhost or 127.0.0.1.
+    "TURNSTILE_HOSTNAMES": "vgr.cat",
+  },
+  "secrets": { "required": ["TURNSTILE_SECRET_KEY"] },
+  "send_email": [
+    // Least privilege: even a bug cannot send the notification elsewhere.
+    { "name": "NOTIFY", "destination_address": "contact@vgr.cat" },
+    // Auto-reply to the visitor. Separate binding, deliberately unrestricted.
+    { "name": "REPLY" },
+  ],
   "observability": { "enabled": true },
 }

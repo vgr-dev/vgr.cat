@@ -27,7 +27,10 @@ export default defineConfig({
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
+        'frame-src https://challenges.cloudflare.com',
       ],
+      // Turnstile's loader is a third-party script; Astro still owns the inline hashes.
+      scriptDirective: { resources: ['https://challenges.cloudflare.com'] },
     },
   },
   integrations: [

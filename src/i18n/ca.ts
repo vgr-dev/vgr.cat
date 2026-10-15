@@ -43,6 +43,19 @@ export const ca: Dictionary = {
     body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
     bookingLabel: 'TODO(copy) [ca] — Lorem ipsum',
   },
+  form: {
+    name: 'TODO(copy) [ca] — Lorem',
+    email: 'TODO(copy) [ca] — Lorem',
+    message: 'TODO(copy) [ca] — Lorem ipsum',
+    submit: 'TODO(copy) [ca] — Lorem',
+    turnstile: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+  },
+  thanks: {
+    title: 'TODO(copy) [ca] — Lorem ipsum | vgr.cat',
+    heading: 'TODO(copy) [ca] — Lorem ipsum',
+    body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    back: 'TODO(copy) [ca] — Lorem ipsum',
+  },
   notFound: {
     title: 'TODO(copy) [ca] — Lorem ipsum | vgr.cat',
     heading: 'TODO(copy) [ca] — Lorem ipsum dolor',

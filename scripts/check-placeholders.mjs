@@ -3,8 +3,10 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const SENTINEL = /TODO\(copy\)/g;
-const SRC = new URL('../src/', import.meta.url).pathname;
+// Copy placeholders, plus config placeholders that would ship a broken setting.
+const PATTERNS = [/TODO\(copy\)/g, /REPLACE_ME/g];
+const TREE = new URL('../src/', import.meta.url).pathname;
+const EXTRA_FILES = [new URL('../wrangler.jsonc', import.meta.url).pathname];
 
 function walk(dir) {
   return readdirSync(dir).flatMap((entry) => {
@@ -16,21 +18,25 @@ function walk(dir) {
 let total = 0;
 const perFile = [];
 
-for (const file of walk(SRC)) {
-  const hits = readFileSync(file, 'utf8').match(SENTINEL);
-  if (hits) {
-    total += hits.length;
-    perFile.push([relative(process.cwd(), file), hits.length]);
+for (const file of [...walk(TREE), ...EXTRA_FILES]) {
+  const source = readFileSync(file, 'utf8');
+  const count = PATTERNS.reduce(
+    (sum, pattern) => sum + (source.match(pattern)?.length ?? 0),
+    0,
+  );
+  if (count > 0) {
+    total += count;
+    perFile.push([relative(process.cwd(), file), count]);
   }
 }
 
 if (total === 0) {
-  console.log('check:placeholders — 0 TODO(copy) sentinels remain.');
+  console.log('check:placeholders — 0 placeholders remain.');
   process.exit(0);
 }
 
 console.error(
-  `check:placeholders — ${total} TODO(copy) sentinel(s) across ${perFile.length} file(s):`,
+  `check:placeholders — ${total} placeholder(s) across ${perFile.length} file(s):`,
 );
 for (const [file, count] of perFile.sort()) {
   console.error(`  ${String(count).padStart(3)}  ${file}`);

@@ -558,7 +558,7 @@ paraphrased):
 
 #### Tasks
 
-- [ ] Task 4.1: Add the Worker and bindings to `wrangler.jsonc`, preserving
+- [x] Task 4.1: Add the Worker and bindings to `wrangler.jsonc`, preserving
       `not_found_handling: '404-page'` (it is what makes `src/pages/404.astro` serve):
       ```jsonc
       {
@@ -585,12 +585,12 @@ paraphrased):
       through to `env.ASSETS.fetch(request)` for every non-`/api/*` path — which is also why the
       `ASSETS` binding above is required rather than optional. Losing the custom 404 is the single most
       likely silent regression from this phase.
-- [ ] Task 4.2: Build the contact flow as **progressive enhancement with no JavaScript required**:
+- [x] Task 4.2: Build the contact flow as **progressive enhancement with no JavaScript required**:
       `<form method="post" action="/api/contact">` posting same-origin, which the existing
       `form-action 'self'` already permits. The Worker answers `303 See Other` with
       `Location: /contact/thanks` — `form-action` constrains the *submission target*, not the redirect
       that follows. Add a real `src/pages/contact/thanks.astro` in all three locales.
-- [ ] Task 4.3: Add Turnstile, verified **server-side only**, and add its CSP resources **in the same
+- [x] Task 4.3: Add Turnstile, verified **server-side only**, and add its CSP resources **in the same
       change**:
       ```js
       security: {
@@ -613,7 +613,7 @@ paraphrased):
       `styleDirective` entry above is *inferred, not verified* — Turnstile injects its own styles, and the
       authoritative test is the zero-violations browser check in the acceptance criteria. Do **not** add
       `'unsafe-inline'`.
-- [ ] Task 4.4: Harden the endpoint. These are requirements, not suggestions:
+- [x] Task 4.4: Harden the endpoint. These are requirements, not suggestions:
       - **Validate before use.** Strict email regex, length cap on every field, and reject `\r` / `\n` in
         anything reaching `subject` or `replyTo`. Interpolating raw visitor input into a header is
         **email header injection** — on a site whose pitch is regulatory rigour, that is not a cosmetic
@@ -628,12 +628,29 @@ paraphrased):
       - Consider whether the auto-reply makes the endpoint a backscatter/abuse amplifier; if so, drop the
         `REPLY` binding and keep only the notification, which is quota-exempt and cannot be abused into
         unsolicited mail.
-- [ ] Task 4.5: Generate binding types instead of hand-writing them: `npx wrangler types` →
+- [x] Task 4.5: Generate binding types instead of hand-writing them: `npx wrangler types` →
       `worker-configuration.d.ts`, exposed as a `types` script. Decide and record whether the generated
       file is committed or produced in CI.
-- [ ] Task 4.6: Add `eslint.config.js` (`eslint-plugin-astro` + a11y rules; D7 authorized) and insert a
+- [x] Task 4.6: Add `eslint.config.js` (`eslint-plugin-astro` + a11y rules; D7 authorized) and insert a
       `npm run lint` step into `ci.yml`. **Do not rename the `CI` workflow or the `validate` job** —
       branch protection requires the `CI / validate` status check.
+      > **DONE 2026-10-15 — the only Phase 4 task that was unblocked.** Verified: `npm run lint` exits 0
+      > across **15 files**; `eslint --print-config` confirms **34 a11y rules** active under the
+      > `astro/jsx-a11y/*` namespace. (My first verification checked for a `jsx-a11y/*` prefix and
+      > wrongly suggested none were active — corrected.) `ci.yml` gained an `npm run lint` step between
+      > `check` and the placeholder guard; the `CI` workflow and `validate` job names are unchanged.
+      >
+      > **Two recorded deviations.**
+      > (a) **ESLint is pinned to `^9`, not 10.** ESLint 10 was installed first and failed: the config
+      > crashed with `Key "plugins": Key "jsx-a11y": Expected an object`, because
+      > `eslint-plugin-jsx-a11y@6.10.2` peers `eslint@^3 … ^9`. Per `AGENTS.md` the version was aligned
+      > rather than forced with `--legacy-peer-deps`.
+      > (b) **`@typescript-eslint/parser` is required** as the Astro parser's sub-parser, since the
+      > frontmatter is TypeScript; without it every `.astro` file failed with
+      > `Parsing error: The keyword 'interface' is reserved`.
+      >
+      > `astro check` now reports **23 files** (was 22); `AGENTS.md` was updated to match, and the
+      > ESLint 9 pin was recorded there as a gotcha beside the existing TypeScript cap.
 - [ ] Task 4.7: `www.vgr.cat` is handled in **Cloudflare DNS + routing**, deliberately *not* in
       `wrangler.jsonc` (D5). Two constraints apply:
       - **No wildcard route.** A `*.vgr.cat/*` catch-all answers on every present *and future*
@@ -650,19 +667,181 @@ paraphrased):
       SPF/DKIM records; verify the destination inbox address; create the Turnstile secret with
       `npx wrangler secret put TURNSTILE_SECRET_KEY`. **`wrangler secret put` deploys immediately.**
 
+> **BLOCKED — Phase 4 halted at the credential boundary (2026-10-15).** Tasks 4.1–4.5, 4.7 and 4.9 are
+> **not started**. They cannot be completed or verified without inputs only the user can supply, and
+> writing them blind would put unverified, CSP-sensitive code into a strict-CSP site:
+>
+> | Needed | For |
+> | --- | --- |
+> | The real destination inbox address | `send_email` `destination_address` (plan carries `REPLACE_ME@vgr.cat`) |
+> | Turnstile **site key** (public) and **secret key** | The widget markup and server-side `siteverify` |
+> | Authorization for `wrangler email sending enable` + SPF/DKIM | Onboarding the sending domain |
+> | Authorization for `wrangler secret put` | It deploys immediately |
+> | Dashboard work for `www` | DNS record + Redirect Rule (zone-level, not a Worker route) |
+>
+> **Why the CSP cannot be guessed:** the `turnstile-spin` skill confirms the two origins
+> (`challenges.cloudflare.com` for both `api.js` and `siteverify`) but carries **no CSP guidance at all**.
+> Turnstile injects an iframe and its own styles, so the widget may additionally need `style-src`
+> resource entries — or, if it writes inline `style=""` attributes, a
+> `{ resource: "'unsafe-inline'", kind: "attribute" }` concession. Per
+> `.github/instructions/astro-src.instructions.md` this class of failure *"will not fail locally"*;
+> it surfaces only in a production build or browser. The directive set therefore stays unverified until
+> a real widget exists.
+>
+> **Still verifiable without credentials once writes resume:** Task 4.6 is done; the Worker's
+> `main` + `assets.binding` routing, the **404-fallthrough regression** the plan calls "the single most
+> likely silent regression", and the endpoint's negative paths (missing/invalid token, oversized body,
+> CRLF injection — all reject *before* `siteverify`) are all testable via `wrangler dev`. Only the
+> happy-path email delivery is unreachable.
+>
+> **UPDATE (2026-10-15, same day) — Phase 4 implemented and verified locally.** The user authorised
+> Cloudflare's Turnstile **test keys** for local/CI use, which unblocked everything except real delivery.
+> Tasks **4.1–4.6 are done**; **4.7** and **4.9** remain user actions, and the acceptance criteria for
+> real delivery and rate limiting are **not** met. Superseded text above is left in place.
+>
+> **Correction to this plan's own verified basis.** The section above asserts that `/api/contact`
+> "reaches the Worker with **no** `run_worker_first` needed". **That claim was wrong.**
+> `not_found_handling: '404-page'` intercepts *navigation* requests before the Worker, so a real browser
+> form POST returned **405** while an identical `curl` POST returned **303** — curl does not send
+> `Sec-Fetch-Mode: navigate`. Header bisection isolated it: adding only `Sec-Fetch-Mode: navigate`
+> reproduced the 405. Fixed with `assets.run_worker_first: ["/api/*"]`, which is therefore **mandatory,
+> not an optimisation**. Recorded because only an empirical browser test caught it.
+>
+> **CSP directive set — now empirically verified rather than inferred.** With the real Turnstile widget
+> on the page (test sitekey `1x00000000000000000000AA`), a browser run with a `securitypolicyviolation`
+> listener reported **zero violations**. Only two additions were needed: `frame-src
+> https://challenges.cloudflare.com` and
+> `scriptDirective.resources: ['https://challenges.cloudflare.com']`. The previously *inferred*
+> `styleDirective` entry turned out to be **unnecessary**, and **no `'unsafe-inline'` was required**.
+> That was the main risk this phase carried.
+>
+> **Verified locally with `wrangler dev`**, which simulates the Email Service bindings:
+>
+> | Check | Result |
+> | --- | --- |
+> | Static routes | `/` 200, `/ca/` 200, `/missing-page` 404 **with the custom 404 page** (all 3 locales) |
+> | `GET /api/contact` | 405 `Method not allowed` |
+> | Honeypot filled | 400 `Rejected` |
+> | Submitted in under 3 s | 400 `Rejected` |
+> | No Turnstile token | 403 `Challenge missing` |
+> | Bad email | 400 `Invalid email` |
+> | **CRLF injection** | 400 `Invalid field` — rejected, **not** injected |
+> | Oversized field | 400 `Invalid field` |
+> | **Happy path (real browser)** | widget emitted `XXXX.DUMMY.TOKEN.XXXX` → **303** → `/ca/contact/thanks/` 200, `lang="ca"` |
+> | Localized redirects | `en`→`/contact/thanks`, `ca`→`/ca/contact/thanks`, `es`→`/es/contact/thanks`, bogus→en |
+> | Worker response headers | HSTS + `nosniff` present — `public/_headers` does not cover Worker responses |
+>
+> Gate: `format:check` clean · `lint` clean · `astro check` **29 files, 0 errors, 0 hints** · build
+> **7 pages** · `wrangler --dry-run` **Read 30 files**, no warnings · `check:placeholders` **198
+> placeholders / 23 files**, exit 1 (armed by user decision).
+>
+> **Deviations.**
+> (a) **The form requires JavaScript.** Task 4.2's "no JavaScript required" cannot hold, because
+> Turnstile itself requires JS. The submission mechanics are progressive; the widget is not.
+> (b) The destination is duplicated in `vars.CONTACT_DESTINATION` and `send_email[0].destination_address`,
+> because the binding pins it as a hard cap while the `send()` type requires an explicit `to`.
+> (c) `check:placeholders` was extended to fail on `REPLACE_ME` and to scan `wrangler.jsonc`, so config
+> placeholders cannot ship either.
+> (d) `worker-configuration.d.ts` is **generated, gitignored**, and chained into `npm run check`, rather
+> than committed as a 626 KB blob. `secrets.required` had to be declared in `wrangler.jsonc` for
+> `wrangler types` to know about `TURNSTILE_SECRET_KEY`.
+>
+> **Still outstanding — all user actions.** The real destination inbox address; a real Turnstile site key
+> and secret (`PUBLIC_TURNSTILE_SITE_KEY` at build time, `wrangler secret put TURNSTILE_SECRET_KEY`);
+> onboarding the sending domain with SPF/DKIM; the `www` DNS record + Redirect Rule; and a Cloudflare
+> rate-limiting rule on `/api/contact` — the in-code honeypot and time-trap are **not** rate limiting.
+> Until the real site key is set the build falls back to a **test** key, which would silently disable bot
+> protection in production. `README.md` was also not updated (criterion deferred).
+>
+> **Addendum (2026-10-15).** The real destination is set: `contact@vgr.cat`, in **both**
+> `vars.CONTACT_DESTINATION` and `send_email[0].destination_address` (the duplication noted in (b) above);
+> the dry-run confirms `env.NOTIFY (contact@vgr.cat)`.
+>
+> **Turnstile key handling, now implemented.** The *sitekey* is public and ships in the markup, so it is
+> supplied at **build** time via `PUBLIC_TURNSTILE_SITE_KEY`, sourced from the `TURNSTILE_SITE_KEY`
+> repository **variable** that `deploy.yml` forwards. `src/config.ts` falls back to Cloudflare's
+> always-passes test sitekey so local and CI builds work unauthenticated. Because that fallback would
+> silently disable bot protection in production, `deploy.yml` now runs a new
+> `npm run check:production-env` guard (`scripts/check-production-env.mjs`) before the build. Verified by
+> running it three ways: unset → **exit 1**, test sitekey `1x…`/`3x…` → **exit 1** with an explicit
+> refusal, realistic key → **exit 0**. The *secret* never enters the repo: `wrangler secret put
+> TURNSTILE_SECRET_KEY` in production, `.dev.vars` locally (test secret).
+>
+> **Blocker found for obtaining the keys:** the authenticated Wrangler OAuth token carries
+> `workers_*`, `d1`, `pages`, `k2` and `account (read)` scopes but **no `Account.Turnstile:Edit`**, so the
+> widget cannot be created programmatically with current credentials. Either the user creates the widget
+> in the dashboard, or supplies a Turnstile-scoped token via the `turnstile-spin` skill's non-chat flow.
+>
+> Re-run after this change: `astro check` **30 files, 0 errors, 0 hints**; build 7 pages; dry-run Read 30
+> files, no warnings; `check:placeholders` **196 across 22 files**, exit 1.
+>
+> **Addendum 2 (2026-10-15) — real widget supplied; integration complete, secret write pending.** The
+> user confirmed the widget already exists and supplied sitekey `0x4AAAAAAFX7NYXtXTGajTgb`, so the
+> `turnstile-spin` **existing-widget flow** applies (widget creation is skipped; replacement widgets are
+> never created).
+>
+> **Sitekey integrated.** Because sitekeys are public and ship in the markup, it is committed as the
+> default in `src/config.ts`, with `PUBLIC_TURNSTILE_SITE_KEY` as an override for automated runs
+> (set it to the test key `1x00000000000000000000AA`). `check:production-env` was retargeted
+> accordingly: unset → **exit 0** (committed production key is used); a test sitekey → **exit 1**.
+> Verified in the built HTML: `data-sitekey="0x4AAAAAAFX7NYXtXTGajTgb" data-action="contact"`.
+>
+> **Two genuine gaps in my previous phase-4 Worker, both closed.** Siteverify previously accepted
+> `success === true` alone. The skill's canonical contract requires three further checks, now
+> implemented: token length ≤ 2048, `action` matching the surface, and `hostname` membership in a
+> `TURNSTILE_HOSTNAMES` allowlist (`vgr.cat`, as a `wrangler.jsonc` var). Rejections are logged as
+> `siteverify rejected { action, hostname, codes }` — never the secret or token — so failures are
+> diagnosable instead of silent.
+>
+> **Recorded finding: Cloudflare's test keys cannot satisfy the canonical checks.** Querying siteverify
+> with the test secret and the dummy token returns `success: true`, `hostname: "example.com"`, and
+> **no `action` field at all**. So a test-key run clears the hostname gate and is stopped by the action
+> gate — captured verbatim from `wrangler dev`:
+> `▲ [WARNING] siteverify rejected { action: '(absent)', hostname: 'example.com', codes: [] }`.
+> **Consequence, per the skill: destination validation is pending and end-to-end success is NOT claimed.**
+> With test keys only the rejection paths are locally exercisable; the happy path needs the real widget
+> and real secret.
+>
+> **Already re-verified after these changes:** rejection paths — `GET` 405, honeypot 400, under-3 s 400,
+> no token 403, bad email 400, CRLF 400, oversized 400, bogus/oversized token 403; static `/` 200,
+> `/ca/` 200, `/missing-page` 404 with the custom page. Gate: **30 files, 0 errors, 0 hints**; build
+> 7 pages; dry-run Read 30 files; `check:placeholders` 196 / 22 files, exit 1.
+>
+> **Secret write — blocked, write manifest below, awaiting confirmation.** The existing-widget flow
+> requires a canonical Wrangler **outside** the project root at ≥4.109 and forbids `npx`, package
+> scripts, or a project-local binary for any credential-bearing command. Neither condition is met:
+> | Field | Value |
+> | --- | --- |
+> | Canonical `WRANGLER_BIN` | **absent** — only the project-local devDependency `wrangler@4.151.0` exists; no global install on PATH or via `npm prefix -g` |
+> | `WRANGLER_VERSION` | `4.151.0` (devDependency; ≥4.109 satisfied, but project-local) |
+> | Account | `VGR SpA Domains` · `94b2d5ba6453a558df79f8e77b02942b` |
+> | Sitekey | `0x4AAAAAAFX7NYXtXTGajTgb` |
+> | Expected domains | `vgr.cat` |
+> | Project root | `/home/vagonzal/repos/vgr.cat` |
+> | Secret destination | Worker `vgr-cat`, binding `TURNSTILE_SECRET_KEY` |
+>
+> Two further blockers: (1) the **Worker does not exist in the account yet** — the flow stops unless
+> `wrangler secret list` confirms an existing Worker, so the Worker must be deployed first; (2) the
+> authenticated OAuth token's scope list (`workers_*`, `d1`, `pages`, `k2`, `account (read)`) does **not**
+> include `Account.Turnstile:Edit`, which `wrangler turnstile widget get` requires to retrieve the secret.
+> Also note a direct conflict to resolve explicitly: the skill forbids project-local Wrangler for
+> credential-bearing commands, while this repo's own `AGENTS.md` documents
+> `wrangler secret put TURNSTILE_SECRET_KEY` as the production path — that needs a user decision, not a
+> silent choice.
+
 #### Acceptance Criteria
 
-- [ ] `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` exits 0 with no warnings for the new
+- [x] `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` exits 0 with no warnings for the new
       `main` + `send_email` configuration; record the new "Read N files" count verbatim.
-- [ ] CSP: `npm run build`, confirm each newly permitted origin appears in `dist/index.html`'s meta CSP,
+- [x] CSP: `npm run build`, confirm each newly permitted origin appears in `dist/index.html`'s meta CSP,
       then browser-test with **zero** `securitypolicyviolation` events **and** assert the widget's styles
       actually applied — a present-but-blocked Turnstile renders invisibly and fails silently.
 - [ ] Happy path on a real deployment: the notification email arrives **and** the visitor auto-reply
       arrives. Record the actual `EmailSendResult.messageId` values.
-- [ ] Negative paths, each recorded with its real status code: missing token → rejected; invalid token →
+- [x] Negative paths, each recorded with its real status code: missing token → rejected; invalid token →
       rejected; oversized body → rejected; a field containing `\r\n` → rejected, **not injected**.
 - [ ] Rate limiting observed by deliberately exceeding the limit.
-- [ ] **404 not regressed:** an unknown path **and** an unknown locale prefix still render
+- [x] **404 not regressed:** an unknown path **and** an unknown locale prefix still render
       `src/pages/404.astro` with the right status, now that a Worker is in front of the assets.
 - [ ] **DX regression recorded:** `npm run dev` and `npm run preview` cannot exercise the endpoint —
       Astro's dev server and the static preview never run the Worker. Local integration testing requires

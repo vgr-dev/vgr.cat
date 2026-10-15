@@ -1,11 +1,20 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
+// Single source of truth for locales so switching the default is a one-line change.
+import { locales, defaultLocale } from './src/i18n/config.ts';
 
 export default defineConfig({
   site: 'https://vgr.cat',
   output: 'static',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
+  vite: { plugins: [tailwindcss()] },
+  i18n: {
+    defaultLocale,
+    locales: [...locales],
+    routing: { prefixDefaultLocale: false },
+  },
   security: {
     // Emits a build-time <meta http-equiv="content-security-policy"> tag on every
     // prerendered page. Astro hashes the inline <style>/<script> blocks it emits and
@@ -18,8 +27,18 @@ export default defineConfig({
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
+        'frame-src https://challenges.cloudflare.com',
       ],
+      // Turnstile's loader is a third-party script; Astro still owns the inline hashes.
+      scriptDirective: { resources: ['https://challenges.cloudflare.com'] },
     },
   },
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale,
+        locales: Object.fromEntries(locales.map((locale) => [locale, locale])),
+      },
+    }),
+  ],
 });

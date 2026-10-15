@@ -1,0 +1,105 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Hero from './Hero.astro';
+import ServiceCard from './ServiceCard.astro';
+import CaseStudy from './CaseStudy.astro';
+import ContactSection from './ContactSection.astro';
+import ContactForm from './ContactForm.astro';
+import { useTranslations } from '../i18n';
+import type { Locale } from '../i18n/config';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const pillarOrder: CollectionEntry<'services'>['data']['pillar'][] = [
+  'regtech',
+  'entity-resolution',
+  'infrastructure',
+];
+
+const services = (
+  await getCollection('services', ({ data }) => data.locale === lang)
+).sort(
+  (a, b) =>
+    pillarOrder.indexOf(a.data.pillar) - pillarOrder.indexOf(b.data.pillar),
+);
+
+const caseStudies = await getCollection(
+  'caseStudies',
+  ({ data }) => data.locale === lang,
+);
+
+const serviceCards = await Promise.all(
+  services.map(async (entry) => ({
+    entry,
+    Content: (await render(entry)).Content,
+  })),
+);
+
+const studyCards = await Promise.all(
+  caseStudies.map(async (entry) => ({
+    entry,
+    Content: (await render(entry)).Content,
+  })),
+);
+---
+
+<Hero
+  title={t.hero.title}
+  subtitle={t.hero.subtitle}
+  ctaLabel={t.hero.cta}
+  ctaHref="#contact"
+/>
+
+<section class="mx-auto max-w-5xl px-6 py-12">
+  <h2 class="text-2xl font-semibold tracking-tight">{t.positioning.heading}</h2>
+  <p class="mt-4 max-w-2xl text-muted">{t.positioning.body}</p>
+</section>
+
+<section id="services" class="mx-auto max-w-5xl px-6 py-12">
+  <h2 class="text-2xl font-semibold tracking-tight">{t.services.heading}</h2>
+  <div class="mt-8 grid gap-6 sm:grid-cols-3">
+    {serviceCards.map(({ entry, Content }) => (
+      <ServiceCard title={entry.data.title}>
+        <p>{entry.data.summary}</p>
+        <Content />
+      </ServiceCard>
+    ))}
+  </div>
+</section>
+
+<section id="work" class="mx-auto max-w-5xl px-6 py-12">
+  <h2 class="text-2xl font-semibold tracking-tight">{t.work.heading}</h2>
+  {studyCards.map(({ entry, Content }) => (
+    <CaseStudy
+      title={entry.data.title}
+      summary={entry.data.summary}
+      problemLabel={t.caseStudy.problem}
+      approachLabel={t.caseStudy.approach}
+      outcomeLabel={t.caseStudy.outcome}
+      problem={entry.data.problem}
+      approach={entry.data.approach}
+      outcome={entry.data.outcome}
+    >
+      <Content />
+    </CaseStudy>
+  ))}
+</section>
+
+<section id="about" class="mx-auto max-w-5xl px-6 py-12">
+  <h2 class="text-2xl font-semibold tracking-tight">{t.about.heading}</h2>
+  <p class="mt-4 max-w-2xl text-muted">{t.about.body}</p>
+</section>
+
+<ContactSection
+  heading={t.contact.heading}
+  body={t.contact.body}
+  bookingLabel={t.contact.bookingLabel}
+  bookingHref="https://cal.example/REPLACE_ME"
+>
+  <ContactForm lang={lang} labels={t.form} />
+</ContactSection>

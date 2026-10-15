@@ -1,0 +1,46 @@
+---
+import {
+  locales,
+  localizedPath,
+  stripLocale,
+  type Locale,
+} from '../i18n/config';
+
+interface Props {
+  current: Locale;
+  label: string;
+}
+
+const { current, label } = Astro.props;
+
+const logicalPath = stripLocale(Astro.url.pathname);
+
+const code: Record<Locale, string> = { en: 'EN', ca: 'CA', es: 'ES' };
+const name: Record<Locale, string> = {
+  en: 'English',
+  ca: 'Català',
+  es: 'Español',
+};
+---
+
+<nav aria-label={label}>
+  <ul class="flex items-center gap-1">
+    {locales.map((locale) => {
+      const isCurrent = locale === current;
+      return (
+        <li>
+          <a
+            href={localizedPath(locale, logicalPath)}
+            hreflang={locale}
+            lang={locale}
+            aria-current={isCurrent ? 'true' : undefined}
+            class="rounded px-2 py-1 text-sm aria-[current]:font-semibold aria-[current]:text-accent hover:text-accent"
+          >
+            {code[locale]}
+            <span class="sr-only"> — {name[locale]}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</nav>

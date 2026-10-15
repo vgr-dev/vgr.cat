@@ -1,19 +1,47 @@
 ---
 import '../styles/global.css';
+import {
+  defaultLocale,
+  locales,
+  localizedPath,
+  stripLocale,
+  type Locale,
+} from '../i18n/config';
+import { useTranslations } from '../i18n';
+import { buildJsonLd } from '../lib/schema';
 
 interface Props {
   title: string;
   description: string;
+  lang?: Locale;
 }
 
-const { title, description } = Astro.props as Props;
+const { title, description, lang = defaultLocale } = Astro.props as Props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = new URL('/favicon.svg', Astro.site);
+
+const logicalPath = stripLocale(Astro.url.pathname);
+const alternates = locales.map((locale) => ({
+  locale,
+  href: new URL(localizedPath(locale, logicalPath), Astro.site).href,
+}));
+const xDefaultHref = new URL(
+  localizedPath(defaultLocale, logicalPath),
+  Astro.site,
+).href;
+
+const ogLocale: Record<Locale, string> = {
+  en: 'en_US',
+  ca: 'ca_ES',
+  es: 'es_ES',
+};
+
+const jsonLd = buildJsonLd({ locale: lang, t: useTranslations(lang) });
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,6 +49,10 @@ const ogImageURL = new URL('/favicon.svg', Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    {alternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.locale} href={alt.href} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -31,15 +63,24 @@ const ogImageURL = new URL('/favicon.svg', Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={ogImageURL} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    {locales
+      .filter((locale) => locale !== lang)
+      .map((locale) => (
+        <meta property="og:locale:alternate" content={ogLocale[locale]} />
+      ))}
 
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
-    <main>
+    <slot name="header" />
+    <main id="top">
       <slot />
     </main>
+    <slot name="footer" />
   </body>
 </html>

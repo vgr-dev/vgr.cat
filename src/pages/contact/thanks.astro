@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { defaultLocale } from '../../i18n/config';
+import { useTranslations } from '../../i18n';
+
+const lang = defaultLocale;
+const t = useTranslations(lang);
+---
+
+<BaseLayout lang={lang} title={t.thanks.title} description={t.thanks.body}>
+  <div class="mx-auto max-w-5xl px-6 py-24">
+    <h1 class="text-3xl font-semibold tracking-tight">{t.thanks.heading}</h1>
+    <p class="mt-4 max-w-2xl text-muted">{t.thanks.body}</p>
+    <p class="mt-8">
+      <a href="/" class="text-accent hover:underline">
+        {t.thanks.back}
+      </a>
+    </p>
+  </div>
+</BaseLayout>

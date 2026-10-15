@@ -6,6 +6,7 @@ dist/
 
 # generated types
 .astro/
+worker-configuration.d.ts
 
 # lockfile
 package-lock.json

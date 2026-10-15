@@ -1,0 +1,95 @@
+---
+import { turnstileSiteKey, turnstileAction } from '../config';
+
+interface Props {
+  lang: string;
+  labels: {
+    name: string;
+    email: string;
+    message: string;
+    submit: string;
+    turnstile: string;
+  };
+}
+
+const { lang, labels } = Astro.props;
+
+const inputClass =
+  'rounded border border-border bg-surface px-3 py-2 text-fg focus-visible:outline-2 focus-visible:outline-accent';
+---
+
+<form method="post" action="/api/contact" class="mt-8 grid max-w-2xl gap-4">
+  <input type="hidden" name="lang" value={lang} />
+  <input type="hidden" name="elapsed" value="" data-elapsed />
+
+  <label class="grid gap-1">
+    <span class="text-sm font-medium">{labels.name}</span>
+    <input
+      name="name"
+      required
+      maxlength="2000"
+      autocomplete="name"
+      class={inputClass}
+    />
+  </label>
+
+  <label class="grid gap-1">
+    <span class="text-sm font-medium">{labels.email}</span>
+    <input
+      name="email"
+      type="email"
+      required
+      maxlength="2000"
+      autocomplete="email"
+      class={inputClass}
+    />
+  </label>
+
+  <label class="grid gap-1">
+    <span class="text-sm font-medium">{labels.message}</span>
+    <textarea
+      name="message"
+      rows="5"
+      required
+      maxlength="2000"
+      class={inputClass}
+    ></textarea>
+  </label>
+
+  <div class="hidden" aria-hidden="true">
+    <label>
+      Company
+      <input name="company" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <div
+    class="cf-turnstile"
+    data-sitekey={turnstileSiteKey}
+    data-action={turnstileAction}
+  ></div>
+
+  <button
+    type="submit"
+    class="justify-self-start rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
+  >
+    {labels.submit}
+  </button>
+  <p class="text-sm text-muted">{labels.turnstile}</p>
+</form>
+
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer
+></script>
+
+<script>
+  const started = Date.now();
+  const elapsed = document.querySelector<HTMLInputElement>('[data-elapsed]');
+  const form = elapsed?.closest('form');
+  form?.addEventListener('submit', () => {
+    if (elapsed) elapsed.value = String(Date.now() - started);
+  });
+</script>

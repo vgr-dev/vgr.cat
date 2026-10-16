@@ -16,6 +16,7 @@ const variants = locales.map((locale) => ({
   lang={defaultLocale}
   title={fallback.title}
   description={fallback.body}
+  noindex
 >
   {variants.map(({ locale, copy, isDefault, href }) => (
     <section

@@ -1280,6 +1280,80 @@ paraphrased):
       and the beacon endpoint to `connect-src`, **in the same change** as the script tag. Do **not** use
       zone-level automatic injection: a script injected by Cloudflare is not in Astro's hash list, which
       is precisely the case the `<meta>` CSP blocks.
+      > **UPDATE (2026-10-16, same day) — the delivery model changed: Web Analytics is auto-injected by the
+      > zone, so this task is now a CSP-only change.** Superseded text is kept below because it records the
+      > explicit-beacon path and its measurements; the design that ships is the one in this update.
+      >
+      > **What changed, and why it is safe.** The user created the Web Analytics site for `vgr.cat` with
+      > **`auto_install: true`** (ruleset `452ff937-2ea0-4098-bab4-4c3b1080cee6`, `enabled: true`, created
+      > `2026-10-16T10:37:42Z`, token `667e7d4d…`), so Cloudflare injects the beacon at the edge. **That
+      > reverses D4**, which had chosen an explicit beacon partly *because* an injected script is absent from
+      > Astro's hash list. The resolution: the injected tag is an **external** script, so it is governed by
+      > `script-src`'s host allowlist rather than by hashes — allowing the origin is sufficient.
+      >
+      > **Live finding — the beacon was blocked, so analytics were collecting nothing.** Loading
+      > `https://vgr.cat/` in a real browser on 2026-10-16 produced, verbatim:
+      >
+      > ```
+      > [error] Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v4bc70e2c…'
+      > violates the following Content Security Policy directive:
+      > "script-src https://challenges.cloudflare.com 'sha256-vtFofoRvwSYwLti63JEK0s8IumNTtUd9pq+Khj0yWxw=' …".
+      > The action has been blocked.
+      > ```
+      >
+      > The deployed `<meta>` CSP was silently discarding every pageview — invisible to visitors and only
+      > findable by loading production with a violation listener. These CSP entries are the fix.
+      >
+      > **Final design, much smaller than the original:**
+      >
+      > - `astro.config.mjs` keeps both entries, re-commented as the *only* visible record of a dependency
+      >   that lives in Cloudflare's zone configuration: `connect-src 'self' https://cloudflareinsights.com`
+      >   and `https://static.cloudflareinsights.com` in `scriptDirective.resources`.
+      > - **The explicit `<script>` was removed from `BaseLayout`, and `cfBeaconToken` from `src/config.ts`
+      >   with it** — with auto-install on, shipping both would count every pageview **twice**, and the token
+      >   belongs to the zone, so it never enters the repository at all. A comment in `BaseLayout` records why
+      >   nothing is emitted there.
+      >
+      > **Verified:** the emitted CSP carries both origins; and injecting **Cloudflare's exact snippet with
+      > the real zone token** into that build in a real browser gave **zero** `securitypolicyviolation`
+      > events and `document.cookie === ''` — the policy demonstrably admits the injected beacon.
+      > **Not yet verifiable:** the beacon's *report* succeeding, because it does not report from a
+      > non-matching host (`127.0.0.1:4321`) and production keeps blocking the script until this ships. That
+      > confirmation is the acceptance criterion below.
+      >
+      > **STATUS (2026-10-16) — implemented end to end, but NOT complete: the beacon needs a site token
+      > that does not exist yet, so the box stays unticked.**
+      >
+      > **Done, and proven in a build:**
+      >
+      > - `src/config.ts` exports `cfBeaconToken` (`PUBLIC_CF_BEACON_TOKEN` override plus a committed
+      >   default), following the Turnstile-sitekey precedent — the value is public because it ships in the
+      >   markup. While it is empty the beacon is **omitted entirely**, so no build can ship the script
+      >   with a bogus token.
+      > - `astro.config.mjs` gained both CSP entries **in the same change as the script tag**, as the
+      >   scoped instruction demands: `connect-src 'self' https://cloudflareinsights.com` (the report
+      >   endpoint — `'self'` must stay in that directive or declaring it would *drop* the default) and
+      >   `scriptDirective.resources` now lists `https://static.cloudflareinsights.com` beside Turnstile's
+      >   origin. No hand-written `script-src` hash, no `'unsafe-inline'`.
+      > - `BaseLayout.astro` emits the official snippet shape — `<script is:inline type="module"
+      >   src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=…>` — gated on the
+      >   token. Zone-level injection was **not** used (D4).
+      >
+      > **Proven with a scratch token**: `PUBLIC_CF_BEACON_TOKEN=scratch-token-for-verification npm run
+      > build` put `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js"
+      > data-cf-beacon="{&quot;token&quot;:&quot;scratch-token-for-verification&quot;}">` into
+      > `dist/index.html`, and the browser read that attribute back as
+      > `{"token":"scratch-token-for-verification"}` — so Astro's HTML entity encoding decodes correctly
+      > and the beacon parses the token. A clean rebuild then produced **0** occurrences of
+      > `beacon.min.js`, confirming the gate works in both directions.
+      >
+      > **What is missing and exactly why.** The token must come from a Web Analytics *site* for `vgr.cat`,
+      > and none exists: `GET /accounts/{id}/rum/site_info/list` returns only `vgr.cl` (zone ruleset,
+      > auto-install) and an unrelated regex host `(disabled-site.pages.dev|liceoartistico.cl|knopsolar.cl)`.
+      > Creating one needs a scope this session's credentials lack — `POST /accounts/{id}/rum/site_info` →
+      > **`10000: Authentication error`** — so the user is creating the site by hand.
+      > **To finish:** put the new site's beacon token in `PRODUCTION_BEACON_TOKEN` (`src/config.ts`), which
+      > is public exactly like the Turnstile sitekey, rebuild, and re-run the browser check below.
 - [x] Task 5.2: Generate the real 1200×630 OG image at `public/og/og-default.png` and point
       `BaseLayout`'s `og:image` / `twitter:image` at it — currently they point at `favicon.svg`.
       > **DONE 2026-10-16.** `public/og/og-default.png` is a real **1200×630** PNG — `file` reports
@@ -1407,17 +1481,95 @@ paraphrased):
       >
       > **Gate after the fix:** `format:check` clean · `lint` clean · `astro check` **30 files, 0 errors,
       > 0 warnings, 0 hints** · build **7 pages** · `wrangler deploy --dry-run` **Read 32 files**, exit 0.
-- [ ] Task 5.4: Verify per-locale canonical URLs and `og:locale`.
+- [x] Task 5.4: Verify per-locale canonical URLs and `og:locale`.
+      > **DONE 2026-10-16 — and it also closes the 404 finding deferred from Task 5.3.**
+      >
+      > **Per-locale canonical + `og:locale`, read out of the built HTML** (all six indexable pages):
+      >
+      > | Page | `<link rel="canonical">` | `og:locale` |
+      > | --- | --- | --- |
+      > | `dist/index.html` | `https://vgr.cat/` | `en_US` |
+      > | `dist/ca/index.html` | `https://vgr.cat/ca/` | `ca_ES` |
+      > | `dist/es/index.html` | `https://vgr.cat/es/` | `es_ES` |
+      > | `dist/contact/thanks/index.html` | `https://vgr.cat/contact/thanks/` | `en_US` |
+      > | `dist/ca/contact/thanks/index.html` | `https://vgr.cat/ca/contact/thanks/` | `ca_ES` |
+      > | `dist/es/contact/thanks/index.html` | `https://vgr.cat/es/contact/thanks/` | `es_ES` |
+      >
+      > Every canonical is that page's own locale URL in the trailing-slash form production actually
+      > serves (Task 5.3), and each page carries `og:locale` plus `og:locale:alternate` for the other two.
+      >
+      > **The 404 no longer declares anything it cannot honour.** `BaseLayout` gained a `noindex` prop and
+      > `src/pages/404.astro` sets it. Measured in the built output: `dist/404.html` now contains
+      > `<meta name="robots" content="noindex">`, **0** `rel="canonical"` links and **0**
+      > `rel="alternate"` links — previously it advertised `https://vgr.cat/404/` as canonical plus three
+      > hreflang siblings that do not resolve (live `GET /404/` → 307, `/ca/404/` → 404). `og:url` is
+      > dropped alongside the canonical for the same reason.
+      >
+      > **A rendering decision was required and the Builder took it — flagged for the Architect.** The
+      > plan offered "suppress on the 404 page" or "point them at `/`". Suppression was chosen because a
+      > 404 answers every unknown path and so has no canonical URL of its own, and because the page's
+      > runtime locale switch only rewrites `lang`, `<title>` and the meta description — nothing depended
+      > on canonical or hreflang. Reversing it is a one-line change in `404.astro` plus a
+      > `canonicalOverride` prop.
 
 #### Acceptance Criteria
 
-- [ ] `curl -s https://<preview>/ | grep -o 'content-security-policy[^>]*'` shows the analytics origin.
+- [x] `curl -s https://<preview>/ | grep -o 'content-security-policy[^>]*'` shows the analytics origin.
+      > **VERIFIED 2026-10-16** against the built output served locally (scratch-token build). The emitted
+      > directive is `connect-src 'self' https://cloudflareinsights.com`, present on every page tested —
+      > `/`, `/ca/`, `/es/` and `/contact/thanks/` — and `script-src` carries
+      > `https://static.cloudflareinsights.com` alongside Turnstile's origin and Astro's own hashes.
+      > Measured as `curl -s http://localhost:4321/ca/` etc., since the deployed site does not carry the
+      > change until this merges.
 - [ ] Browser load records **zero** CSP violations and the beacon request succeeds (assert the network
       entry, not just absence of an error).
-- [ ] No cookie is set by the analytics script — assert `document.cookie === ''` after a pageview.
-- [ ] Lighthouse mobile: Performance ≥ 95 and Accessibility = 100 on `/`, `/ca/` and `/es/`. Record the
+      > **UPDATE (2026-10-16) — fails today on production for a now-understood reason, and that is a
+      > pre-deploy state.** On live `https://vgr.cat/` the zone-injected beacon is **blocked** (the verbatim
+      > violation is recorded under Task 5.1), so this criterion fails *right now* and the fix is unmerged.
+      > Off-host confirmation is impossible: injecting the real snippet plus the real token into the new-CSP
+      > build gives **zero** violations, but the beacon does not report from `127.0.0.1:4321`, and the
+      > successful network entry can only be observed on `vgr.cat` after the deploy.
+      > **Re-run against production post-deploy** — expected: zero violations and one POST to
+      > `cloudflareinsights.com/cdn-cgi/rum`.
+      > **PARTIALLY verified 2026-10-16 — deliberately left unticked.** In a real browser (the editor's
+      > browser tools, i.e. a genuine browser rather than a headless simulation) against the scratch-token
+      > build, with a `securitypolicyviolation` listener installed via `addInitScript` *before* navigation:
+      > `cspViolations: []` (**zero**), `beaconScriptCount: 1`, the `data-cf-beacon` attribute read back as
+      > `{"token":"scratch-token-for-verification"}`, and `performance.getEntriesByType('resource')`
+      > contained `https://static.cloudflareinsights.com/beacon.min.js` — so the script is neither blocked
+      > nor stripped by the policy. **What is missing is the report itself:** no POST to
+      > `cloudflareinsights.com/cdn-cgi/rum` was observed, which is expected for a token that is not a real
+      > site token — the beacon validates before it reports. Because this criterion demands that the
+      > beacon request *succeed*, it stays unticked until the real token is in place and the check is
+      > re-run.
+- [x] No cookie is set by the analytics script — assert `document.cookie === ''` after a pageview.
+      > **VERIFIED 2026-10-16** in the same browser run: after a full page load with the beacon script
+      > present and executing, `document.cookie` was `''` (length `0`). Cloudflare Web Analytics is
+      > documented as cookieless and nothing measured here contradicts that. To be re-asserted with the real
+      > token in the pre-launch pass, since this evidence comes from the scratch-token build.
+- [x] Lighthouse mobile: Performance ≥ 95 and Accessibility = 100 on `/`, `/ca/` and `/es/`. Record the
       actual numbers; the brief's "100" target is a goal, and English-only phrasing may not survive
       translation — **do not record 100 unless measured**.
+      > **MEASURED 2026-10-16 — targets met on all three locales.** Lighthouse **13.5.0**, mobile form
+      > factor, simulated throttling, against the built output served locally — i.e. the artifact that will
+      > ship, including the analytics beacon:
+      >
+      > | Locale | Performance | Accessibility | LCP | CLS | TBT | FCP |
+      > | --- | --- | --- | --- | --- | --- | --- |
+      > | `/` | **99** | **100** | 1 653 ms | 0.0000 | 0 ms | 1 388 ms |
+      > | `/ca/` | **99** | **100** | 1 653 ms | 0.0000 | 0 ms | 1 381 ms |
+      > | `/es/` | **99** | **100** | 1 653 ms | 0.0000 | 0 ms | 1 381 ms |
+      >
+      > Accessibility is a measured 100, not the brief's aspiration — it is Lighthouse's
+      > `categories.accessibility.score`. **How it was run, because the environment fought back:** this
+      > machine has no browser and the npm cache is read-only inside the sandbox, so Lighthouse was
+      > installed with `npm install --no-save lighthouse` — deliberately **not** added to `package.json`,
+      > so the lockfile and CI are untouched — with `--cache` redirected to `/tmp/vgr-qa`, and Chrome for
+      > Testing 155.0.8059.84 was unpacked into the same scratch directory. `chrome-launcher`
+      > mis-detects this container and dies in `mkdtemp('/mnt/undefined/Users/undefined/…')`, so Chrome was
+      > started separately and Lighthouse attached with `--port=9222`.
+      > **Caveat recorded:** this measures the *local* build. Phase 6 should re-measure `https://vgr.cat`
+      > after the deploy, where real network conditions apply.
 
 ### Phase 6: Pre-launch QA and go-live
 

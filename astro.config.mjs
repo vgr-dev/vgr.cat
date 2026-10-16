@@ -28,9 +28,21 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self'",
         'frame-src https://challenges.cloudflare.com',
+        // Web Analytics is injected by Cloudflare at the edge (zone auto-install), not emitted
+        // by this repo, so this entry is the only place the dependency is visible. Its beacon
+        // reports to cloudflareinsights.com; without this directive `default-src 'self'` blocks
+        // the report — silently, and only in production.
+        "connect-src 'self' https://cloudflareinsights.com",
       ],
-      // Turnstile's loader is a third-party script; Astro still owns the inline hashes.
-      scriptDirective: { resources: ['https://challenges.cloudflare.com'] },
+      // Turnstile's loader is a third-party script. `static.cloudflareinsights.com` is here for
+      // the zone-injected Web Analytics beacon: an injected script is absent from Astro's hash
+      // list, so its origin has to be allowed by host. Astro still owns the inline hashes.
+      scriptDirective: {
+        resources: [
+          'https://challenges.cloudflare.com',
+          'https://static.cloudflareinsights.com',
+        ],
+      },
     },
   },
   integrations: [

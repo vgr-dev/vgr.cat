@@ -143,6 +143,15 @@ wrong, raise it with the user rather than silently reverting it.
   serve static output only and never run the Worker, so `/api/contact` does not exist there.
   `wrangler dev` also simulates the Email Service bindings, which is how the contact flow is testable
   without a real sending domain.
+- **Web Analytics is injected by Cloudflare, and the meta CSP can silently kill it.** The zone has Web
+  Analytics auto-install enabled for `vgr.cat`, so Cloudflare injects
+  `https://static.cloudflareinsights.com/beacon.min.js` into the HTML at the edge — **not** by this repo.
+  Because the site ships a `<meta>` CSP, that origin must be allowed in `astro.config.mjs`
+  (`scriptDirective.resources` for the script, `connect-src` for its report to
+  `cloudflareinsights.com`). Measured 2026-10-16: while the deployed `script-src` lacked the origin, the
+  browser blocked the injected beacon and **no analytics were collected at all**, with no visible error to
+  visitors. Do **not** also add an explicit beacon tag — with auto-install on, both would count every
+  pageview twice.
 - **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
   empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching

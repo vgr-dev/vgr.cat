@@ -14,9 +14,20 @@ interface Props {
   title: string;
   description: string;
   lang?: Locale;
+  /**
+   * A 404 is a single prerendered file answering every path, so it has no canonical URL of
+   * its own. Without this, the page advertised `https://vgr.cat/404/` as its canonical plus
+   * three hreflang siblings that do not resolve (live `GET /404/` → 307, `/ca/404/` → 404).
+   */
+  noindex?: boolean;
 }
 
-const { title, description, lang = defaultLocale } = Astro.props as Props;
+const {
+  title,
+  description,
+  lang = defaultLocale,
+  noindex = false,
+} = Astro.props as Props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 // 1200x630 brand card. Regeneration command is recorded in the active plan (Phase 5, Task 5.2).
@@ -49,11 +60,15 @@ const jsonLd = buildJsonLd({ locale: lang, t: useTranslations(lang) });
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
-    {alternates.map((alt) => (
-      <link rel="alternate" hreflang={alt.locale} href={alt.href} />
-    ))}
-    <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={canonicalURL} />}
+    {!noindex &&
+      alternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.locale} href={alt.href} />
+      ))}
+    {!noindex && (
+      <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
+    )}
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -62,7 +77,7 @@ const jsonLd = buildJsonLd({ locale: lang, t: useTranslations(lang) });
     <meta property="og:site_name" content="vgr.cat" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalURL} />
+    {!noindex && <meta property="og:url" content={canonicalURL} />}
     <meta property="og:image" content={ogImageURL} />
     <meta property="og:locale" content={ogLocale[lang]} />
     {locales
@@ -76,6 +91,13 @@ const jsonLd = buildJsonLd({ locale: lang, t: useTranslations(lang) });
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {/*
+      Cloudflare Web Analytics is NOT emitted here. It is injected at the edge by the zone's
+      Web Analytics auto-install, so it must be allowed by origin in `security.csp`
+      (`static.cloudflareinsights.com` for the script, `cloudflareinsights.com` for its report).
+      An explicit beacon was built first and removed deliberately: with auto-install on, shipping
+      both would count every pageview twice.
+    */}
   </head>
   <body>
     <slot name="header" />

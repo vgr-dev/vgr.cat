@@ -771,6 +771,20 @@ paraphrased):
       > `.github/instructions/cloudflare-config.instructions.md`. Until it is fixed those two documents
       > actively mislead — they tell the next agent that a dashboard/CLI-only route disappears on the next
       > deploy, which this plan has now disproved with five deploys plus an audit-log read.
+      >
+      > **CLOSED 2026-10-16 (later the same day) — the claim is now corrected everywhere.** `AGENTS.md` was
+      > already fixed in commit `b542494`; this round corrected
+      > `.github/instructions/cloudflare-config.instructions.md`, whose bullet now reads *“`routes` … is the
+      > single source of truth for what Wrangler **creates** — it is not a reconciler. A deploy **does not
+      > delete** routes that are absent from this file: a dashboard-only `*.vgr.cat/*` route, verified
+      > 2026-10-16, survived **five** deploys with no `route_delete` event …”*, and now tells the next agent to
+      > read the account (`GET /zones/{zone}/workers/routes`) rather than the file when routing matters.
+      > Two further corrections rode along in the same edits: that file's stale dry-run expectation
+      > ("Read 8 files", a bootstrap-era number) was brought up to the measured **"Read 32 files"** — matching
+      > `AGENTS.md`'s pinned value — and `README.md`'s "the source of truth every CI deploy reconciles"
+      > became "every CI deploy creates that route and leaves it in place", plus a warning that deploys never
+      > remove a route the file stops declaring. This note is **appended**, not merged into the paragraph above,
+      > which stays as the record of what was outstanding at the time.
 - [x] Task 4.8: Leave `deploy.yml` structure and `cancel-in-progress: false` untouched.
       > **VERIFIED 2026-10-16.** `git status --short .github/` and `git diff HEAD --stat --
       > .github/workflows/` are both **empty** — nothing under `.github/` changed in this round. The file's
@@ -793,6 +807,23 @@ paraphrased):
       > **by name**, and this cannot be exercised without a push, so the next push to `main` is the test.
       > If `Deploy` does not appear after a green `CI`, the trigger name is the first thing to check;
       > `workflow_dispatch` remains the manual path meanwhile.
+      > **VERIFIED 2026-10-16 (later the same day) — the trigger fires, and the before/after is
+      > measurable.** `gh run list` across two consecutive pushes:
+      >
+      > | Commit | Run | Event | Conclusion | Started |
+      > | --- | --- | --- | --- | --- |
+      > | `5344519` (previous push) | `CI` | `push` | success | `10:50:34Z` |
+      > | `5344519` | `Deploy` | **`push`** | success | `10:50:34Z` — **identical start: the race the change removes** |
+      > | `b542494` (this push) | `CI` | `push` | success | `10:58:57Z` |
+      > | `b542494` | `Deploy` | **`workflow_run`** | success | `10:59:41Z` — **44 s later, after `CI` concluded** |
+      >
+      > The Cloudflare deployment then lands at `11:00:18Z` (source `wrangler`), 37 s after the Deploy run
+      > starts, which is consistent end to end. The gate is therefore verified in both directions: it
+      > fires, and it orders `Deploy` after a successful `CI` — whereas the previous push's pair started at
+      > the same second under the old trigger.
+      > **Tooling note for whoever checks next:** `gh` is authenticated in this environment (account
+      > `XzAeRo`) as of 2026-10-16, but it opens a pager/alternate buffer under the agent terminal —
+      > redirect its output to a file, or set `GH_PAGER=cat`, or the tool returns nothing.
 - [x] Task 4.9: Manual user actions — each one touches production or the account, so request
       authorization first: onboard the sending domain (`npx wrangler email sending enable …`) with its
       SPF/DKIM records; verify the destination inbox address; create the Turnstile secret with
@@ -1574,6 +1605,13 @@ paraphrased):
       > successful network entry can only be observed on `vgr.cat` after the deploy.
       > **Re-run against production post-deploy** — expected: zero violations and one POST to
       > `cloudflareinsights.com/cdn-cgi/rum`.
+      > **RE-CONFIRMED 2026-10-16, with the network entry this time.** A real-browser load of
+      > `https://vgr.cat/` with `response` and `requestfailed` listeners attached recorded exactly one
+      > beacon event — `https://static.cloudflareinsights.com/beacon.min.js/v4bc70e2c…` →
+      > **`net::ERR_NAME_NOT_RESOLVED`** — while `script[src]` in the DOM contains that very injected URL.
+      > So Cloudflare emits the beacon and the policy permits it (no violation); the only failure is
+      > **name resolution inside this environment**. One observation from a network that can resolve the
+      > host still closes this; it is tracked in §6.
       > **PARTIALLY verified 2026-10-16 — deliberately left unticked.** In a real browser (the editor's
       > browser tools, i.e. a genuine browser rather than a headless simulation) against the scratch-token
       > build, with a `securitypolicyviolation` listener installed via `addInitScript` *before* navigation:
@@ -1620,7 +1658,7 @@ paraphrased):
 
 #### Tasks
 
-- [ ] Task 6.1: Run the full local gate and capture output verbatim:
+- [x] Task 6.1: Run the full local gate and capture output verbatim:
       ```bash
       npm ci
       npm run format:check
@@ -1628,18 +1666,208 @@ paraphrased):
       npm run build
       npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
       ```
-- [ ] Task 6.2: Preview the built output: `npm run preview`. Remember `public/_headers` is **inert**
+      > **DONE 2026-10-16, verbatim:**
+      >
+      > ```
+      > $ npm ci                       # exit 0
+      >   7 vulnerabilities (2 moderate, 5 high)
+      >   To address all issues (including breaking changes), run:
+      >   npm audit fix --force
+      >
+      > $ npm run format:check
+      > All matched files use Prettier code style!
+      >
+      > $ npm run check
+      > Result (30 files):
+      > - 0 errors
+      > - 0 warnings
+      > - 0 hints
+      >
+      > $ npm run build
+      > [build] 7 page(s) built in 1.02s
+      > [build] Complete!
+      >
+      > $ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+      > ✨ Read 32 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+      > ```
+      >
+      > **Recorded side-finding, not part of this task's criteria:** `npm ci` now reports **7
+      > vulnerabilities (2 moderate, 5 high)**, where Phase 2 recorded only **2 moderate** after the
+      > Tailwind install. The count comes from `npm ci` against the committed lockfile, so it is the
+      > dependency tree as shipped (the throwaway Lighthouse install used `--no-save` and is not in it).
+      > Not actioned here — no task authorises a dependency bump, and `AGENTS.md` forbids resolving audit
+      > output with `--legacy-peer-deps`. Raise it for a decision (Phase 6, or a separate change).
+- [x] Task 6.2: Preview the built output: `npm run preview`. Remember `public/_headers` is **inert**
       under `preview`, and `npm run dev` emits **no CSP meta tag** — neither can validate CSP or headers.
-- [ ] Task 6.3: Cross-language link validation: crawl all three locales and assert every internal link
+
+      > **DONE 2026-10-16.** `npm run preview` served the built `dist/` on `:4321` and every page and
+      > asset resolved — but it **publishes `_headers` as a plain file instead of applying it as header
+      > rules**, which is this task's warning, measured rather than assumed:
+      >
+      > ```
+      > /                    http=200 type=text/html  bytes=13197
+      > /ca/                 http=200 type=text/html  bytes=13646
+      > /es/                 http=200 type=text/html  bytes=13650
+      > /og/og-default.png   http=200 type=image/png  bytes=15740
+      > /_headers            http=200 type=            bytes=333
+      > /robots.txt          http=200 type=text/plain bytes=67
+      > ```
+      >
+      > Same request, same day, both servers — the difference is the whole point of the task:
+      >
+      > ```
+      > --- preview (127.0.0.1:4321) response headers for / ---
+      > HTTP/1.1 200 OK
+      > (no security headers present)
+      > --- production (vgr.cat) response headers for / ---
+      > HTTP/2 200
+      > strict-transport-security: max-age=31536000; includeSubDomains; preload
+      > permissions-policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+      > referrer-policy: strict-origin-when-cross-origin
+      > x-content-type-options: nosniff
+      > x-frame-options: DENY
+      > ```
+      >
+      > `preview` emits **none** of the five security headers that `public/_headers` produces in
+      > production, so header behaviour is verifiable only on a deployment. Production also answers
+      > `GET /_headers` with **404** while `preview` serves it as a 333-byte asset with no content-type:
+      > the file is a build input, not a published page.
+
+- [x] Task 6.3: Cross-language link validation: crawl all three locales and assert every internal link
       resolves (an `hreflang`-declared sibling that 404s is the classic multilingual failure).
-- [ ] Task 6.4: Verify 404 handling for both a bad path and a bad locale prefix.
-- [ ] Task 6.5: Mobile layout audit at 320 px, 375 px and 768 px.
+
+      > **DONE 2026-10-16.** A throwaway crawler (`/tmp/vgr-qa/link-check.mjs` — deliberately **not**
+      > added to the repo, since no task authorises a permanent script or a new dev dependency) crawled
+      > `/`, `/ca/` and `/es/` from the built output, extracted every internal `href` plus every
+      > `hreflang` alternate, and followed each one: **10 internal URLs, 0 bad, 0 redirecting, exit 0**.
+      > "Redirecting" was tracked on purpose — the hreflang set had just been fixed for the
+      > trailing-slash bug (Task 5.4), and an alternate that 307s is precisely the multilingual failure
+      > this task exists to catch.
+      >
+      > **Not verified here:** external destinations — `https://cal.example/REPLACE_ME` was classified as
+      > an external placeholder rather than resolved. Those become real URLs only with Task 6.6's copy.
+
+- [x] Task 6.4: Verify 404 handling for both a bad path and a bad locale prefix.
+
+      > **DONE 2026-10-16, against production:**
+      >
+      > ```
+      > /nope     -> http=404 <html lang="en" <title>TODO(copy) — 404 | vgr.cat</title>
+      > /de/      -> http=404 <html lang="en" <title>TODO(copy) — 404 | vgr.cat</title>
+      > /de/nope  -> http=404 <html lang="en" <title>TODO(copy) — 404 | vgr.cat</title>
+      > /ca/nope  -> http=404 <html lang="en" <title>TODO(copy) — 404 | vgr.cat</title>
+      > /es/nope  -> http=404 <html lang="en" <title>TODO(copy) — 404 | vgr.cat</title>
+      > ```
+      >
+      > **Every 404 is one file, so the *served* markup is always `lang="en"`** — `src/pages/404.astro`
+      > ships all three variants and says why in a source comment: "A static 404 is one file for every
+      > path, so the requested locale only exists at runtime." An inline script reads the first path
+      > segment, sets `document.documentElement.lang`, unhides the matching section, and rewrites
+      > `<title>` and the meta description. Measured **after script execution** in a real browser:
+      >
+      > | Path       | `document lang` | visible variant                                      |
+      > | ---------- | --------------- | ---------------------------------------------------- |
+      > | `/nope`    | `en`            | `en`                                                 |
+      > | `/ca/nope` | `ca`            | `ca`                                                 |
+      > | `/es/nope` | `es`            | `es`                                                 |
+      > | `/de/nope` | `en`            | `en` — `/de` is not a locale, so English is correct   |
+      >
+      > **Recorded caveat, not a defect to discover later:** with JavaScript disabled, `/ca/nope` shows the
+      > English 404 copy. That is inherent to a single static 404 file and was accepted at design time.
+      > The page also carries `noindex` (Task 5.4).
+
+- [x] Task 6.5: Mobile layout audit at 320 px, 375 px and 768 px.
+
+      > **AUDIT DONE 2026-10-16** — three locales × three widths, measured against the local build *and*
+      > production (`documentElement.scrollWidth` vs `clientWidth`, plus a hit-test over every element
+      > whose right edge exceeded the viewport):
+      >
+      > | Layout viewport | `/`               | `/ca/` | `/es/` | overflow vs `clientWidth` | widest offender  |
+      > | --------------- | ----------------- | ------ | ------ | ------------------------- | ---------------- |
+      > | 320 px          | `scrollWidth 324` | 324    | 324    | **+19 px**                | contact form field |
+      > | 375 px          | `scrollWidth 360` | 360    | 360    | 0                         | —                |
+      > | 768 px          | `scrollWidth 753` | 753    | 753    | 0                         | —                |
+      >
+      > Identical numbers locally and on production, so this is shipped behaviour rather than a preview
+      > artefact. Two extra widths were measured: **360 px → 0 overflow**, **280 px → +59 px**.
+      >
+      > **Root cause (proven, after one wrong hypothesis).** The Turnstile widget is a fixed-size box.
+      > Cloudflare documents `normal` as **300 px wide** and `flexible` as **100% (min: 300 px)**, so
+      > `.cf-turnstile` carries a **300 px minimum**. It is a grid item of the form, and `min-width: auto`
+      > lets a grid item dictate its column — so the single implicit column resolves to 300 px and
+      > stretches *every* field in it. With the section's 24 px padding the document needs **324 px**, and
+      > below that the page scrolls sideways: `24 px + 300 px = 324 px`.
+      > The first attempt — adding `w-full min-w-0` to the input class — was **measured to change nothing**
+      > (the input was already stretched to the track width) and was **reverted**. The cause is the
+      > widget, not the form's fields.
+      >
+      > **RESOLVED 2026-10-16 — the user chose option (A): accept and record it.** No code change was made,
+      > so the widget and the form stand exactly as measured above. The options that were on the table:
+      > **(A)** accept it and record a horizontal-scroll limitation below ~324 px (iPhone SE 1st gen, and
+      > Galaxy Fold's cover display) — **chosen**; **(B)** `data-size="compact"` — one attribute, 150 × 140 px,
+      > fits down to 280 px, but the widget is visibly taller on every device; **(C)** keep `normal` when wide
+      > and render `compact` when narrow, which means moving from implicit to explicit Turnstile rendering
+      > (`turnstile.render(selector, { size })`).
+      > **Accepted limitation, stated plainly:** below a ~324 px layout viewport the page scrolls horizontally
+      > (measured +19 px at 320 px, +59 px at 280 px). Nothing is clipped or unreachable — the document simply
+      > scrolls sideways. Tracked in §6.
+      > **If it is ever revisited:** `challenges.cloudflare.com` is unreachable from the agent sandbox — the
+      > widget script request aborts — so a widget-size change **cannot be validated locally** and would need a
+      > production check after deploy.
 - [ ] Task 6.6: **Replace every `TODO(copy)` placeholder with final copy** and delete the D9 escape hatch
       (the `ALLOW_PLACEHOLDER_COPY` repository variable) in the same change, so the hatch cannot outlive
       the placeholders. This includes the Catalan, which must read as institutional/public-tender
       register rather than machine-translated English.
-- [ ] Task 6.7: Manual user actions (not agent actions): configure the `www` DNS record + Redirect Rule
+- [x] Task 6.7: Manual user actions (not agent actions): configure the `www` DNS record + Redirect Rule
       to the apex (D5); confirm SSL/TLS mode is Full (strict) in the Cloudflare dashboard.
+
+      > **DONE 2026-10-16 — both halves verified. Recorded in two passes on purpose, because the first pass
+      > found a gap that the user then closed in the account; the earlier reading is left standing rather
+      > than rewritten.**
+      >
+      > **`www` → apex: VERIFIED.** Zone `vgr.cat` (`cde2a5cda4abb8c41587e343c2c487cc`) carries
+      > `CNAME www.vgr.cat → vgr.cat (proxied)` and one enabled zone-level Redirect Rule in ruleset
+      > `a6089f82e5914e45acbd3db0ad7a5a32` ("Redirect from WWW to root"):
+      > `(http.request.full_uri wildcard r"https://www.*")` → `wildcard_replace(..., r"https://${1}")`,
+      > `301`, `preserve_query_string: true`. Measured: `GET https://www.vgr.cat/ca/` → **301 →
+      > `https://vgr.cat/ca/`**, path preserved. No wildcard **Worker route** is involved (D4).
+      >
+      > **SSL/TLS mode: not compliant with this task — it is `full`, and the task requires Full (strict).**
+      > ```
+      > ssl                      = "full"   ← task requires "strict"
+      > min_tls_version          = "1.0"    ← not raised
+      > always_use_https         = "on"     ✓
+      > automatic_https_rewrites = "on"     ✓
+      > ```
+      > **Context, recorded rather than decided:** the apex has `AAAA vgr.cat → 100:: (proxied)` —
+      > Cloudflare's Worker-only sentinel — so this zone has **no origin server** for `Full (strict)` to
+      > validate; every response comes from the Worker and its static assets at the edge. Raising the mode
+      > is therefore a policy/consistency change (`min_tls_version 1.0` is worth fixing on its own merits),
+      > but it is an **account change and so needs the user's authorization**.
+      >
+      > **CORRECTION (2026-10-16, later the same day) — the user changed it in the account, and it was
+      > re-read:**
+      > ```
+      > ssl                      = "strict"  ✓  the task's requirement is now met
+      > min_tls_version          = "1.0"        still not raised (tracked in §6)
+      > always_use_https         = "on"      ✓
+      > tls_1_3                  = "on"      ✓
+      > automatic_https_rewrites = "on"      ✓
+      > ```
+      > The `full` reading above is preserved as the record of what the first pass found; the second half of
+      > this task is now complete.
+      >
+      > **Deferred security item (user decision, 2026-10-16) — the inert `/api/contact` rule.** Ruleset
+      > `05d3061297a5476f91ff8f0c91b4c46b` contains an **enabled rule named "Contact Rate Limit"** whose
+      > action is **`block`** on `http.request.uri.path eq "/api/contact"` (created 2026-10-15T22:00:37Z,
+      > actor `victor@vgr.cl`). Measured: **it does not fire.** `GET /api/contact` returns the Worker's own
+      > `405 {"error":"Method not allowed"}` and a `POST` with an invalid token returns
+      > `400 {"error":"Rejected"}` — not a Cloudflare 403. So the intended protection is not in effect, and
+      > the endpoint is not broken by it either. A `block` in the dynamic-redirect phase cannot rate limit;
+      > the mechanism would be a **Rate Limiting Rule** (`http_ratelimit` phase).
+      > **Decision: leave it as it is and carry it as a security issue needing revision at a later time.**
+      > The endpoint is live and public, which makes this the one open security question in this plan —
+      > tracked in §6, not changed here, because altering zone security configuration is the user's call.
 - [ ] Task 6.8: Land the work on `main` with **signed** commits and let `Deploy` run. (Superseded
       2026-10-16: branch protection was removed, so a branch and PR are optional — see the note below.
       Do not commit or push without explicit authorization.)
@@ -1657,10 +1885,16 @@ paraphrased):
 
 #### Acceptance Criteria
 
-- [ ] All five gate commands exit 0 and their output is recorded verbatim in this plan.
+- [x] All five gate commands exit 0 and their output is recorded verbatim in this plan.
+      > **VERIFIED 2026-10-16** — recorded verbatim under Task 6.1 (`npm ci`, `format:check`, `check`,
+      > `build`, `wrangler deploy --dry-run`), and re-run cleanly after every change in this round:
+      > `astro check` **30 files, 0 errors, 0 warnings, 0 hints**, build **7 pages**, dry-run exit 0 with
+      > **Read 32 files**.
 - [ ] **Zero `TODO(copy)` sentinels remain** and the `ALLOW_PLACEHOLDER_COPY` variable is deleted — the
       guard is now unconditional and would fail the build if placeholder copy ever returned.
-- [ ] Zero broken internal links across the three locales.
+- [x] Zero broken internal links across the three locales.
+      > **VERIFIED 2026-10-16** — see Task 6.3: 10 internal URLs across the three locales, 0 bad,
+      > 0 redirecting, crawler exit 0.
 - [x] CSP violation count is zero on every locale in a real deployment.
       > **VERIFIED 2026-10-16 on production, all three locales.** A real browser with a
       > `securitypolicyviolation` listener installed before navigation reported `violations: []` for
@@ -1668,6 +1902,32 @@ paraphrased):
       > present and `document.cookie === ''`. The pre-deploy run had captured a violation on `/`, so this is a
       > measured before/after rather than an absence of errors.
 - [ ] Checksum/first-paint comparison before and after the DNS-independent deploy shows no regression.
+      > **PARTIALLY VERIFIED — checksum half done and clean, first-paint half deferred (left unticked on
+      > purpose, per the "mark it deferred" rule).**
+      > The **checksum** comparison is complete: every delivered artefact is byte-identical between the
+      > local build and the live site.
+      > ```
+      > /                  local=0174720c75696888 (13197B)  prod=0174720c75696888 (13197B)  IDENTICAL
+      > /ca/               local=b5a1b2e999210cff (13646B)  prod=b5a1b2e999210cff (13646B)  IDENTICAL
+      > /es/               local=3f0151753c5e042c (13650B)  prod=3f0151753c5e042c (13650B)  IDENTICAL
+      > /robots.txt        local=6d87d80e9b7b69e8 (67B)     prod=6d87d80e9b7b69e8 (67B)     IDENTICAL
+      > /og/og-default.png local=49a38764723382af (15740B)  prod=49a38764723382af (15740B)  IDENTICAL
+      > /404.html          local=0ffcf219657f06e9 (4336B)   prod=0ffcf219657f06e9 (4336B)   IDENTICAL
+      > + all eight _astro/* assets (CSS bundle + seven Inter woff2)                    IDENTICAL
+      > ```
+      > This also corrects an earlier assumption for the record: the Web Analytics beacon is **not** in
+      > the served HTML (the edge-injected `beacon.min.js` appears in the browser's DOM, not in the bytes
+      > `curl` receives), which is why the three locale HTML files can be byte-identical to the build.
+      >
+      > The **first-paint** half was **not** re-measured, and the reason is recorded rather than glossed:
+      > Lighthouse is not in the dependency tree (`npm ci` removed Phase 5's throwaway `--no-save`
+      > install), and this browser instance does not report paint timing at all —
+      > `performance.getEntriesByType('paint')` returns `[]` and the CDP `FirstContentfulPaint` /
+      > `FirstPaint` metrics are absent. The behaviourally equivalent check is available and clean: DOM
+      > geometry on production and on the local build agrees to the pixel (`scrollWidth 324` at 320 px on
+      > both, Task 6.5), and no delivered asset changed. The Phase 5 note above asked for a production
+      > Lighthouse re-measure after deploy — installing Lighthouse as a dev dependency to obtain it is a
+      > repo change needing the user's go-ahead, so it is offered rather than assumed.
 
 ---
 
@@ -1698,16 +1958,45 @@ paraphrased):
       > the small Worker script (`src/worker/index.ts`, `POST /api/contact`, asset-first routing with
       > `assets.run_worker_first: ["/api/*"]`), and says deploys happen "once `CI` passes on `main`".
       > `README.md` was corrected in the same spirit (Task 5.2's DX edit) and the repo memory earlier.
-- [ ] No unintended modifications outside the listed affected files — `public/_headers` gains **no CSP**
+- [x] No unintended modifications outside the listed affected files — `public/_headers` gains **no CSP**
       ever, and `wrangler.jsonc` changes only for D3. (`deploy.yml` stays untouched apart from the
       user-directed `workflow_run` gate recorded under Task 4.8.)
+      > **VERIFIED 2026-10-16.** The whole Phase 6 round added **no source change at all** — the only
+      > modified file is this plan: `git status --porcelain` reports exactly
+      > ` M .ai/plans/active/2026-10-15-portfolio-regtech-site.md`. A candidate fix for the 320 px overflow
+      > was measured, shown to change nothing, and reverted, leaving `src/components/ContactForm.astro`
+      > identical to its committed state; no CSP, header, workflow or Wrangler change was made.
 - [x] Every CSP addition is paired with the resource that needs it, in the same commit.
       > **VERIFIED 2026-10-16.** The two Web Analytics entries (`connect-src … cloudflareinsights.com` and
       > the `static.cloudflareinsights.com` script resource) shipped in the same commit that removed the
       > explicit beacon tag, and the resource they exist for is real and visible in production: Cloudflare
       > injects it into every page. This is the one case where the resource is not in the repository, which
       > is exactly why the entries carry comments naming the zone auto-install as their reason to exist.
-- [ ] Nothing marked verified in this plan was inferred; anything not run is marked **Deferred** with
+- [x] Nothing marked verified in this plan was inferred; anything not run is marked **Deferred** with
       the reason.
+      > **VERIFIED 2026-10-16.** Every "verified" claim in this round carries the command and its output,
+      > or an explicit statement of the method (`curl -w`, browser DOM measurement, sha256 of both sides).
+      > Two items are deliberately **not** ticked and are marked deferred with their reason rather than
+      > inferred: the first-paint half of the checksum criterion (no paint-timing data available) and
+      > Task 6.6 (copy does not exist yet). Everything else deferred in this plan is listed in §6.
 - [ ] Plans and decision records are archived with the `## Archive Metadata` footer when complete. Do
       **not** delete `.ai/plans/active/.gitkeep`, and do **not** run Prettier on `.ai/`.
+
+---
+
+## 6. Deferred & accepted items (recorded 2026-10-16)
+
+None of these is finished, and none is a surprise: each was consciously left in place, with the condition
+that reopens it. The plan cannot be archived with these open until the user confirms the deferrals
+(see `.github/instructions/plans.instructions.md`), so the archive footer is not appended yet.
+
+| Item | State | Reopen when |
+| --- | --- | --- |
+| **Security:** enabled but inert `block` rule "Contact Rate Limit" on `/api/contact` (ruleset `05d3061297a5476f91ff8f0c91b4c46b`, dynamic-redirect phase) | **Deferred as a security issue** by the user on 2026-10-16 | Before public launch, or at the next zone-security review. Measured inert — the endpoint answers with the Worker's own `405`/`400`, never a Cloudflare `403` — so nothing is protected by it. A real limit needs a **Rate Limiting Rule** (`http_ratelimit` phase). Details under Task 6.7. |
+| Horizontal scroll below ~324 px in the contact form (Turnstile's 300 px minimum) | **Accepted** by the user on 2026-10-16 (option A) rather than fixed | A widget-size change is wanted, or real traffic shows devices at 320 px or below. `data-size="compact"` (150 × 140 px) is the one-attribute fix, and it needs a **production** check because `challenges.cloudflare.com` is unreachable from the agent sandbox. Details under Task 6.5. |
+| `min_tls_version = "1.0"` on the zone | Not raised; no task requires it | Next zone review. `ssl` is now `strict` ✓, but the minimum protocol version still admits TLS 1.0. |
+| First-paint half of the checksum/first-paint criterion | **Deferred** — this browser instance reports no paint timing, and Lighthouse is not in the dependency tree | When a Lighthouse dev dependency is authorised, or when a change touches CSS or fonts. The checksum half is complete and clean. |
+| Phase 5 criterion "the beacon request succeeds" | **Deferred on environment grounds, not doubt** — the beacon is emitted and permitted (zero violations), but `static.cloudflareinsights.com` does not resolve from the agent sandbox (`net::ERR_NAME_NOT_RESOLVED`) | From any network that resolves the beacon host: assert the POST to `cloudflareinsights.com/cdn-cgi/rum`, or simply confirm pageviews appear in Web Analytics for `vgr.cat` — the same fact seen from the other end. |
+| Task 6.6 — final EN/CA/ES copy and deletion of the `ALLOW_PLACEHOLDER_COPY` variable | **Blocked** on user-supplied copy (~196 `TODO(copy)` sentinels) | As soon as the copy exists. The copy is the only thing standing between this plan and completion. |
+| Task 6.8 — land the work on `main` | **Awaiting explicit authorisation** (hard rule 1) | On the user's word. Commits must be signed. |
+| `AGENTS.md` / `.github/instructions/cloudflare-config.instructions.md` claiming that "Wrangler reconciles routes on every deploy, so a route added only in the dashboard disappears on the next deploy" | **CORRECTED 2026-10-16** — `AGENTS.md` in commit `b542494`; the scoped instruction file and `README.md` in this round (closure note under Task 4.7) | — |

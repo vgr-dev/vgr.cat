@@ -12,3 +12,10 @@ export const turnstileSiteKey =
 
 /** Stable surface label. Must match `TURNSTILE_ACTION` in `src/worker/index.ts`. */
 export const turnstileAction = 'contact';
+
+/**
+ * Single source for every booking CTA. Kept here rather than inline in each component so the
+ * campaign/link can change once without hunting through markup, and because the placeholder guard
+ * (`scripts/check-placeholders.mjs`) treats an unresolved booking URL as a release blocker.
+ */
+export const bookingUrl = 'https://calendar.app.google/3dd7SXGnZqUZsWXm6';

@@ -9,8 +9,12 @@ applyTo: 'wrangler.jsonc, public/_headers'
 
 - `assets.directory` is `./dist`, and `assets.not_found_handling: '404-page'` is what makes
   `src/pages/404.astro` actually serve for unknown paths. Dropping it falls back to a Cloudflare default.
-- `routes` binds the `vgr.cat` custom domain and is the **single source of truth**. Wrangler reconciles
-  routes on every deploy, so a route added only in the dashboard disappears on the next deploy.
+- `routes` binds the `vgr.cat` custom domain and is the **single source of truth for what Wrangler
+  creates — it is not a reconciler.** A deploy **does not delete** routes that are absent from this file:
+  a dashboard-only `*.vgr.cat/*` route, verified 2026-10-16, survived **five** deploys with no
+  `route_delete` event in the account audit log and had to be removed in the dashboard. Config and account
+  can therefore drift, so when a route's behaviour actually matters, read the account
+  (`GET /zones/{zone}/workers/routes`) rather than trusting this file.
 - **Never add a wildcard `*.vgr.cat/*` route.** A catch-all silently answers on every present _and
   future_ subdomain. This was deliberately removed once already; do not reintroduce it.
 - `route` / `routes` must be given per environment. `vars` and bindings are non-inheritable.
@@ -19,7 +23,7 @@ applyTo: 'wrangler.jsonc, public/_headers'
 Validate any change without deploying:
 
 ```bash
-npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 8 files", no warnings
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 32 files", no warnings
 ```
 
 ## `public/_headers`

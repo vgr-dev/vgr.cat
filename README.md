@@ -94,8 +94,8 @@ npx wrangler deploy
 
 ### Custom domain
 
-`wrangler.jsonc` declares the apex as a custom domain, which is the source of truth
-every CI deploy reconciles:
+`wrangler.jsonc` declares the apex as a custom domain. Every CI deploy creates that
+route and leaves it in place:
 
 ```jsonc
 "routes": [{ "pattern": "vgr.cat", "custom_domain": true }]
@@ -105,6 +105,11 @@ every CI deploy reconciles:
 TLS certificate. No wildcard route is declared: a `*.vgr.cat/*` catch-all would
 silently answer on every present and future subdomain. If `www` is ever needed, add
 it as a second explicit custom domain rather than widening the pattern.
+
+A deploy only ever **creates or keeps** routes — it does not remove one that this file
+stops declaring. A dashboard-only wildcard route survived five deploys before it was
+removed by hand, so read the account rather than this file when a route's behaviour
+matters.
 
 `wrangler login` issues an **OAuth token** for local CLI use only. It is not an API
 token and is not usable by CI — see the secrets table below.

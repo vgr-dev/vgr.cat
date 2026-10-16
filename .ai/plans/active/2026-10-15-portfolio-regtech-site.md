@@ -1597,8 +1597,20 @@ paraphrased):
       register rather than machine-translated English.
 - [ ] Task 6.7: Manual user actions (not agent actions): configure the `www` DNS record + Redirect Rule
       to the apex (D5); confirm SSL/TLS mode is Full (strict) in the Cloudflare dashboard.
-- [ ] Task 6.8: Land via a branch and a pull request. `main` is branch-protected; direct pushes are
-      rejected. Do not commit without explicit authorization.
+- [ ] Task 6.8: Land the work on `main` with **signed** commits and let `Deploy` run. (Superseded
+      2026-10-16: branch protection was removed, so a branch and PR are optional — see the note below.
+      Do not commit or push without explicit authorization.)
+
+      > **UPDATE (2026-10-16) — this task’s premise changed, so it collapses to "land it".** The user
+      > **removed branch protection** on `main` while working solo and **kept required signed commits**.
+      > A direct push is therefore no longer rejected, and `CI / validate` no longer gates a merge: land
+      > the work with **signed** commits and let `Deploy` run. A branch + PR remains available as the
+      > review path for anything that warrants one — it is simply not mandatory any more.
+      > Recorded as a dated note rather than a silent rewrite, because Task 4.6’s instruction and the
+      > Phase 4 addenda describe the protection as it stood at the time and remain accurate history.
+      > **Verified for the four commits awaiting a push on 2026-10-16:**
+      > `git log --format='%h %G? %GS'` reports **`G`** for all four, signed by
+      > `Victor Gonzalez (VGR) <victor@vgr.cl>` — so they satisfy the retained requirement.
 
 #### Acceptance Criteria
 

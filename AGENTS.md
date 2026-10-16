@@ -49,8 +49,11 @@ Use `npx astro dev stop` / `npx astro preview stop` to shut servers down — the
 1. **Never `git commit`, `git push`, `git reset`, or `git rebase` without explicit user authorization.**
    Make the edits, run the gate, then stop and _propose_ the commit message. This is a standing user
    instruction, not a suggestion.
-2. **`main` is branch-protected.** Direct pushes are rejected. Every change — including docs-only —
-   needs a branch and a pull request, with the `CI / validate` check passing.
+2. **`main` accepts direct pushes as of 2026-10-16, but commits must be signed.** Branch protection was
+   removed while working solo, because it added ceremony without a second reviewer; required **signed
+   commits** were kept, so `commit.gpgsign` must stay on (`git log --format='%G?'` must report `G`).
+   `CI` still runs on push and on pull requests, and a branch + PR is still the right shape for a change
+   that wants review — it is simply no longer mandatory, and nothing gates a merge.
 3. **Never run destructive production commands.** In particular `npx wrangler rollback` republishes an
    older version to live `vgr.cat`. `wrangler secret put/delete` also deploy immediately. Ask first.
 4. **Never commit secrets.** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are repository secrets;

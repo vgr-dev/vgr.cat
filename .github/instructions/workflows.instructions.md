@@ -35,5 +35,8 @@ applyTo: '.github/workflows/**'
 `npm run build`.
 
 - `.github/workflows/*.yml` **is** covered by `npm run format:check`. Format before committing.
-- `main` is branch-protected and requires the **`CI / validate`** check. Renaming the `validate` job, or
-  the `CI` workflow, silently breaks branch protection and leaves every PR unmergeable.
+- **Branch protection was removed from `main` on 2026-10-16** (working solo), so direct pushes are no
+  longer rejected; **required signed commits were kept**. `CI` still runs on push and on pull requests,
+  reporting as **`CI / validate`**. Renaming the `validate` job or the `CI` workflow still changes that
+  reported name — which the plan's acceptance criteria depend on, and which any future protection rule
+  would need to match.

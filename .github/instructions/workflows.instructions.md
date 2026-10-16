@@ -40,3 +40,9 @@ applyTo: '.github/workflows/**'
   reporting as **`CI / validate`**. Renaming the `validate` job or the `CI` workflow still changes that
   reported name — which the plan's acceptance criteria depend on, and which any future protection rule
   would need to match.
+- **`Deploy` runs only after `CI` passes on `main`.** Because protection no longer orders them, that
+  ordering is enforced inside `deploy.yml`: `workflow_run` on `CI` (`types: [completed]`, `branches:
+[main]`) plus a job condition requiring `conclusion == 'success'`. `workflows: [CI]` matches the
+  triggering workflow **by name**, so renaming the `CI` workflow silently stops every deploy. The
+  checkout is pinned to `github.event.workflow_run.head_sha`, so Deploy ships the commit `CI` validated
+  rather than whatever sits at the tip of `main` when the job starts.

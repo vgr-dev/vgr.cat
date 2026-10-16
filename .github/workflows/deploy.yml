@@ -1,6 +1,17 @@
 name: Deploy
+# Deploys only after `CI` has passed on `main`.
+#
+# Branch protection was removed on 2026-10-16, so a push to `main` no longer waits for a passing check:
+# with a `push` trigger, `CI` and `Deploy` start in parallel and Deploy could ship code CI would reject.
+# Gating on `workflow_run` restores the ordering without re-adding protection.
+#
+# Two things this depends on:
+#   * the triggering workflow is matched by NAME — renaming the `CI` workflow silently stops all deploys;
+#   * the checkout pins the SHA `CI` validated, so a newer push landing mid-run is not deployed unverified.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -9,10 +20,13 @@ permissions:
 
 concurrency:
   group: deploy-production
+  # Deliberate: interrupting a production deploy can leave the Worker inconsistent.
   cancel-in-progress: false
 
 jobs:
   deploy:
+    # `workflow_run` fires on failure too — deploy only on success, or on a manual dispatch.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -21,6 +35,10 @@ jobs:
       PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Exactly the commit `CI` validated. A manual dispatch carries no `workflow_run`
+          # payload, so it falls back to the dispatched ref.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc

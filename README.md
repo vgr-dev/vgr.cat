@@ -132,10 +132,12 @@ render-blocking request.
 | Workflow | Trigger                              | Purpose                                                                                      |
 | -------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
 | `CI`     | Pull request, push to `main`, manual | `npm ci` → `format:check` → `check` → `build`; uploads the `dist` artifact (7-day retention) |
-| `Deploy` | Push to `main`, manual               | `npm ci` → `build` → `wrangler deploy` to production                                         |
+| `Deploy` | After `CI` passes on `main`, manual  | `npm ci` → `build` → `wrangler deploy` to production                                         |
 
-`Deploy` runs against the `production` environment with `cancel-in-progress: false`, so
-an in-flight production deploy is never interrupted by a newer commit.
+`Deploy` is gated on `CI`: it triggers on the `CI` workflow completing and only proceeds when that run
+concluded `success`, then deploys the exact commit `CI` validated. It runs against the `production`
+environment with `cancel-in-progress: false`, so an in-flight production deploy is never interrupted by a
+newer commit.
 
 ### Required repository secrets
 

@@ -778,6 +778,21 @@ paraphrased):
       > `name: Deploy`, `push` trigger, explicit `permissions:`, `concurrency:` with
       > `cancel-in-progress: false`, a single `deploy` job, and the load-bearing
       > `check:production-env` → `types` → `build` step order.
+      > **UPDATE (2026-10-16) — superseded by a user directive: `deploy.yml`'s *trigger* changed.** With
+      > branch protection removed, a push to `main` starts `CI` and `Deploy` in parallel, so Deploy could
+      > ship code CI would have rejected. The user asked for deploys to be gated on a CI pass, so the
+      > trigger is now `workflow_run` on `CI` (`types: [completed]`, `branches: [main]`) plus a job
+      > condition requiring `conclusion == 'success'`, and the checkout is pinned to
+      > `github.event.workflow_run.head_sha` so it ships exactly the validated commit.
+      > **Everything this task actually protected still holds:** `concurrency: deploy-production` with
+      > `cancel-in-progress: false`, `permissions: contents: read`, the single `deploy` job,
+      > `environment: production`, and the `check:production-env` → `types` → `build` → `wrangler-action`
+      > order are all untouched. The verification above stays accurate for the state it describes; the
+      > trigger is the single deliberate exception, made on request.
+      > **Not yet verified:** that the new trigger fires. `workflow_run` matches the triggering workflow
+      > **by name**, and this cannot be exercised without a push, so the next push to `main` is the test.
+      > If `Deploy` does not appear after a green `CI`, the trigger name is the first thing to check;
+      > `workflow_dispatch` remains the manual path meanwhile.
 - [x] Task 4.9: Manual user actions — each one touches production or the account, so request
       authorization first: onboard the sending domain (`npx wrangler email sending enable …`) with its
       SPF/DKIM records; verify the destination inbox address; create the Turnstile secret with
@@ -1633,8 +1648,9 @@ paraphrased):
 - [ ] **The "no Worker script" statements are retired.** `AGENTS.md` describes this project as having
       "no Worker script", and the repo memory asserts the same. After Phase 4 both are false. Update them
       in the same change, or the next agent will plan against a deployment shape that no longer exists.
-- [ ] No unintended modifications outside the listed affected files — in particular `deploy.yml` stays
-      untouched, `public/_headers` gains **no CSP** ever, and `wrangler.jsonc` changes only for D3.
+- [ ] No unintended modifications outside the listed affected files — `public/_headers` gains **no CSP**
+      ever, and `wrangler.jsonc` changes only for D3. (`deploy.yml` stays untouched apart from the
+      user-directed `workflow_run` gate recorded under Task 4.8.)
 - [ ] Every CSP addition is paired with the resource that needs it, in the same commit.
 - [ ] Nothing marked verified in this plan was inferred; anything not run is marked **Deferred** with
       the reason.

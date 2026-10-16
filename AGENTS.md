@@ -155,6 +155,10 @@ wrong, raise it with the user rather than silently reverting it.
   browser blocked the injected beacon and **no analytics were collected at all**, with no visible error to
   visitors. Do **not** also add an explicit beacon tag — with auto-install on, both would count every
   pageview twice.
+- **`Deploy` is gated on `CI`, not on `push`.** `deploy.yml` triggers on `workflow_run` for the workflow
+  named **`CI`** and proceeds only when it concluded `success`, because branch protection no longer orders
+  the two. Renaming the `CI` workflow silently stops every deploy; `workflow_dispatch` remains the manual
+  path. It checks out `github.event.workflow_run.head_sha`, so it ships the commit CI validated.
 - **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
   empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching

@@ -771,11 +771,31 @@ paraphrased):
       > `.github/instructions/cloudflare-config.instructions.md`. Until it is fixed those two documents
       > actively mislead — they tell the next agent that a dashboard/CLI-only route disappears on the next
       > deploy, which this plan has now disproved with five deploys plus an audit-log read.
-- [ ] Task 4.8: Leave `deploy.yml` structure and `cancel-in-progress: false` untouched.
-- [ ] Task 4.9: Manual user actions — each one touches production or the account, so request
+- [x] Task 4.8: Leave `deploy.yml` structure and `cancel-in-progress: false` untouched.
+      > **VERIFIED 2026-10-16.** `git status --short .github/` and `git diff HEAD --stat --
+      > .github/workflows/` are both **empty** — nothing under `.github/` changed in this round. The file's
+      > last change is still `9d44176` (the authorised PR #6 fix) and its structure is intact:
+      > `name: Deploy`, `push` trigger, explicit `permissions:`, `concurrency:` with
+      > `cancel-in-progress: false`, a single `deploy` job, and the load-bearing
+      > `check:production-env` → `types` → `build` step order.
+- [x] Task 4.9: Manual user actions — each one touches production or the account, so request
       authorization first: onboard the sending domain (`npx wrangler email sending enable …`) with its
       SPF/DKIM records; verify the destination inbox address; create the Turnstile secret with
       `npx wrangler secret put TURNSTILE_SECRET_KEY`. **`wrangler secret put` deploys immediately.**
+      > **VERIFIED 2026-10-16 — all three are done.**
+      >
+      > | Action | Evidence |
+      > | --- | --- |
+      > | Turnstile secret written | `GET /accounts/{id}/workers/scripts/vgr-cat/secrets` → `[{ "name": "TURNSTILE_SECRET_KEY", "type": "secret_text" }]` — the secret exists **on the deployed Worker**, not merely locally |
+      > | Sending domain onboarded | `wrangler email sending list` → **`vgr.cat`, `enabled: yes`**, tag `18c1f8afb88c43458e6c61d5e4ed912b` (recorded in Addendum 3), plus the live `cf-bounce.vgr.cat` MX / SPF / DKIM records that onboarding creates |
+      > | Destination inbox verified | mail actually delivered to `contact@vgr.cat` — see the delivery analytics in Addendum 6, and the auto-reply to a real mailbox confirmed by the user |
+      >
+      > **Limit recorded:** the Email Sending REST endpoints are **not** readable with the credentials available
+      > here — `GET /accounts/{id}/email/sending/domains` and `/email/sending/logs` both return
+      > `10001 Unable to authenticate request`, and `wrangler` has no authenticated session in this sandbox
+      > (`whoami` → "You are not authenticated"). The sending-domain row therefore rests on the recorded
+      > `wrangler email sending list` output plus the DNS records and successful live delivery, not on a
+      > fresh API read.
 
 > **BLOCKED — Phase 4 halted at the credential boundary (2026-10-15).** Tasks 4.1–4.5, 4.7 and 4.9 are
 > **not started**. They cannot be completed or verified without inputs only the user can supply, and
@@ -991,19 +1011,92 @@ paraphrased):
 - [x] CSP: `npm run build`, confirm each newly permitted origin appears in `dist/index.html`'s meta CSP,
       then browser-test with **zero** `securitypolicyviolation` events **and** assert the widget's styles
       actually applied — a present-but-blocked Turnstile renders invisibly and fails silently.
-- [ ] Happy path on a real deployment: the notification email arrives **and** the visitor auto-reply
+- [x] Happy path on a real deployment: the notification email arrives **and** the visitor auto-reply
       arrives. Record the actual `EmailSendResult.messageId` values.
+      > **VERIFIED 2026-10-16 on production — and this is the first time the auto-reply half is confirmed.**
+      > A real browser (the VS Code browser tools, not `wrangler dev`) loaded `https://vgr.cat/#contact`,
+      > the committed production widget minted a real **773-character** token (prefix `1.G4QHgM1iy8`), the
+      > lazy-injected `cf-turnstile-response` input was present, the honeypot stayed empty, the form was
+      > submitted with `victor@vgr.cl` as the visitor address, and the Worker answered
+      > **303 → `https://vgr.cat/contact/thanks/`** (`title = TODO(copy) — Message sent | vgr.cat`,
+      > `h1 = TODO(copy) — Thank you`). That exercised every gate on the live domain, including
+      > `run_worker_first` for a genuine navigation POST.
+      >
+      > **Both messages confirmed received by the user: "Both emails received correctly"** — the
+      > notification at `contact@vgr.cat` and the auto-reply at `victor@vgr.cl`. This replaces the earlier
+      > state in which the auto-reply had only ever been *sent* (to `visitor@example.com`, which correctly
+      > bounces because the domain has no mail service — captured in the analytics as `deliveryFailed`).
+      >
+      > **RECORDED DEFERRAL — the `messageId` values were not recorded, and cannot be with the access
+      > available here.** Both blockers were verified, not assumed:
+      > (a) the Worker **discards** its `EmailSendResult`: the send block awaits `env.NOTIFY.send()` and
+      > `env.REPLY.send()` and logs nothing except `console.error('contact delivery failed')` on the
+      > failure path, so no `messageId` ever reaches Workers Logs;
+      > (b) the only documented per-event source, `emailSendingAdaptive`, returns **no rows** for this zone
+      > (three attempts, two query shapes, `errors: []` and empty data) while the aggregate
+      > `emailSendingAdaptiveGroups` returns real counts — see Addendum 6 — and the Email Sending REST
+      > endpoints answer `10001`.
+      > **To finish it:** add `messageId` logging to the Worker (small change; needs the PR to merge and
+      > deploy) or read the IDs from the dashboard's Email Sending activity log. The functional claim —
+      > both emails arrive, from a real deployment, driven by a real widget — **is** verified.
 - [x] Negative paths, each recorded with its real status code: missing token → rejected; invalid token →
       rejected; oversized body → rejected; a field containing `\r\n` → rejected, **not injected**.
-- [ ] Rate limiting observed by deliberately exceeding the limit.
+- [x] Rate limiting observed by deliberately exceeding the limit.
+      > **OBSERVED 2026-10-16 against production**, by deliberately exceeding it. Eight `POST`s to
+      > `/api/contact`, no Turnstile token, as fast as `curl` allows:
+      >
+      > ```
+      > req 1  400  t=0.093s      req 5  400  t=0.105s
+      > req 2  400  t=0.100s      req 6  429  t=0.089s
+      > req 3  400  t=0.111s      req 7  429  t=0.124s
+      > req 4  400  t=0.091s      req 8  429  t=0.091s
+      > after a 12 s wait:       400
+      > ```
+      >
+      > The first five reach the Worker (400 = its own validation rejection); from the sixth the request is
+      > stopped **at the edge** and the Worker never runs. Blocked responses are `HTTP/2 429`,
+      > `content-type: text/plain; charset=UTF-8`, `retry-after: 10`, body `error code: 1015` — exactly the
+      > configured rule: zone rate limit on `http.request.uri.path eq "/api/contact"`,
+      > `requests_per_period: 5` / `period: 10` s per `ip.src` + `cf.colo.id`, action `block`,
+      > `mitigation_timeout: 10`. A request 12 s later succeeds, so the mitigation window closes as
+      > configured. **No email was sent by any probe** — every one was rejected before the send step.
 - [x] **404 not regressed:** an unknown path **and** an unknown locale prefix still render
       `src/pages/404.astro` with the right status, now that a Worker is in front of the assets.
-- [ ] **DX regression recorded:** `npm run dev` and `npm run preview` cannot exercise the endpoint —
+- [x] **DX regression recorded:** `npm run dev` and `npm run preview` cannot exercise the endpoint —
       Astro's dev server and the static preview never run the Worker. Local integration testing requires
       `npm run build && npx wrangler dev`. Put this in `README.md` so it is not rediscovered.
-- [ ] Documentation gotcha recorded: emails sent from the Worker show as **dropped** in the Email Routing
+      > **RECORDED 2026-10-16 in `README.md`**, and **measured** rather than asserted: under
+      > `npm run preview`, `POST /api/contact` answers **404 `text/html`** — the prerendered 404 page, not
+      > the Worker's JSON — so the endpoint genuinely does not exist on the static server. The README's
+      > "Local development" section now says so and gives the working alternative
+      > (`npm run build && npx wrangler dev`, port 8787, which also simulates the Email Service bindings),
+      > plus the note that the real widget allows `localhost`/`127.0.0.1` while Cloudflare's test keys
+      > cannot pass the Worker's `action`/`hostname` checks. The same section of `AGENTS.md` already carried
+      > this gotcha; the criterion's specific requirement was the README.
+- [x] Documentation gotcha recorded: emails sent from the Worker show as **dropped** in the Email Routing
       summary even when delivered successfully. Use Email Sending metrics/logs for delivery truth.
-- [ ] `CI / validate` is still the reported check name on the PR.
+      > **RECORDED 2026-10-16 in `AGENTS.md` — with the wording corrected against Cloudflare's own docs**
+      > rather than repeated as given. From `developers.cloudflare.com/email-service/observability/logs/`:
+      > sending uses `Sent` / `Delivered` / `Delivery failed` / `Rejected` / `Failed`, while routing uses
+      > `Forwarded` / `Handled` / **`Dropped`** / `Rejected` / `Delivery failed` / `Error`, where `Dropped`
+      > is documented as *"Email dropped due to filtering rules or configuration"* — an **inbound** routing
+      > outcome. The guidance was right (use Email Sending for delivery truth); the vocabulary was wrong.
+      > A Worker **send** cannot be `Dropped`; the two views simply have separate status vocabularies, and
+      > the routing view is the wrong place to look for outbound mail.
+      > **Explicitly NOT verified:** the specific observation that Worker sends appear as `Dropped` in the
+      > Email Routing summary. Today's docs do not show that behaviour and it is not reproducible with the
+      > access available here (routing analytics returned no rows; Email Sending endpoints return `10001`).
+      > It is now recorded as guidance, not as an observed fact.
+      > The `AGENTS.md` entry also records the `messageId`-is-never-logged consequence, which is what blocked
+      > the messageId half of the happy-path criterion above.
+- [x] `CI / validate` is still the reported check name on the PR.
+      > **VERIFIED 2026-10-16** against both the GitHub API and the workflow definition:
+      > `GET https://api.github.com/repos/vgr-dev/vgr.cat/commits/main/check-runs` → `total_count: 2`, with
+      > `name="validate"` (app `github-actions`, **conclusion `success`**, sha `5cd11b1`) and
+      > `name="deploy"` (also `success`). `.github/workflows/ci.yml` declares `name: CI` with a single job
+      > `validate`, so GitHub reports the required check as **`CI / validate`** — unchanged, and nothing in
+      > this round touched `.github/` (see Task 4.8). The name is derived from the workflow file, which is
+      > why the file-derived part of this check is sound rather than circular.
 
 > **Addendum 4 (2026-10-15) — the merge deployed NOTHING. Found while checking the secret flow.**
 >
@@ -1118,6 +1211,63 @@ paraphrased):
 > `wrangler secret list` confirms `TURNSTILE_SECRET_KEY` is set. It was written *before* the fix — i.e.
 > onto the assets-only Worker — and survived the PR #6 deploy, which is why the endpoint returns 403 and
 > not 500. No further secret action is required.
+
+> **Addendum 6 (2026-10-16) — Phase 4 closed out.** Every item still open before Phase 5 was worked
+> through in one round, after a workstation crash. Five are now closed with measured evidence (recorded
+> inline above); one is closed with an explicit, reasoned deferral.
+>
+> **1. Production happy path, driven by a real browser.** `https://vgr.cat/#contact` loaded in a real
+> browser, the committed production widget minted a 773-character token, and the submission returned
+> **303 → `/contact/thanks/`**. **Both** emails were then confirmed received by the user — the
+> notification at `contact@vgr.cat` and the auto-reply at a real mailbox. Before this, the auto-reply had
+> only ever been *sent*, never confirmed arriving.
+>
+> **2. Cloudflare's delivery analytics corroborate the notification path — and the replay anomaly.**
+>
+> ```
+> 2026-10-15T21:47:00Z  envelopeTo=contact@vgr.cat      status=delivered       count=4  errorCause=""       sendingDomain=vgr.cat
+> 2026-10-15T21:47:00Z  envelopeTo=visitor@example.com  status=deliveryFailed  count=4  errorCause=unknown
+> ```
+>
+> **Four** separate notifications were delivered for one solved challenge, matching the recorded
+> "same token submitted four times, all four 303" anomaly — so the replays really did produce four real
+> emails. That is independent support for the replay risk escalated to the Architect, and it sharpens it:
+> inside the token window the only thing bounding repeated sends is the rate limit observed below. The
+> four `deliveryFailed` rows are the auto-replies to `visitor@example.com`, a reserved domain with no mail
+> service — the expected outcome, and the reason that half of the criterion needed a real mailbox.
+>
+> **Caveat recorded deliberately:** those numbers came from `emailSendingAdaptiveGroups`, and two
+> immediate re-runs of the *identical* query returned no data; the per-event `emailSendingAdaptive` dataset
+> returned nothing across three attempts and two query shapes (`errors: []`, empty data). This is a
+> **single observation of a flaky dataset**, not a stable query, and today's own send appears in none of
+> them.
+>
+> **3. Rate limiting observed** by deliberately exceeding it — 5×`400`, then `429` with `retry-after: 10`,
+> then recovery.
+>
+> **4. `CI / validate` re-confirmed** from the check-runs API plus `ci.yml`'s `name: CI` / job `validate`.
+>
+> **5. Docs gotcha recorded with a correction.** Sending and routing have **separate** status
+> vocabularies; `Dropped` is a routing (inbound) outcome, so the original phrasing — Worker sends "show as
+> dropped" — is not behaviour the docs describe. Recorded in `AGENTS.md` as guidance, with the specific
+> observation flagged unverified.
+>
+> **6. `README.md` updated** with the DX regression, and — while editing that same section — the two stale
+> *"there is no Worker script"* statements were corrected, which is the §5 requirement to retire them.
+> Doing it here was deliberate: same file, same paragraph, and leaving a false claim in place while
+> documenting the Worker script's behaviour would be incoherent. `AGENTS.md`'s equivalents were already
+> updated.
+>
+> **Recorded limits of this round, so nobody re-derives them.** `wrangler` has no authenticated session in
+> this sandbox (`whoami` → "You are not authenticated") and `gh` is unauthenticated too, which is why the
+> check name was read from the public API plus the workflow file; the Email Sending REST endpoints return
+> `10001` for these credentials; the Playwright browser cache was lost to the crash, so the production
+> submission was driven through the editor's browser tools — a *stronger* environment for this purpose,
+> since it is a real browser against the real deployment.
+>
+> **Deferred, not silently dropped:** the `messageId` sub-clause of the happy-path criterion (blocked on
+> Worker logging, above); the Architect-owned corrections to the false Wrangler route-reconciliation claim
+> (Task 4.7) and to this addendum's docs wording.
 
 ### Phase 5: Technical SEO, performance and cookieless analytics
 

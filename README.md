@@ -17,6 +17,11 @@ Static site for [vgr.cat](https://vgr.cat), built with **Astro** and served from
 There is no adapter and no server-side rendering. Every page is prerendered at build
 time and the `dist/` directory is uploaded to the edge verbatim.
 
+One **Worker script** (`src/worker/index.ts`) sits in front of the assets to serve
+`POST /api/contact`. Routing stays asset-first, so the prerendered pages keep winning;
+`assets.run_worker_first: ["/api/*"]` is required for the form alone, because
+`not_found_handling: '404-page'` otherwise intercepts navigation requests.
+
 ## Prerequisites
 
 - **Node 24** — recorded in `.nvmrc`; CI reads the same file via `node-version-file`.
@@ -54,11 +59,25 @@ npm run preview    # serve dist/ at http://localhost:4321
 `npm run preview` is a plain static server and does **not** apply `public/_headers`,
 so header behaviour can only be verified against a deployed Worker.
 
+**`npm run dev` and `npm run preview` cannot exercise `/api/contact`.** Both serve the
+static output only and never run the Worker, so the endpoint answers `404` (the prerendered
+404 page) instead of the Worker's JSON. Local integration testing needs `wrangler dev`,
+which also simulates the Email Service bindings:
+
+```bash
+npm run build
+npx wrangler dev       # http://localhost:8787 — this one does run the Worker
+```
+
+The real Turnstile widget allows `localhost` and `127.0.0.1`, so the happy path is
+exercisable locally with the `.dev.vars` secret; Cloudflare's _test_ keys cannot pass the
+Worker's `action` and `hostname` checks.
+
 ## Deployment
 
 The site is deployed to **Cloudflare Workers** as a _static-assets project_. Wrangler
-uploads the prerendered `dist/` directory to the edge directly, so there is no Worker
-script and no Astro adapter — the build output stays completely static.
+uploads the prerendered `dist/` directory to the edge directly, alongside the small Worker
+script that serves `/api/contact`. There is no Astro adapter — every page stays static.
 
 `@astrojs/cloudflare` is intentionally not installed. It can be added later for SSR,
 Actions, or sessions without changing platforms: the adapter removed Cloudflare Pages

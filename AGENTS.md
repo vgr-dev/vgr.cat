@@ -127,6 +127,15 @@ wrong, raise it with the user rather than silently reverting it.
   hostname gate and is stopped by the action gate. **Consequence: the contact happy path cannot be
   verified end-to-end with test keys** — only the rejection paths are locally exercisable. The Worker
   logs the reason as `siteverify rejected { action, hostname, codes }`, never the secret or the token.
+- **Email delivery truth lives in Email _Sending_, not Email Routing — the two have separate status
+  vocabularies.** Cloudflare documents sending as `Sent` / `Delivered` / `Delivery failed` / `Rejected` /
+  `Failed`, and routing as `Forwarded` / `Handled` / **`Dropped`** / `Rejected` / `Delivery failed` /
+  `Error`, where `Dropped` means _inbound_ mail discarded by a routing rule. This Worker **sends**
+  outbound mail through the `send_email` bindings, so an Email Routing view is the wrong place to look
+  for it. Use the Email Sending activity log, or the `emailSendingAdaptive*` GraphQL datasets documented
+  at `developers.cloudflare.com/email-service/observability/metrics-analytics/`. Note that the Worker
+  **discards `EmailSendResult`** — it never logs `messageId` — so message IDs are absent from Workers
+  Logs; add logging there if they are ever needed.
 - **`worker-configuration.d.ts` is generated, not committed.** It is gitignored and produced by
   `npm run types` (`wrangler types`), which `npm run check` chains. Secrets must be declared under
   `secrets.required` in `wrangler.jsonc` or `wrangler types` will not know about them.

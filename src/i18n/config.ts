@@ -22,7 +22,11 @@ export function stripLocale(pathname: string): string {
   const first = segments[0];
   if (first !== undefined && first !== defaultLocale && isLocale(first)) {
     const rest = segments.slice(1).join('/');
-    return rest === '' ? '/' : `/${rest}`;
+    if (rest === '') return '/';
+    // Preserve the trailing slash. Callers rebuild canonical URLs from this value, and
+    // collapsing `/ca/thanks/` to `/ca/thanks` emitted hreflang alternates that 307-redirect
+    // to the real page instead of resolving to it.
+    return pathname.endsWith('/') ? `/${rest}/` : `/${rest}`;
   }
   return pathname.startsWith('/') ? pathname : `/${pathname}`;
 }

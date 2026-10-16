@@ -24,7 +24,7 @@ npm run format:check                          # Prettier (also covers .github/wo
 npm run lint                                  # ESLint 9 + eslint-plugin-astro (34 a11y rules)
 npm run check                                 # wrangler types && astro check → expect "30 files, 0 errors, 0 warnings, 0 hints"
 npm run build                                 # astro check && astro build → 7 pages
-npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 30 files", no warnings
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 32 files", no warnings
 ```
 
 `npm run check` alone is not enough — `astro build` transpiles with esbuild and performs **no** type
@@ -36,7 +36,7 @@ checking, which is exactly why `check` is chained into `build`. Never remove tha
 | ------------------------------- | -------------------------------------------------------------------------- |
 | `npm run dev`                   | Dev server on `:4321`. Does **not** emit the CSP meta tag (see gotchas).   |
 | `npm run preview`               | Serves the built `dist/` on `:4321`. Does **not** apply `public/_headers`. |
-| `npx wrangler whoami`           | Works in sandboxes; the Wrangler session is authenticated.                 |
+| `npx wrangler whoami`           | Authenticated 2026-10-15, **unauthenticated 2026-10-16** — probe it.       |
 | `npx wrangler deployments list` | Read-only. Safe.                                                           |
 | `gh pr checks <n>` / `git push` | See the hard rules below.                                                  |
 
@@ -105,8 +105,9 @@ wrong, raise it with the user rather than silently reverting it.
   component set under `components/`, the `src/worker` endpoint, the styles under `styles/`, and the pages
   (`index.astro`, `404.astro`, `[lang]/index.astro`, `contact/thanks.astro`, `[lang]/contact/thanks.astro`).
   The build emits 7 pages (`index.html`, `404.html`, `ca/`, `es/`, plus the three `contact/thanks`)
-  alongside `robots.txt`, `favicon.*`, `sitemap-*.xml`, `_headers` and the hashed `_astro/*` bundle.
-  `astro check` reports **30 files**, which is therefore expected; don't go hunting for a missing page.
+  alongside `robots.txt`, `favicon.*`, `og/og-default.png`, `sitemap-*.xml`, `_headers` and the hashed
+  `_astro/*` bundle. `astro check` reports **30 files**, which is therefore expected; don't go hunting
+  for a missing page.
 - **The Worker needs `assets.run_worker_first` or browser form POSTs break.** `not_found_handling:
 '404-page'` intercepts _navigation_ requests before the Worker runs, so a real browser POST to
   `/api/contact` returned **405** while the identical `curl` request succeeded — curl does not send

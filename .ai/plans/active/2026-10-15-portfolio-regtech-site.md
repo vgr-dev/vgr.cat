@@ -651,7 +651,7 @@ paraphrased):
       >
       > `astro check` now reports **23 files** (was 22); `AGENTS.md` was updated to match, and the
       > ESLint 9 pin was recorded there as a gotcha beside the existing TypeScript cap.
-- [ ] Task 4.7: `www.vgr.cat` is handled in **Cloudflare DNS + routing**, deliberately *not* in
+- [x] Task 4.7: `www.vgr.cat` is handled in **Cloudflare DNS + routing**, deliberately *not* in
       `wrangler.jsonc` (D5). Two constraints apply:
       - **No wildcard route.** A `*.vgr.cat/*` catch-all answers on every present *and future*
         subdomain, and was deliberately removed once already.
@@ -661,6 +661,116 @@ paraphrased):
         route* added only in the dashboard disappears on the next deploy. A DNS record plus a Redirect
         Rule lives outside the Worker's route table and is therefore stable. Verify this distinction
         empirically rather than assuming it.
+      > **STATUS (2026-10-16) — both positive constraints verified; one constraint VIOLATED and blocked on
+      > credentials, so the box stays unticked rather than being ticked for partial work.**
+      >
+      > **The step's endpoint already exists and works — it was done by the user in the dashboard on
+      > 2026-10-15.** Both halves are zone-level, exactly as D5 specifies:
+      >
+      > | Item | Evidence |
+      > | --- | --- |
+      > | `www.vgr.cat` DNS | `GET /zones/{zone}/dns_records` → `{ type: "CNAME", name: "www.vgr.cat", content: "vgr.cat", proxied: true, ttl: 1 }`. Audit log: `dns.record f3c0c5b5…` created `2026-10-15T21:28:35Z` by `victor@vgr.cl`, interface **UI**. |
+      > | Redirect Rule | Ruleset `a6089f82e5914e45acbd3db0ad7a5a32`, phase `http_request_dynamic_redirect`, `kind: zone`, rule *"Redirect from WWW to root"*, `enabled: true`, `status_code: 301`, `preserve_query_string: true`, expression `(http.request.full_uri wildcard r"https://www.*")`, target `wildcard_replace(http.request.full_uri, r"https://www.*", r"https://${1}")`. Audit log: `rulesets_create …21:29:37Z` by `victor@vgr.cl`, interface **UI**. |
+      >
+      > Live behaviour, `curl` on 2026-10-16 — and **not** the Worker, which contains no `www` handling
+      > at all (its only redirect is the contact `303` at `src/worker/index.ts:175`):
+      >
+      > | Request | Response |
+      > | --- | --- |
+      > | `http://www.vgr.cat/` | `301` → `https://www.vgr.cat/` (zone-level Always Use HTTPS) |
+      > | `https://www.vgr.cat/` | `301` → `https://vgr.cat/` |
+      > | `https://www.vgr.cat/deep/path?x=1&y=2` | `301` → `https://vgr.cat/deep/path?x=1&y=2` — **path and query string preserved** |
+      >
+      > **Constraint 1 — "No wildcard route" — is violated by live state.** A zone route
+      > `{ id: "55e5cd4c9dc943ac914484a6206d7aee", pattern: "*.vgr.cat/*", script: "vgr-cat" }` is bound.
+      > It is **not** what serves `www` (the Redirect Rule phase runs before Worker invocation, and the
+      > Worker has no `www` code). Deletion was **authorised by the user on 2026-10-16** — *"let's just
+      > use vgr.cat route. There will be subdomains used for other purposes in the future"* — but is
+      > **blocked**, not skipped, because no available credential can perform it:
+      >
+      > - `DELETE /zones/{zone}/workers/routes/55e5cd4c…` → `No access to the specified resource`, and a
+      >   deliberately bogus route id (`0000…`) returns the **identical** error, which distinguishes a
+      >   **permission** failure from a `404`.
+      > - The session's API credentials can read routes but not delete them, and cannot even report their
+      >   own scopes: `GET /user/tokens` → `9109 Unauthorized to access requested resource`.
+      > - `npx wrangler whoami` → *"You are not authenticated"*, and Wrangler 4.151.0 exposes **no**
+      >   route-delete command (`wrangler triggers` is the only route-adjacent command, and it is
+      >   per-deployment and `[experimental]`).
+      >
+      > **User action to finish Task 4.7 (one click):** Cloudflare dashboard → **vgr.cat → Workers
+      > Routes** → delete the `*.vgr.cat/*` route. API equivalent:
+      > `DELETE /zones/cde2a5cda4abb8c41587e343c2c487cc/workers/routes/55e5cd4c9dc943ac914484a6206d7aee`;
+      > rollback is a single `POST` of the same `pattern` + `script` pair. `www` does **not** depend on
+      > this route — the proxied CNAME plus the Redirect Rule answer the request.
+      >
+      > **Constraint 2 — "Verify this distinction empirically rather than assuming it" — the documented
+      > claim is FALSE, and this is the substantive finding.** This task's own rationale, `AGENTS.md` and
+      > `.github/instructions/cloudflare-config.instructions.md` all assert that *"routes in
+      > `wrangler.jsonc` is the single source of truth"* and that a route added only in the dashboard
+      > *"disappears on the next deploy"*. Tested against the account audit log, that does not hold for
+      > **deletions**:
+      >
+      > - `route_create` of `*.vgr.cat/*` (route `55e5cd4c…`): `2026-10-15T15:39:29.97869Z`.
+      > - **Five** `wrangler` deploys followed — `16:24:24`, `17:06:29`, `17:25:39`, `21:41:33`
+      >   (`workers/triggered_by: "secret"`) and `21:45:22Z` — while the committed `wrangler.jsonc`
+      >   contained **only** `{ "pattern": "vgr.cat", "custom_domain": true }` (`7a7ae33`, 15:44:51Z for
+      >   the first three; `b54e53f`, 21:17:42Z for the last two).
+      > - The audit log contains **no `route_delete` event** for that route id, and
+      >   `GET /zones/{zone}/workers/routes` still returns **both** `vgr.cat` and `*.vgr.cat/*`.
+      > - The wildcard was never in config at any point: `git --no-pager log --all -S'*.vgr.cat' --oneline
+      >   -- wrangler.jsonc` returns **empty**, `wrangler.jsonc` at `995aef5` has no `routes` key at all,
+      >   and at `7a7ae33` / `b54e53f` only the apex custom domain.
+      >
+      > Conclusion: `routes` describes what Wrangler **creates**, not what it **reconciles**; a
+      > dashboard/CLI-only route survives every subsequent deploy. The failure mode is precisely the one
+      > the constraint guards against — the catch-all silently answers on every present *and future*
+      > subdomain, which is the stated reason the user is keeping only `vgr.cat`.
+      >
+      > **Escalated, not edited.** Correcting the wording in `AGENTS.md` and in
+      > `.github/instructions/cloudflare-config.instructions.md` touches the settled-decision record, so
+      > per `AGENTS.md` hard rule 6 it is raised with the Architect rather than silently rewritten by the
+      > Builder. Until it is corrected, a future agent will trust a claim this plan has now disproved.
+      >
+      > **Adjacent finding, recorded because it changes what Phase 4 still owes:** a zone rate-limit
+      > ruleset already exists — phase `http_ratelimit`, rule *"Contact Rate Limit"*, expression
+      > `http.request.uri.path eq "/api/contact"`, action `block`, `requests_per_period: 5` /
+      > `period: 10` s per `ip.src` + `cf.colo.id`, `mitigation_timeout: 10`, created
+      > `2026-10-15T22:00:37Z` by `victor@vgr.cl` (UI). The open criterion *"Rate limiting observed by
+      > deliberately exceeding the limit"* therefore needs an **observation**, not configuration. Nothing
+      > was changed here — it is Phase 4 evidence, not Task 4.7 work.
+      >
+      > **UPDATE (2026-10-16, same day) — blocker cleared, Task 4.7 COMPLETE.** The user removed the route
+      > from the dashboard; the removal was then **verified independently** rather than accepted on
+      > report:
+      >
+      > - Audit log: `route_delete` of `route 55e5cd4c…`,
+      >   `{"pattern":"*.vgr.cat/*","zone_name":"vgr.cat"}`, `2026-10-16T09:45:08Z`, actor
+      >   `victor@vgr.cl`.
+      > - `GET /zones/{zone}/workers/routes`, checked `2026-10-16T09:45:37Z` (28 s after the delete),
+      >   returns **only** `{ id: "22cdb764d744438390c43a6bd267f056", pattern: "vgr.cat",
+      >   script: "vgr-cat" }`.
+      > - Behaviour re-probed after the deletion. That `www` still redirects with **no Worker route
+      >   covering the hostname** is the empirical proof the task asked for:
+      >
+      > | Request | Result |
+      > | --- | --- |
+      > | `https://vgr.cat/` | `200` |
+      > | `https://vgr.cat/missing-page` | `404` — custom 404 page still served |
+      > | `https://vgr.cat/api/contact` | `405` (`application/json`) — Worker still routed at the apex |
+      > | `https://www.vgr.cat/` | `301` → `https://vgr.cat/` |
+      > | `https://www.vgr.cat/deep/path?x=1&y=2` | `301` → `https://vgr.cat/deep/path?x=1&y=2` |
+      > | `https://future-subdomain.vgr.cat/` | `curl: (6) Could not resolve host` — no catch-all answers |
+      >
+      > The last row is the point of the constraint: with the wildcard gone the Worker can no longer be
+      > reached on arbitrary subdomains, so the subdomains the user has planned retain their own routing.
+      > Both constraints now hold, `wrangler.jsonc` needs no change (it never carried the wildcard), and
+      > no repository file was modified by this task.
+      >
+      > **Still outstanding, still Architect-owned:** the **false reconciliation claim** in the STATUS
+      > block above remains uncorrected in `AGENTS.md` and
+      > `.github/instructions/cloudflare-config.instructions.md`. Until it is fixed those two documents
+      > actively mislead — they tell the next agent that a dashboard/CLI-only route disappears on the next
+      > deploy, which this plan has now disproved with five deploys plus an audit-log read.
 - [ ] Task 4.8: Leave `deploy.yml` structure and `cancel-in-progress: false` untouched.
 - [ ] Task 4.9: Manual user actions — each one touches production or the account, so request
       authorization first: onboard the sending domain (`npx wrangler email sending enable …`) with its
@@ -1020,10 +1130,133 @@ paraphrased):
       and the beacon endpoint to `connect-src`, **in the same change** as the script tag. Do **not** use
       zone-level automatic injection: a script injected by Cloudflare is not in Astro's hash list, which
       is precisely the case the `<meta>` CSP blocks.
-- [ ] Task 5.2: Generate the real 1200×630 OG image at `public/og/og-default.png` and point
+- [x] Task 5.2: Generate the real 1200×630 OG image at `public/og/og-default.png` and point
       `BaseLayout`'s `og:image` / `twitter:image` at it — currently they point at `favicon.svg`.
-- [ ] Task 5.3: Confirm `robots.txt` still references the absolute sitemap URL and that the sitemap
+      > **DONE 2026-10-16.** `public/og/og-default.png` is a real **1200×630** PNG — `file` reports
+      > `PNG image data, 1200 x 630, 8-bit/color RGB, non-interlaced`, and `sharp` metadata confirms
+      > `png 1200x630`, 3 channels, sRGB, 15 740 bytes. `BaseLayout.astro` now points **both** `og:image`
+      > and `twitter:image` at `https://vgr.cat/og/og-default.png`. `twitter:card` moved
+      > `summary` → `summary_large_image`, because a 1200×630 asset declared as `summary` is cropped to a
+      > small square and the new image would have been wasted — a related correction, recorded rather than
+      > folded in silently.
+      >
+      > **No CSP change was needed, and that was checked rather than assumed.** The asset is same-origin,
+      > so the existing `img-src 'self' data:` already covers it; the five custom directives in
+      > `astro.config.mjs` are untouched. That is what the scoped instruction's rule — *add the resource
+      > and its CSP entry in the same change* — reduces to when the resource is same-origin.
+      >
+      > **Deliberate constraint on the artwork: it contains no copy at all.** Every visible string under
+      > `src/i18n/` is still a `TODO(copy)` sentinel, and `scripts/check-placeholders.mjs` scans `src/`
+      > plus `wrangler.jsonc` — it **cannot read a binary**. Baking placeholder, invented or
+      > not-yet-approved copy into a PNG would ship it to live `vgr.cat` with the D9 guard structurally
+      > unable to notice, so the card was built from verified brand facts only: the wordmark `vgr.cat`
+      > (`src/i18n/en.ts` → `header.brand`), the mark from `public/favicon.svg`, and the palette/font from
+      > `src/styles/global.css` (`#101114`, `#f2f3f5`, `#262a31`, accent `#7aa7ff`, self-hosted Inter
+      > Variable). **Re-render it as part of Task 6.6** once real copy exists.
+      >
+      > **Generation is reproducible; the generator was deliberately not committed**, since this task's
+      > file entry names the PNG only. Recorded so it can be redone: a 1200×630 HTML card (dark surface,
+      > favicon mark inline, wordmark in Inter at 104 px, 168×8 accent rule) referencing
+      > `node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2` through
+      > `@font-face`, rendered by the **cached Playwright Chromium** (not a project dependency):
+      >
+      > ```bash
+      > "$HOME/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome" \
+      >   --headless=new --disable-gpu --no-sandbox --hide-scrollbars \
+      >   --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=4000 \
+      >   --screenshot="$PWD/public/og/og-default.png" "file://$TMPDIR/og-card.html"
+      > ```
+      >
+      > **Verified without deploying:**
+      >
+      > | Check | Result |
+      > | --- | --- |
+      > | Every built page | all **7** of `dist/**/*.html` carry `og:image` = `https://vgr.cat/og/og-default.png` — `favicon.svg` is no longer an OG target anywhere |
+      > | Card type | `twitter:card` = `summary_large_image` on all 7 pages |
+      > | Actually served | `npm run preview` + `curl -I http://localhost:4321/og/og-default.png` → **200**, `Content-Type: image/png`, `Content-Length: 15740`; the downloaded byte count equals `wc -c < public/og/og-default.png`. Preview server stopped afterwards (`npx astro preview stop`). |
+      > | Gate | `format:check` clean · `lint` clean · `astro check` **30 files, 0 errors, 0 warnings, 0 hints** · build **7 pages** · `wrangler deploy --dry-run` **Read 32 files**, exit 0, no warnings |
+      >
+      > **`AGENTS.md`'s pinned numbers corrected in the same change.** The dry-run count moved **30 → 32**
+      > — one file *and* one directory, not two files: `find dist -type f | wc -l` was 21 before and is 22
+      > after, and Wrangler's counter evidently includes the asset directories (`22 + 10` now vs `21 + 9`
+      > before, which reproduces the previously recorded 30 exactly). Updated: the pinned `"Read 32 files"`
+      > expectation, the emitted-artefact list (`og/og-default.png` added), and the
+      > "`npx wrangler whoami` … the Wrangler session is authenticated" row, which is false as of
+      > 2026-10-16 (`whoami` → *"You are not authenticated"*, while `deploy --dry-run` still exits 0
+      > unauthenticated).
+      >
+      > **Explicitly NOT verified:** how X / Facebook / Slack actually render the card. That requires the
+      > asset to be live at `https://vgr.cat/og/og-default.png`, i.e. a deployment, which happens on merge;
+      > no social-crawler debugger was run, and the file is not live yet.
+- [x] Task 5.3: Confirm `robots.txt` still references the absolute sitemap URL and that the sitemap
       emits `hreflang`.
+      > **Both halves CONFIRMED 2026-10-16, and confirming the second half uncovered a real defect that
+      > was then fixed. Work resumed after a workstation crash; the tree was re-checked before continuing.**
+      >
+      > **1. `robots.txt` — confirmed.** Content is unchanged and the sitemap reference is absolute:
+      >
+      > ```
+      > User-agent: *
+      > Allow: /
+      >
+      > Sitemap: https://vgr.cat/sitemap-index.xml
+      > ```
+      >
+      > Served as `GET /robots.txt` → `200`, `text/plain`. `dist/sitemap-index.xml` really does hold
+      > `https://vgr.cat/sitemap-0.xml` and is served `200` `text/xml`, so the reference is not dangling.
+      >
+      > **2. The sitemap emits `hreflang` — confirmed.** `dist/sitemap-0.xml` contains **6** `<url>`
+      > entries — `/`, `/ca/`, `/es/` and the three `contact/thanks` pages, with the 404 correctly
+      > excluded — and **every one carries 3 `xhtml:link rel="alternate"` entries** (`en`, `ca`, `es`),
+      > for example `/ca/contact/thanks/` → `ca=/ca/contact/thanks/`, `en=/contact/thanks/`,
+      > `es=/es/contact/thanks/`. All 6 URLs use the trailing-slash form and all resolve `200`.
+      >
+      > **Recorded difference, not an error:** the sitemap emits **no `x-default`**, while the HTML in
+      > `BaseLayout` does. `x-default` is optional in the sitemap protocol, so the two sources are
+      > consistent; noted so a future check does not "fix" a non-bug.
+      >
+      > **Defect found while confirming, and fixed in the same change.** `stripLocale()` stripped a locale
+      > prefix by rejoining path segments and **dropped the trailing slash**, so on the three
+      > `contact/thanks` pages `BaseLayout` emitted `hreflang` alternates in slashless form
+      > (`https://vgr.cat/ca/contact/thanks`). Production **307-redirects** that form — measured live:
+      >
+      > | Request (live `vgr.cat`) | Result |
+      > | --- | --- |
+      > | `GET /contact/thanks` | **307** → `https://vgr.cat/contact/thanks/` |
+      > | `GET /ca/contact/thanks` | **307** → `https://vgr.cat/ca/contact/thanks/` |
+      > | `GET /contact/thanks/`, `/ca/contact/thanks/`, `/es/contact/thanks/` | **200** |
+      >
+      > `hreflang` must reference canonical URLs, so three pages were declaring alternates that redirect,
+      > and they contradicted the sitemap, which had always used the trailing-slash form. The fix is a
+      > 4-line change in `src/i18n/config.ts`: preserve the trailing slash, with a comment explaining why.
+      > Post-fix, all 7 pages emit trailing-slashed alternates, each page's own-locale alternate **equals
+      > its own canonical**, and every declared alternate resolves `200` (`/`, `/ca/`, `/es/`,
+      > `/contact/thanks/`, `/ca/contact/thanks/`, `/es/contact/thanks/`).
+      >
+      > **Blast radius checked, not assumed.** The language picker is *unaffected* — it renders only on the
+      > three home pages, where the logical path is `/`; its hrefs are `/`, `/ca/`, `/es/` with the correct
+      > `aria-current` per page. The thanks pages render no header at all (`grep -c '<header'` → `0`), so
+      > only their `<link rel="alternate">` tags changed.
+      >
+      > **Not re-measured, stated plainly:** the *pre-fix* emitted HTML. `dist/` was rebuilt several times
+      > after the crash, so that output is gone; the pre-fix logic is captured verbatim from
+      > `git show HEAD:src/i18n/config.ts`, the delta is visible in the working-tree diff, and the
+      > substantive justification is the live 307 behaviour measured above — not the old build artefact.
+      > A local preview does **not** reproduce this: `npm run preview` returns `200` for the slashless form,
+      > so only production exposes it. That is the same local/production divergence the CSP constraint
+      > warns about, and worth remembering.
+      >
+      > **Finding deferred to Task 5.4 — the 404 page's canonical set does not resolve.** `dist/404.html`
+      > declares `canonical` = `https://vgr.cat/404/` and alternates `en=/404/`, `ca=/ca/404/`,
+      > `es=/es/404/`. Measured live: `GET /404/` → **307 → `/404`**, and `GET /ca/404/` → **404**. So a
+      > single prerendered 404 file is advertising three siblings that are a redirect and two 404s. Impact
+      > is low — a page served with a 404 status is not indexed — but it is precisely the
+      > "hreflang-declared sibling that does not resolve" failure Phase 6's link-validation criterion
+      > targets, and fixing it needs a rendering decision (suppress canonical/alternates on the 404 page,
+      > or point them at `/`) that belongs with Task 5.4's canonical verification rather than here.
+      >
+      > **Gate after the fix:** `format:check` clean · `lint` clean · `astro check` **30 files, 0 errors,
+      > 0 warnings, 0 hints** · build **7 pages** · `wrangler deploy --dry-run` **Read 32 files**, exit 0.
 - [ ] Task 5.4: Verify per-locale canonical URLs and `og:locale`.
 
 #### Acceptance Criteria

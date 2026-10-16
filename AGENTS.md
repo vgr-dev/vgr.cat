@@ -7,8 +7,10 @@ Guidance for AI coding agents working in this repository. Read this before makin
 ## What this project is
 
 `vgr.cat` is a **fully static site** built with **Astro 7** and deployed to **Cloudflare Workers as a
-static-assets project** (no Worker script, no adapter, no SSR). Wrangler uploads `dist/` to the edge
-verbatim. Live at `https://vgr.cat`, deployed automatically by GitHub Actions on merge to `main`.
+static-assets project** — no adapter and no SSR, but it does ship a **small Worker script**
+(`src/worker/index.ts`) for `POST /api/contact`. Wrangler uploads `dist/` to the edge verbatim, and
+routing stays asset-first with `assets.run_worker_first: ["/api/*"]`, so the prerendered pages keep
+winning. Live at `https://vgr.cat`, deployed by GitHub Actions once `CI` passes on `main`.
 
 Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
 

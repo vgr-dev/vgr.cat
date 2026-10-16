@@ -1290,8 +1290,27 @@ paraphrased):
 
 #### Tasks
 
-- [ ] Task 5.1: Add Cloudflare Web Analytics via the **explicit beacon script** (D4 authorized) so the
-      origin is auditable. Add `https://static.cloudflareinsights.com` to the CSP `script-src` resources
+- [x] Task 5.1: Add Cloudflare Web Analytics via the **explicit beacon script** (D4 authorized) so the
+      origin is auditable.
+      > **POST-DEPLOY UPDATE (2026-10-16) — shipped, and verified as far as this environment allows.**
+      > The change is live: `curl 'https://vgr.cat/?cb=…'` returns a CSP containing
+      > `connect-src 'self' https://cloudflareinsights.com` and
+      > `script-src … https://static.cloudflareinsights.com`. In a real browser the zone-injected beacon is
+      > now present on **all three locales** — `document.querySelectorAll('script[src*="cloudflareinsights"]').length`
+      > = **1** on `/`, `/ca/` and `/es/` — carrying the real zone token
+      > (`data-cf-beacon='{"version":"2024.11.0","token":"667e7d4d06f44cfebc9079dbabc9381c","r":1,"spa":2}'`),
+      > with **zero** `securitypolicyviolation` events and `document.cookie === ''` on every locale. The
+      > pre-deploy violation recorded below is gone, and the browser now proceeds to *request* the script —
+      > which it could not do while the policy blocked it.
+      > **One environment caveat, measured rather than assumed:** in that same browser the beacon request
+      > then fails at DNS — `net::ERR_NAME_NOT_RESOLVED` for
+      > `static.cloudflareinsights.com/beacon.min.js/v4bc70e2c…` — and this sandbox is refused egress to the
+      > same host (`curl` → connection refused). **Neither environment can load the beacon**, so a successful
+      > report POST could not be observed from here. That is a network restriction on both sides, **not** a
+      > site defect.
+      > **Consequence for measurement:** visits from a network that blocks that host are not counted. Worth
+      > confirming in the dashboard (Web Analytics → `vgr.cat`) that pageviews appear, and worth knowing
+      > that the owner's own browser currently cannot be one of them. Add `https://static.cloudflareinsights.com` to the CSP `script-src` resources
       and the beacon endpoint to `connect-src`, **in the same change** as the script tag. Do **not** use
       zone-level automatic injection: a script injected by Cloudflare is not in Astro's hash list, which
       is precisely the case the `<meta>` CSP blocks.
@@ -1538,6 +1557,15 @@ paraphrased):
       > change until this merges.
 - [ ] Browser load records **zero** CSP violations and the beacon request succeeds (assert the network
       entry, not just absence of an error).
+      > **POST-DEPLOY UPDATE (2026-10-16).** The first half is now verified **on production and on every
+      > locale**: zero `securitypolicyviolation` events on `/`, `/ca/` and `/es/`, with the injected beacon
+      > present on each (evidence in Task 5.1 above). The second half — the beacon *request succeeding* —
+      > **cannot be observed from here**: the client browser fails DNS resolution for
+      > `static.cloudflareinsights.com` and this sandbox is refused egress to the same host. The criterion
+      > therefore stays unticked on **environment grounds, not doubt**.
+      > **To close it:** load `https://vgr.cat` from a network that can resolve the beacon host and assert the
+      > POST to `cloudflareinsights.com/cdn-cgi/rum`, or confirm pageviews appear in Web Analytics for
+      > `vgr.cat` — the same fact observed from the other end.
       > **UPDATE (2026-10-16) — fails today on production for a now-understood reason, and that is a
       > pre-deploy state.** On live `https://vgr.cat/` the zone-injected beacon is **blocked** (the verbatim
       > violation is recorded under Task 5.1), so this criterion fails *right now* and the fix is unmerged.
@@ -1633,25 +1661,52 @@ paraphrased):
 - [ ] **Zero `TODO(copy)` sentinels remain** and the `ALLOW_PLACEHOLDER_COPY` variable is deleted — the
       guard is now unconditional and would fail the build if placeholder copy ever returned.
 - [ ] Zero broken internal links across the three locales.
-- [ ] CSP violation count is zero on every locale in a real deployment.
+- [x] CSP violation count is zero on every locale in a real deployment.
+      > **VERIFIED 2026-10-16 on production, all three locales.** A real browser with a
+      > `securitypolicyviolation` listener installed before navigation reported `violations: []` for
+      > `https://vgr.cat/` (lang `en`), `/ca/` (`ca`) and `/es/` (`es`), each with the injected beacon
+      > present and `document.cookie === ''`. The pre-deploy run had captured a violation on `/`, so this is a
+      > measured before/after rather than an absence of errors.
 - [ ] Checksum/first-paint comparison before and after the DNS-independent deploy shows no regression.
 
 ---
 
 ## 5. Post-Implementation Verification & Regression Checks
 
-- [ ] Feature end-to-end functionality verified on a real Cloudflare deployment, not only locally.
-- [ ] `npm run format:check`, `npm run check`, `npm run build` and the Wrangler dry-run all pass cleanly.
-- [ ] **`AGENTS.md`'s pinned expectations are updated to the measured values** (`astro check` file count,
+- [x] Feature end-to-end functionality verified on a real Cloudflare deployment, not only locally.
+      > **VERIFIED 2026-10-16 on `vgr.cat`** across four independent features: the contact endpoint (real
+      > widget → 303 → thanks page, then both emails confirmed received by the user); the Web Analytics CSP
+      > fix (injected beacon permitted on all three locales, zero violations); the hreflang trailing-slash fix
+      > (`/ca/contact/thanks/` now advertises its own URL as its `ca` alternate); and the 404 canonical fix
+      > (`0` canonical links, `robots noindex` present). The OG image serves as `200 image/png` at exactly
+      > 15 740 bytes.
+- [x] `npm run format:check`, `npm run check`, `npm run build` and the Wrangler dry-run all pass cleanly.
+      > **VERIFIED 2026-10-16**, repeatedly, including after every documentation and workflow edit in this
+      > round: `format:check` clean (it also parses the workflow YAML), `lint` clean, `astro check`
+      > **30 files, 0 errors, 0 warnings, 0 hints**, build **7 pages**, `wrangler deploy --dry-run` exit 0
+      > with **Read 32 files** and no warnings.
+- [x] **`AGENTS.md`'s pinned expectations are updated to the measured values** (`astro check` file count,
       Wrangler "Read N files"). These are documented as expected numbers and will otherwise read as
       regressions on the next change.
-- [ ] **The "no Worker script" statements are retired.** `AGENTS.md` describes this project as having
+      > **DONE 2026-10-16.** `AGENTS.md` carries the measured values: `astro check` **30 files** and the
+      > dry-run **"Read 32 files"** (raised from 30 when the OG image added one file and one directory). The
+      > build's emitted-artefact list was extended with `og/og-default.png` in the same edit.
+- [x] **The "no Worker script" statements are retired.** `AGENTS.md` describes this project as having
       "no Worker script", and the repo memory asserts the same. After Phase 4 both are false. Update them
       in the same change, or the next agent will plan against a deployment shape that no longer exists.
+      > **DONE 2026-10-16.** `AGENTS.md`'s opening paragraph now describes the static-assets deployment *plus*
+      > the small Worker script (`src/worker/index.ts`, `POST /api/contact`, asset-first routing with
+      > `assets.run_worker_first: ["/api/*"]`), and says deploys happen "once `CI` passes on `main`".
+      > `README.md` was corrected in the same spirit (Task 5.2's DX edit) and the repo memory earlier.
 - [ ] No unintended modifications outside the listed affected files — `public/_headers` gains **no CSP**
       ever, and `wrangler.jsonc` changes only for D3. (`deploy.yml` stays untouched apart from the
       user-directed `workflow_run` gate recorded under Task 4.8.)
-- [ ] Every CSP addition is paired with the resource that needs it, in the same commit.
+- [x] Every CSP addition is paired with the resource that needs it, in the same commit.
+      > **VERIFIED 2026-10-16.** The two Web Analytics entries (`connect-src … cloudflareinsights.com` and
+      > the `static.cloudflareinsights.com` script resource) shipped in the same commit that removed the
+      > explicit beacon tag, and the resource they exist for is real and visible in production: Cloudflare
+      > injects it into every page. This is the one case where the resource is not in the repository, which
+      > is exactly why the entries carry comments naming the zone auto-install as their reason to exist.
 - [ ] Nothing marked verified in this plan was inferred; anything not run is marked **Deferred** with
       the reason.
 - [ ] Plans and decision records are archived with the `## Archive Metadata` footer when complete. Do

@@ -12,7 +12,7 @@ export const ca: Dictionary = {
   nav: {
     services: 'Serveis',
     caseStudies: 'Casos pràctics',
-    about: 'Qui sóc',
+    about: 'Qui soc',
     contact: 'Contacte',
     bookCall: 'Concertar una reunió',
   },
@@ -75,7 +75,7 @@ export const ca: Dictionary = {
     title:
       'Lideratge arquitectònic pràctic a la cruïlla entre la política energètica i el programari',
     paragraphs: [
-      'Sóc enginyer principal de programari, amb seu a Sant Cugat del Vallès (Barcelona), i m’ocupo d’infraestructura, enginyeria de dades i eines de programari a mida per a grans iniciatives europees d’eficiència energètica, com Topten.eu i Topten.ch.',
+      'Soc enginyer principal de programari, amb seu a Sant Cugat del Vallès (Barcelona), i m’ocupo d’infraestructura, enginyeria de dades i eines de programari a mida per a grans iniciatives europees d’eficiència energètica, com Topten.eu i Topten.ch.',
       'La meva tasca tècnica se centra a reduir la distància entre la normativa europea complexa (Ecodesign, etiquetatge energètic, ESPR) i la supervisió real del mercat. Construeixo canonades d’alt rendiment que contrasten els registres de certificació estàtics amb els canals minoristes fragmentats mitjançant la resolució d’entitats per algorisme i el mapatge de GTIN.',
       'Tant si aconsello administracions públiques sobre infraestructura de supervisió, com si preparo fabricants per als passaports digitals de producte o construeixo eines internes que donen autonomia als analistes, prioritzo sistemes robustos i sense excés de complexitat, amb un retorn operatiu elevat.',
     ],
@@ -115,7 +115,7 @@ export const ca: Dictionary = {
       submitButton: 'Enviar la consulta',
       submitting: 'S’està enviant...',
       successMessage:
-        'Gràcies. Hem rebut el vostre missatge i us respondrem en un termini d’un a dos dies laborables.',
+        'Gràcies. He rebut el vostre missatge i us respondré en un termini d’un a dos dies laborables.',
       errorMessage:
         'No s’ha pogut enviar el missatge. Podeu escriure directament a contact@vgr.cat.',
       turnstile: 'Protegit per Cloudflare Turnstile.',
@@ -131,7 +131,7 @@ export const ca: Dictionary = {
   },
   thanks: {
     title: 'Missatge enviat | vgr.cat',
-    heading: 'Gràcies — hem rebut el missatge',
+    heading: 'Gràcies — he rebut el missatge',
     body: 'La vostra consulta s’ha enviat. Rebreu una confirmació al correu electrònic i us respondré personalment, normalment en un o dos dies laborables.',
     back: 'Torna a la pàgina d’inici',
   },

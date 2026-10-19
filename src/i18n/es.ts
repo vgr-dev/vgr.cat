@@ -115,7 +115,7 @@ export const es: Dictionary = {
       submitButton: 'Enviar consulta',
       submitting: 'Enviando...',
       successMessage:
-        'Gracias. Hemos recibido su mensaje y le responderemos en un plazo de uno a dos días laborables.',
+        'Gracias. He recibido su mensaje y le responderé en un plazo de uno a dos días laborables.',
       errorMessage:
         'No se ha podido enviar el mensaje. Puede escribir directamente a contact@vgr.cat.',
       turnstile: 'Protegido por Cloudflare Turnstile.',
@@ -131,7 +131,7 @@ export const es: Dictionary = {
   },
   thanks: {
     title: 'Mensaje enviado | vgr.cat',
-    heading: 'Gracias — hemos recibido el mensaje',
+    heading: 'Gracias — he recibido el mensaje',
     body: 'Su consulta se ha enviado. Recibirá una confirmación por correo electrónico y le responderé personalmente, normalmente en uno o dos días laborables.',
     back: 'Volver a la página de inicio',
   },

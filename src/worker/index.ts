@@ -27,6 +27,22 @@ const THANKS_PATH: Record<string, string> = {
   es: '/es/contact/thanks',
 };
 
+/** Auto-reply copy in the submitter's language; falls back to English. */
+const REPLY_COPY: Record<string, { subject: string; text: string }> = {
+  en: {
+    subject: 'Message received',
+    text: 'Thanks for getting in touch — a reply is on its way.',
+  },
+  ca: {
+    subject: 'Missatge rebut',
+    text: 'Gràcies per contactar amb mi — us respondré ben aviat.',
+  },
+  es: {
+    subject: 'Mensaje recibido',
+    text: 'Gracias por ponerse en contacto — le responderé en breve.',
+  },
+};
+
 /** `public/_headers` does not apply to Worker-generated responses, so we set these here. */
 const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
@@ -161,7 +177,9 @@ async function contact(request: Request, env: Env): Promise<Response> {
     return problem(403, 'Challenge failed');
   }
 
-  const thanks = THANKS_PATH[field(form, 'lang')] ?? THANKS_PATH.en;
+  const lang = field(form, 'lang');
+  const thanks = THANKS_PATH[lang] ?? THANKS_PATH.en;
+  const reply = REPLY_COPY[lang] ?? REPLY_COPY.en;
 
   try {
     await env.NOTIFY.send({
@@ -176,8 +194,8 @@ async function contact(request: Request, env: Env): Promise<Response> {
     await env.REPLY.send({
       to: { email, name },
       from: FROM,
-      subject: 'Message received',
-      text: 'Thanks for getting in touch — a reply is on its way.',
+      subject: reply.subject,
+      text: reply.text,
     });
   } catch (error) {
     console.error('contact delivery failed', error);

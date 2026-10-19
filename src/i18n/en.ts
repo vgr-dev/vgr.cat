@@ -140,7 +140,7 @@ export const en = {
     title: 'Message sent | vgr.cat',
     heading: 'Thank you — message received',
     // Doubles as the page's meta description, so it has to read standalone.
-    body: 'Your enquiry has been sent. A confirmation is on its way to your inbox, and I reply personally, usually within one or two business days.',
+    body: 'Your inquiry has been sent. A confirmation is on its way to your inbox, and I reply personally, usually within one or two business days.',
     back: 'Back to the home page',
   },
   notFound: {

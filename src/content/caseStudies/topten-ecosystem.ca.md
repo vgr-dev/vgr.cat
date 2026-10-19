@@ -23,7 +23,7 @@ A mesura que Topten va passar de projectes pilot nacionals a ser una referència
 
 Com a enginyer principal de programari, vaig redissenyar l’arquitectura de la plataforma des de zero:
 
-- **Base multilloguer:** consolidació de desplegaments dispars en una arquitectura modular unificada. Un únic motor central gestiona el modelatge de la base de dades, les capes d’API i la lògica de negoci, tot donant suport a criteris, imatge de marca i contingut multilingüe específics de cada loguer.
+- **Base multilloguer:** consolidació de desplegaments dispars en una arquitectura modular unificada. Un únic motor central gestiona el modelatge de la base de dades, les capes d’API i la lògica de negoci, tot donant suport a criteris, imatge de marca i contingut multilingüe específics de cada llogater.
 - **Eines internes i alta de productes a mida:** substitució de fluxos fragmentats per eines administratives intuïtives dissenyades a partir del cicle operatiu real d’un analista de Topten. L’alta de nous membres de l’equip va passar de setmanes a hores.
 - **Ingestió i memòria cau robustes:** disseny de canonades de dades resilients per sincronitzar actualitzacions de catàleg, llindars de referència i fluxos de proveïdors, amb memòria cau agressiva a la vora que ofereix temps de càrrega inferiors a un segon fins i tot en pics de trànsit.
 - **Automatització CI/CD:** estandardització dels fluxos de prova i desplegament amb integració contínua moderna, garantint que els canvis en un portal no afectin les instàncies germanes.

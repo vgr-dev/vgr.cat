@@ -1814,7 +1814,7 @@ paraphrased):
       > **If it is ever revisited:** `challenges.cloudflare.com` is unreachable from the agent sandbox — the
       > widget script request aborts — so a widget-size change **cannot be validated locally** and would need a
       > production check after deploy.
-- [ ] Task 6.6: **Replace every `TODO(copy)` placeholder with final copy** and delete the D9 escape hatch
+- [x] Task 6.6: **Replace every `TODO(copy)` placeholder with final copy** and delete the D9 escape hatch
       (the `ALLOW_PLACEHOLDER_COPY` repository variable) in the same change, so the hatch cannot outlive
       the placeholders. This includes the Catalan, which must read as institutional/public-tender
       register rather than machine-translated English.
@@ -1838,6 +1838,56 @@ paraphrased):
       > measured count when the adoption plan was written (2026-10-16) was **145 across 16 files**, and
       > the last measured state before the copy landed was **135 across 15**. The 196 figure was never
       > re-measured; it is superseded by those readings and is left here rather than rewritten.
+      >
+      > **COMPLETE 2026-10-19 — the temporary hatch is deleted from repository settings. Appended to the
+      > PARTIAL note above, which stays as written.** The user invoked `/implement-step Task 6.6`, which is
+      > the authorisation for the owner action this task names. Verbatim:
+      >
+      > ```
+      > $ gh variable list
+      > NAME                    VALUE  UPDATED
+      > ALLOW_PLACEHOLDER_COPY  true   about 3 days ago
+      > list exit=0
+      > $ gh variable delete ALLOW_PLACEHOLDER_COPY
+      > ✓ Deleted variable ALLOW_PLACEHOLDER_COPY from vgr-dev/vgr.cat
+      > delete exit=0
+      > $ gh variable list
+      > no variables found
+      > list exit=0
+      > $ gh variable get ALLOW_PLACEHOLDER_COPY
+      > variable ALLOW_PLACEHOLDER_COPY was not found
+      > get exit=1
+      > ```
+      >
+      > Repository state re-proved in the same round, not assumed from the earlier note:
+      >
+      > ```
+      > $ npm run check:placeholders
+      > check:placeholders — 0 placeholders remain.
+      > exit=0
+      > $ grep -rn ALLOW_PLACEHOLDER_COPY .github/ AGENTS.md README.md
+      > grep exit=1        # no matches
+      > $ npm run format:check
+      > All matched files use Prettier code style!
+      > exit=0
+      > ```
+      >
+      > `ci.yml` was read to confirm the guard is unconditional rather than merely unreferenced to the
+      > variable: the step is `- name: Check for placeholder copy` / `run: npm run check:placeholders` with
+      > **no `if:`**, so nothing in the workflow can switch it off. The variable is therefore dead config
+      > that no longer exists — the outcome D9 required (`"delete the variable and the sentinels together so
+      > it cannot outlive the placeholders it exists for"`).
+      >
+      > **Catalan review — recorded as observed, not as a sign-off.** The earlier note said the Catalan was
+      > "not yet owner-reviewed"; since then the owner's own commit `ebeeea6` (2026-10-19T11:53:09+02:00,
+      > *fix(i18n): correct language and gramatical errors*) edited exactly those files — `src/i18n/ca.ts`
+      > (4 lines) and `src/content/caseStudies/topten-ecosystem.ca.md` — alongside `es`/`en`. That is the
+      > review activity the note asked for, but this plan does not record an explicit "Catalan approved"
+      > statement from the owner, so the tick rests on the task's own stated condition ("once it is gone
+      > this checkbox can be ticked with no further code change"), not on a presumed approval.
+      >
+      > **No repository file changed in this task** beyond this plan: the deletion was a repository-setting
+      > change, and the copy, workflow and guard had already landed in `28ca321`/`ebeeea6`.
 - [x] Task 6.7: Manual user actions (not agent actions): configure the `www` DNS record + Redirect Rule
       to the apex (D5); confirm SSL/TLS mode is Full (strict) in the Cloudflare dashboard.
 
@@ -1910,8 +1960,14 @@ paraphrased):
       > `build`, `wrangler deploy --dry-run`), and re-run cleanly after every change in this round:
       > `astro check` **30 files, 0 errors, 0 warnings, 0 hints**, build **7 pages**, dry-run exit 0 with
       > **Read 32 files**.
-- [ ] **Zero `TODO(copy)` sentinels remain** and the `ALLOW_PLACEHOLDER_COPY` variable is deleted — the
+- [x] **Zero `TODO(copy)` sentinels remain** and the `ALLOW_PLACEHOLDER_COPY` variable is deleted — the
       guard is now unconditional and would fail the build if placeholder copy ever returned.
+      > **VERIFIED 2026-10-19** — both halves measured, see Task 6.6: `check:placeholders — 0 placeholders
+      > remain.` (**exit 0**), and `gh variable delete` → `✓ Deleted variable ALLOW_PLACEHOLDER_COPY from
+      > vgr-dev/vgr.cat`, after which `gh variable list` reports **no variables found** and
+      > `gh variable get` exits 1 with *was not found*. `grep -rn ALLOW_PLACEHOLDER_COPY .github/ AGENTS.md
+      > README.md` returns nothing, and `ci.yml`'s guard step carries no `if:`, so the build now fails on a
+      > sentinel with no way to disable it.
 - [x] Zero broken internal links across the three locales.
       > **VERIFIED 2026-10-16** — see Task 6.3: 10 internal URLs across the three locales, 0 bad,
       > 0 redirecting, crawler exit 0.
@@ -2017,6 +2073,6 @@ that reopens it. The plan cannot be archived with these open until the user conf
 | `min_tls_version = "1.0"` on the zone | Not raised; no task requires it | Next zone review. `ssl` is now `strict` ✓, but the minimum protocol version still admits TLS 1.0. |
 | First-paint half of the checksum/first-paint criterion | **Deferred** — this browser instance reports no paint timing, and Lighthouse is not in the dependency tree | When a Lighthouse dev dependency is authorised, or when a change touches CSS or fonts. The checksum half is complete and clean. |
 | Phase 5 criterion "the beacon request succeeds" | **Deferred on environment grounds, not doubt** — the beacon is emitted and permitted (zero violations), but `static.cloudflareinsights.com` does not resolve from the agent sandbox (`net::ERR_NAME_NOT_RESOLVED`) | From any network that resolves the beacon host: assert the POST to `cloudflareinsights.com/cdn-cgi/rum`, or simply confirm pageviews appear in Web Analytics for `vgr.cat` — the same fact seen from the other end. |
-| Task 6.6 — final EN/CA/ES copy and deletion of the `ALLOW_PLACEHOLDER_COPY` variable | **Blocked** on user-supplied copy (~196 `TODO(copy)` sentinels) | As soon as the copy exists. The copy is the only thing standing between this plan and completion. |
+| Task 6.6 — final EN/CA/ES copy and deletion of the `ALLOW_PLACEHOLDER_COPY` variable | **COMPLETE 2026-10-19** — this row read "**Blocked** on user-supplied copy (~196 `TODO(copy)` sentinels)" and was not updated when the copy landed; measured state is **0 sentinels** and the repository variable **deleted** (evidence under Task 6.6) | — |
 | Task 6.8 — land the work on `main` | **Awaiting explicit authorisation** (hard rule 1) | On the user's word. Commits must be signed. |
 | `AGENTS.md` / `.github/instructions/cloudflare-config.instructions.md` claiming that "Wrangler reconciles routes on every deploy, so a route added only in the dashboard disappears on the next deploy" | **CORRECTED 2026-10-16** — `AGENTS.md` in commit `b542494`; the scoped instruction file and `README.md` in this round (closure note under Task 4.7) | — |

@@ -4,6 +4,21 @@
  *
  * Replaces the `mx-auto max-w-5xl px-6` string that was copy-pasted into nine elements, so a
  * change to the page width is one edit instead of nine.
+ *
+ * Breakpoint policy (plan Phase 5, task 7). `sm`/`md`/`lg` are Tailwind's 640/768/1024, and the
+ * rule behind them is *prose columns are never narrower than ~280 px*:
+ *
+ * - **< 640** — single column everywhere; the header nav is a toggle panel.
+ * - **640 (`sm`)** — the nav goes inline and two non-prose columns become safe (language picker,
+ *   contact details). Nothing that carries a paragraph splits yet, because 640/2 ≈ 296 px only
+ *   holds short values.
+ * - **768 (`md`)** — two columns for cards: services (measured 341 px each, 291 px of prose).
+ * - **1024 (`lg`)** — three columns, where a 304 px track is the narrowest prose-bearing cell on
+ *   the page: the case-study summary grid, the hero metrics, and the article prose capped by
+ *   `--measure`.
+ *
+ * Anything prose-bearing that would fall below 280 px at the next step down stays stacked —
+ * measured, not assumed.
  */
 interface Props {
   as?: 'div' | 'section';

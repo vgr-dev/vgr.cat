@@ -47,11 +47,14 @@ const {
       {calendarLabel}
     </Button>
 
-    <dl class="mt-8 grid gap-6 text-sm sm:grid-cols-3">
+    <dl class="mt-8 grid gap-6 text-sm md:grid-cols-2">
       <div>
         <dt class="font-medium">{emailLabel}</dt>
         <dd class="mt-1 text-muted">
-          <a href={`mailto:${emailAddress}`} class="hover:text-accent">
+          <a
+            href={`mailto:${emailAddress}`}
+            class="inline-block py-1 hover:text-accent"
+          >
             {emailAddress}
           </a>
         </dd>

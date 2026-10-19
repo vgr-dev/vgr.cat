@@ -849,6 +849,10 @@ Medium (evidence + unverified condition) / Low (needs research).
 > column at 375/640. **What remains open from UX-012:** the hero metrics `<dl>`, the `CaseStudy` `<dl>` and the
 > `#contact dl` are all still `sm:grid-cols-3` (309 px columns measured at 1440 px). Do not re-apply the
 > services change — it is already in the tree.
+>
+> **Resolved 2026-10-19 (Phase 5):** the three remaining grids moved. The case-study `<dl>` and the hero
+> metrics are stacked below `lg` (304 px cells at 1024, 309 px at 1440) and the contact `<dl>` is two columns
+> from `md` (341 px at 768, 469 px at 1024). Smallest prose-bearing track on the page is now 304 px.
 
 ### [UX-013] The contact `<dl>` declares three columns but has two items
 
@@ -867,6 +871,8 @@ Medium (evidence + unverified condition) / Low (needs research).
 - **Architectural implications:** trivial; if a third item is added it must exist in all three locales.
 - **Dependencies:** UX-016 (footer may absorb contact details) — decide together.
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 5):** fixed by taking the "two columns" option — `md:grid-cols-2`, so the
+  list is one track at 640 and two at 768+. No third item was invented.
 
 ### [UX-014] Every call to action is styled as the same primary button
 
@@ -1081,6 +1087,11 @@ Medium (evidence + unverified condition) / Low (needs research).
   wildly different measured widths.
 - **Dependencies:** none.
 - **Status:** Confirmed as a measured inconsistency; classification as a defect is **not** asserted (§13 D-9).
+- **Resolution note (2026-10-19, Phase 5):** the token is now consumed — `max-w-[var(--measure)]` on the
+  case-study prose and on the three summary `<dd>`s — and it is emitted (`max-width:var(--measure)` in the
+  built CSS). Measured after the change: article prose **79** characters at 768/1024/1440 (was 92/126/128),
+  hero subtitle **62**. The subtitle deliberately keeps `max-w-2xl`, per this finding's own warning about
+  headline/body rhythm.
 
 ### [UX-022] Container and button styling are duplicated rather than shared
 
@@ -1704,6 +1715,7 @@ XS/S/M/L/XL from the prioritisation model.
    owns exactly this work ("Prose measure: apply `--measure`; verify the hero subtitle still looks
    intentional"). Consuming it now would duplicate Phase 5 and change line length in a foundation phase.
    **This sub-task is deferred, not done** — UX-021 remains open.
+   *Resolved 2026-10-19:* Phase 5 consumed the token on the article prose and the case-study summary `<dd>`s.
 3. **`--space-section` is consumed** in the three `py-12` sections via `py-[var(--space-section)]`, with the
    value set to `3rem` so the rendered padding is unchanged (verified: 48 px). Hero `py-20 sm:py-28` and
    contact `py-20` keep their literal values; unifying that split is Phase 5's rhythm work.
@@ -2270,26 +2282,108 @@ summary, and was posted verbatim as `"Primera línea\nSegunda línea\nTercera l�
   SiteHeader}.astro`, `src/styles/global.css`.
 - **Components likely to change:** the five above.
 - **Detailed implementation tasks:**
-  1. Services: `sm:grid-cols-2 lg:grid-cols-3`. [XS]
-  2. Case-study `<dl>`: stacked below `lg`, three columns at `lg`. [XS]
-  3. Contact `<dl>`: two columns (or add a third real item). [XS]
-  4. Hero metrics: keep three columns only where each metric value stays on one line; verify at 640 px. [XS]
-  5. Prose measure: apply `--measure`; verify the hero subtitle still looks intentional. [S]
-  6. Nav links and `mailto:` gain vertical padding to reach 24 px without relying on the spacing exception. [XS]
-  7. Record the breakpoint policy in the component or the plan: 640 = inline nav, 768 = two columns, 1024 =
-         three columns. [XS]
+  1. [x] Services stay `md:grid-cols-2`. **Task superseded by the re-evaluation**, which recorded that the
+     content rework had already made this change and warned not to re-apply it; re-measured (341 px cells,
+     single column at 640).
+  2. [x] Case-study `<dl>` is stacked below `lg` and three columns from `lg` (304 px at 1024, 309 px at 1440).
+  3. [x] Contact `<dl>` is two columns — from `md`, not `sm`, see deviation 3.
+  4. [x] Hero metrics go to three columns at `lg`. The value-on-one-line test passed at `sm` (32 px line box),
+     but the *labels* then sat in 176 px cells, so AC 1 won; see deviation 2.
+  5. [x] `--measure` is consumed — article prose and the summary `<dd>`s — which closes the Phase 1 deferral
+     and UX-021.
+  6. [x] Header nav links and every `mailto:`/footer link now clear 24 × 24 px without relying on the
+     spacing exception.
+  7. [x] The breakpoint policy is recorded in `Container.astro`: 640 inline nav / 768 two columns / 1024 three
+     columns, with the 280 px prose rule as the reason each step waits.
 - **Explicitly out of scope:** changing the 1024 px container cap; adding a fluid type scale.
 - **Risks:** altering the hero metric grid can cause the "EPREL & ESPR" value to wrap mid-phrase, which reads
   badly; test at 640/768 px specifically.
 - **Acceptance criteria:**
-  - [ ] At 640 and 768 px no prose column is narrower than 280 px (measured).
-  - [ ] The contact `<dl>` has no empty grid track at any width ≥640 px.
-  - [ ] No interactive element is under 24 × 24 px without a compliant spacing exception.
-  - [ ] Body prose measures between 45 and 80 characters at 1024 px and above.
+  - [x] At 640 and 768 px no prose column is narrower than 280 px — smallest measured cells are **577 px at
+        640** and **341 px at 768**; the narrowest prose-bearing track anywhere is **304 px** at 1024.
+  - [x] The contact `<dl>` has no empty grid track at any width ≥640 px — one track at 640, two at 768/1024/
+        1440, and exactly two items.
+  - [x] No interactive element is under 24 × 24 px without a compliant spacing exception — a full sweep of
+        `a, button, input, select, textarea` at 320/375/640/768/1024/1440 returns **zero** undersized
+        targets (was 12 at 640 and 14 at 1024).
+  - [x] Body prose measures between 45 and 80 characters at 1024 px and above — article prose **79**, hero
+        subtitle **62**. The summary `<dd>` measures 35 in the 3-up grid the plan prescribes; see
+        limitations.
 - **Automated validation:** gate; Phase 7 viewport assertions.
 - **Manual validation:** measure at 320/375/640/768/1024/1440.
 - **Dependencies on other phases:** 1 and 4. Independently reviewable.
 - **Parallelisation opportunities:** can run alongside Phase 6.
+
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **The services breakpoint was not re-applied.** The re-evaluation requires leaving it at `md:grid-cols-2`;
+   the task list's `sm:grid-cols-2 lg:grid-cols-3` is stale. Measured after this phase: single column at 640
+   (577 px), two at 768 (341 px), two at 1024/1440 (469/476 px).
+2. **The hero metrics moved to `lg`, not "three columns from `sm`".** Task 4's own test — each value on one
+   line — passed at 640 (values are 32 px line boxes), but its labels then rendered in 176 px columns at
+   roughly 21 characters per line. AC 1 says prose columns stay ≥280 px, so the grid waits for `lg`
+   (304/309 px). The plan's named risk (the "EPREL & ESPR" value wrapping mid-phrase) cannot occur here.
+3. **The contact `<dl>` went two-column at `md`, not `sm`.** At exactly 640 the two `sm` columns measured
+   **276.5 px** — (625 − 48 padding − 24 gap) / 2 — three pixels under the rule. At `md` the single track is
+   577 px at 640 and the cells are 341 px at 768, so the rule holds and the AC's "no empty track" still does.
+4. **The summary `<dd>`s also take `--measure`.** Once the case-study grid stacked, the summary ran full width
+   at 768 and measured 81 characters; capping it brought it to 79. It has no effect at `lg`, where the
+   cells are narrower than the cap.
+5. **`--measure` is consumed in two places, not everywhere.** The article prose and the summary `<dd>`s use
+   the token; the hero subtitle keeps `max-w-2xl` because it already measures 62 characters — inside the
+   45–80 band — and capping a `text-lg` block at 68ch would change the headline rhythm that UX-021 warned
+   about.
+6. **Target size was fixed at the source of the shortfall:** header nav links swapped `sm:min-h-0` for
+   `sm:min-h-6` (44 px rows on mobile, 24 px on desktop), and the contact `mailto:`, the privacy-notice link
+   and all five footer links gained `inline-block py-1` (17 → 25 px).
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 37 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 10 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+$ grep -o 'max-width:var(--measure)' dist/_astro/*.css     → present
+$ grep -o '\-\-measure:68ch' dist/_astro/*.css             → present
+```
+
+**Before** (same page, same measurement method):
+
+| Width | Case-study `<dl>` | Contact `<dl>` | Hero metrics | Article prose | Undersized targets |
+| --- | --- | --- | --- | --- | --- |
+| 640 | 176 ×3 | 176 ×3, 2 items (1 empty track) | 176 ×3 | 75 chars | 12 |
+| 768 | 219 ×3 | 219 ×3, 2 items (1 empty track) | 219 ×3 | 92 chars | 12 |
+| 1024 | 304 ×3 | 304 ×3, 2 items (1 empty track) | 304 ×3 | 126 chars | 14 |
+| 1440 | 309 ×3 | 309 ×3, 2 items (1 empty track) | 309 ×3 | 128 chars | 14 |
+
+**After**:
+
+| Width | Services | Case-study `<dl>` | Contact `<dl>` | Hero metrics | Prose | `<dd>` | Subtitle | Doc scroll |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 320 | 257 | 257 | 257 (1) | 257 | 34 | 29 | 26 | 305 / 305 |
+| 375 | 312 | 312 | 312 (1) | 312 | 41 | 36 | 32 | 360 / 360 |
+| 640 | 577 | 577 | 577 (1) | 577 | 75 | 66 | 53 | 625 / 625 |
+| 768 | 341 ×2 | 705 (1) | **341 ×2** | 705 | **79** | 79 | 62 | 753 / 753 |
+| 1024 | 469 ×2 | **304 ×3** | 469 ×2 | **304 ×3** | 79 | 35 | 62 | 1009 / 1009 |
+| 1440 | 476 ×2 | **309 ×3** | 476 ×2 | **309 ×3** | 79 | 35 | 62 | 1425 / 1425 |
+
+Undersized targets after the change: **0 at every width**.
+
+#### Limitations of this verification
+
+- Character counts use an `x`-width probe on each element's computed font, so they estimate average
+  characters per line rather than counting glyphs.
+- The summary `<dd>` measures 35 characters at ≥1024 because it is the three-up summary grid the plan
+  prescribes (304 px). Raising it past 45 would mean two columns until 1280 px — a layout decision, not a
+  bug fix, so it is not made here.
+- No 400 % zoom (1280 px at 320 CSS px) pass was run; the 320 px column covers the width, not the zoom
+  reflow.
+- The mobile panel and the form were not re-exercised beyond the target-size sweep; their behaviour is
+  unchanged by this phase.
 
 ### Phase 6: Performance-adjacent UX
 

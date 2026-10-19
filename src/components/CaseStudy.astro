@@ -25,21 +25,21 @@ const {
 <article class="border-t border-border py-10">
   <h3 class="text-xl font-semibold tracking-tight">{title}</h3>
   <p class="mt-2 max-w-2xl text-muted">{summary}</p>
-  <dl class="mt-6 grid gap-6 sm:grid-cols-3">
+  <dl class="mt-6 grid gap-6 lg:grid-cols-3">
     <div>
       <dt class="text-sm font-medium text-accent">{problemLabel}</dt>
-      <dd class="mt-1 text-muted">{problem}</dd>
+      <dd class="mt-1 max-w-[var(--measure)] text-muted">{problem}</dd>
     </div>
     <div>
       <dt class="text-sm font-medium text-accent">{approachLabel}</dt>
-      <dd class="mt-1 text-muted">{approach}</dd>
+      <dd class="mt-1 max-w-[var(--measure)] text-muted">{approach}</dd>
     </div>
     <div>
       <dt class="text-sm font-medium text-accent">{outcomeLabel}</dt>
-      <dd class="mt-1 text-muted">{outcome}</dd>
+      <dd class="mt-1 max-w-[var(--measure)] text-muted">{outcome}</dd>
     </div>
   </dl>
-  <div class="prose prose-sm mt-6 max-w-none text-muted dark:prose-invert">
+  <div class="prose prose-sm mt-6 max-w-[var(--measure)] text-muted dark:prose-invert">
     <slot />
   </div>
 </article>

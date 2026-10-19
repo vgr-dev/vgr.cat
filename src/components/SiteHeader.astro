@@ -14,6 +14,8 @@ interface Props {
   menuLabel: string;
   primaryNavLabel: string;
   languageNavLabel: string;
+  bookCallLabel?: string;
+  bookCallHref?: string;
 }
 
 const {
@@ -23,6 +25,8 @@ const {
   menuLabel,
   primaryNavLabel,
   languageNavLabel,
+  bookCallLabel,
+  bookCallHref,
 } = Astro.props;
 ---
 
@@ -69,6 +73,14 @@ const {
         </ul>
       </nav>
       <LanguagePicker current={lang} label={languageNavLabel} />
+      {bookCallLabel && bookCallHref && (
+        <a
+          href={bookCallHref}
+          class="rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg hover:opacity-90"
+        >
+          {bookCallLabel}
+        </a>
+      )}
     </div>
   </div>
 </header>

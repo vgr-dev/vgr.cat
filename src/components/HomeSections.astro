@@ -6,7 +6,7 @@ import CaseStudy from './CaseStudy.astro';
 import ContactSection from './ContactSection.astro';
 import ContactForm from './ContactForm.astro';
 import { useTranslations } from '../i18n';
-import { bookingUrl } from '../config';
+import { bookingUrl, contactEmail } from '../config';
 import type { Locale } from '../i18n/config';
 
 interface Props {
@@ -50,22 +50,27 @@ const studyCards = await Promise.all(
 ---
 
 <Hero
+  badge={t.hero.badge}
   title={t.hero.title}
+  titleHighlight={t.hero.titleHighlight}
   subtitle={t.hero.subtitle}
-  ctaLabel={t.hero.cta}
-  ctaHref="#contact"
+  ctaPrimary={t.hero.ctaPrimary}
+  ctaPrimaryHref={bookingUrl}
+  ctaSecondary={t.hero.ctaSecondary}
+  ctaSecondaryHref="#work"
+  metrics={t.hero.metrics}
 />
 
-<section class="mx-auto max-w-5xl px-6 py-12">
-  <h2 class="text-2xl font-semibold tracking-tight">{t.positioning.heading}</h2>
-  <p class="mt-4 max-w-2xl text-muted">{t.positioning.body}</p>
-</section>
-
 <section id="services" class="mx-auto max-w-5xl px-6 py-12">
-  <h2 class="text-2xl font-semibold tracking-tight">{t.services.heading}</h2>
+  <p class="text-sm font-medium text-accent">{t.services.eyebrow}</p>
+  <h2 class="mt-2 text-2xl font-semibold tracking-tight">{t.services.title}</h2>
+  <p class="mt-4 max-w-2xl text-muted">{t.services.subtitle}</p>
   <div class="mt-8 grid gap-6 sm:grid-cols-3">
     {serviceCards.map(({ entry, Content }) => (
-      <ServiceCard title={entry.data.title}>
+      <ServiceCard
+        title={entry.data.title}
+        tag={t.services.pillars[entry.data.pillar].tag}
+      >
         <p>{entry.data.summary}</p>
         <Content />
       </ServiceCard>
@@ -74,14 +79,18 @@ const studyCards = await Promise.all(
 </section>
 
 <section id="work" class="mx-auto max-w-5xl px-6 py-12">
-  <h2 class="text-2xl font-semibold tracking-tight">{t.work.heading}</h2>
+  <p class="text-sm font-medium text-accent">{t.caseStudies.eyebrow}</p>
+  <h2 class="mt-2 text-2xl font-semibold tracking-tight">
+    {t.caseStudies.title}
+  </h2>
+  <p class="mt-4 max-w-2xl text-muted">{t.caseStudies.subtitle}</p>
   {studyCards.map(({ entry, Content }) => (
     <CaseStudy
       title={entry.data.title}
       summary={entry.data.summary}
-      problemLabel={t.caseStudy.problem}
-      approachLabel={t.caseStudy.approach}
-      outcomeLabel={t.caseStudy.outcome}
+      problemLabel={t.caseStudies.labels.problem}
+      approachLabel={t.caseStudies.labels.approach}
+      outcomeLabel={t.caseStudies.labels.outcome}
       problem={entry.data.problem}
       approach={entry.data.approach}
       outcome={entry.data.outcome}
@@ -92,15 +101,33 @@ const studyCards = await Promise.all(
 </section>
 
 <section id="about" class="mx-auto max-w-5xl px-6 py-12">
-  <h2 class="text-2xl font-semibold tracking-tight">{t.about.heading}</h2>
-  <p class="mt-4 max-w-2xl text-muted">{t.about.body}</p>
+  <p class="text-sm font-medium text-accent">{t.about.eyebrow}</p>
+  <h2 class="mt-2 text-2xl font-semibold tracking-tight">{t.about.title}</h2>
+  {t.about.paragraphs.map((paragraph) => (
+    <p class="mt-4 max-w-2xl text-muted">{paragraph}</p>
+  ))}
+  <h3 class="mt-10 text-xl font-semibold tracking-tight">
+    {t.about.techStackTitle}
+  </h3>
+  <ul class="mt-4 grid max-w-2xl list-disc gap-2 pl-5 text-muted sm:grid-cols-2">
+    {t.about.competencies.map((competency) => (
+      <li>{competency}</li>
+    ))}
+  </ul>
 </section>
 
 <ContactSection
-  heading={t.contact.heading}
-  body={t.contact.body}
-  bookingLabel={t.contact.bookingLabel}
-  bookingHref={bookingUrl}
+  eyebrow={t.contact.eyebrow}
+  heading={t.contact.title}
+  body={t.contact.subtitle}
+  orDivider={t.contact.directContact.orDivider}
+  calendarLabel={t.contact.directContact.calendarButton}
+  calendarHref={bookingUrl}
+  emailLabel={t.contact.directContact.emailDirect}
+  emailAddress={contactEmail}
+  locationLabel={t.contact.directContact.locationLabel}
+  locationValue={t.contact.directContact.locationValue}
+  timezone={t.contact.directContact.timezone}
 >
-  <ContactForm lang={lang} labels={t.form} />
+  <ContactForm lang={lang} labels={t.contact.form} />
 </ContactSection>

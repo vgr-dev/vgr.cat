@@ -1,25 +1,68 @@
 ---
 interface Props {
+  eyebrow: string;
   heading: string;
   body: string;
-  bookingLabel: string;
-  bookingHref: string;
+  orDivider: string;
+  calendarLabel: string;
+  calendarHref: string;
+  emailLabel: string;
+  emailAddress: string;
+  locationLabel: string;
+  locationValue: string;
+  timezone: string;
 }
 
-const { heading, body, bookingLabel, bookingHref } = Astro.props;
+const {
+  eyebrow,
+  heading,
+  body,
+  orDivider,
+  calendarLabel,
+  calendarHref,
+  emailLabel,
+  emailAddress,
+  locationLabel,
+  locationValue,
+  timezone,
+} = Astro.props;
 ---
 
 <section id="contact" class="mx-auto max-w-5xl px-6 py-20">
-  <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
+  <p class="text-sm font-medium text-accent">{eyebrow}</p>
+  <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+    {heading}
+  </h2>
   <p class="mt-4 max-w-2xl text-muted">{body}</p>
 
-  <a
-    href={bookingHref}
-    class="mt-8 inline-block rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
-  >
-    {bookingLabel}
-  </a>
-
-  {/* The booking link and the spam-protected form are supplied by the caller. */}
+  {/* The spam-protected form is supplied by the caller. */}
   <slot />
+
+  <div class="mt-12 border-t border-border pt-8">
+    <p class="text-sm font-medium">{orDivider}</p>
+    <a
+      href={calendarHref}
+      class="mt-4 inline-block rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
+    >
+      {calendarLabel}
+    </a>
+
+    <dl class="mt-8 grid gap-6 text-sm sm:grid-cols-3">
+      <div>
+        <dt class="font-medium">{emailLabel}</dt>
+        <dd class="mt-1 text-muted">
+          <a href={`mailto:${emailAddress}`} class="hover:text-accent">
+            {emailAddress}
+          </a>
+        </dd>
+      </div>
+      <div>
+        <dt class="font-medium">{locationLabel}</dt>
+        <dd class="mt-1 text-muted">
+          {locationValue}
+          <span class="mt-1 block text-xs">{timezone}</span>
+        </dd>
+      </div>
+    </dl>
+  </div>
 </section>

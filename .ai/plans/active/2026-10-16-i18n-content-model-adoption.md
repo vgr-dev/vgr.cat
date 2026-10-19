@@ -429,14 +429,18 @@ the gate is green — with `ca`/`es` still sentinelled where translation is pend
 
 #### Acceptance Criteria
 
-- [ ] `npm run check` passes with 0 errors, 0 warnings, 0 hints, and the **new** file count is recorded
+- [x] `npm run check` passes with 0 errors, 0 warnings, 0 hints, and the **new** file count is recorded
       verbatim. → **DEFERRED by owner decision (2026-10-19)**: 22 errors remain, all in the Phase 2
       consumers above. The file count is recorded verbatim there — **30 files, 0 warnings, 0 hints**.
+      → **Satisfied 2026-10-19 at the Phase 2 boundary**: `Result (30 files): 0 errors, 0 warnings,
+      0 hints`, exit 0 (recorded under Phase 2).
 - [x] Key parity is proven, not asserted: temporarily delete one key from `ca.ts` **in a scratch copy**,
       observe that `astro check` fails, restore. → `_(recorded output)_`
 - [x] `grep -n 'as const' src/i18n/en.ts` returns nothing. → `_(recorded output)_`
-- [ ] `npm run dev` serves `/`, `/ca/`, `/es/` without a runtime throw (the 2026-10-16 failure mode).
+- [x] `npm run dev` serves `/`, `/ca/`, `/es/` without a runtime throw (the 2026-10-16 failure mode).
       → **DEFERRED to Phase 2**: the measured cause is recorded below, and Tasks 2.3 / 2.8 remove it.
+      → **Satisfied 2026-10-19**: `npm run build` renders all 7 pages and the preview server served
+      `/`, `/ca/`, `/es/` in a real browser (recorded under Phase 2).
 
 > **RECORDED 2026-10-19 — parity proof, and why the runtime criterion is deferred.**
 >
@@ -498,13 +502,13 @@ the CSP is untouched.
 
 #### Tasks
 
-- [ ] Task 2.1 `src/components/Hero.astro`: add `badge`, split the heading into `title` +
+- [x] Task 2.1 `src/components/Hero.astro`: add `badge`, split the heading into `title` +
       a styled inline `<span>` for `titleHighlight` (keeps the `h1` reading as one sentence), render both
       CTAs (`ctaPrimary`, `ctaSecondary`) and `metrics[]` as a `<dl>` (`<dt>` = value, `<dd>` = label).
       `badge` renders as a `<p>`, **not** a heading, so it cannot break heading order.
-- [ ] Task 2.2 `src/components/ServiceCard.astro`: accept a `tag` prop and render it as a small,
+- [x] Task 2.2 `src/components/ServiceCard.astro`: accept a `tag` prop and render it as a small,
       non-heading label above the collection-supplied `title`.
-- [ ] Task 2.3 `src/components/HomeSections.astro`: rewire every section.
+- [x] Task 2.3 `src/components/HomeSections.astro`: rewire every section.
       - Services: render `services.eyebrow` / `subtitle`, and pass
         `tag={t.services.pillars[entry.data.pillar].tag}` per card (direct indexing, no mapping table — C4).
         `services.ctaLearnMore` only if O2 keeps a per-pillar link.
@@ -514,44 +518,116 @@ the CSP is untouched.
         `competencies[]` as a `<ul>`.
       - Contact: `contact.eyebrow` / `subtitle`, and pass `t.contact.form` through to `ContactForm`.
       - Retire the standalone Positioning section's `t.positioning.*` reads per O1.
-- [ ] Task 2.4 `src/components/CaseStudy.astro`: retarget to `caseStudies.labels.*`. If O2 is "no detail
+- [x] Task 2.4 `src/components/CaseStudy.astro`: retarget to `caseStudies.labels.*`. If O2 is "no detail
       pages", `readFull` / `backToList` are not rendered and are recorded as retired-from-parked-model;
       if O2 is "detail pages", this becomes a new phase and the file-count pins move (Phase 5).
-- [ ] Task 2.5 `src/components/ContactSection.astro`: add `eyebrow`, `subtitle`, and the
+      → **No component change was required:** it already takes `problemLabel` / `approachLabel` /
+      `outcomeLabel` props; the retarget happened at the call site in Task 2.3. `readFull` /
+      `backToList` are not rendered (O2).
+- [x] Task 2.5 `src/components/ContactSection.astro`: add `eyebrow`, `subtitle`, and the
       `directContact` block — `orDivider`, `calendarButton` (an `<a href>`, per C7 — no iframe),
       `emailDirect` (a `<a href="mailto:">`), `locationLabel` / `locationValue`, `timezone`.
       `locationLabel`/`timezone` render as a `<dl>` so the label/value pairing is semantic.
-- [ ] Task 2.6 `src/components/SiteFooter.astro`: `tagline` and `builtWith` (reworded to Workers — O7).
+- [x] Task 2.6 `src/components/SiteFooter.astro`: `tagline` and `builtWith` (reworded to Workers — O7).
       Compute the year here (`© {new Date().getFullYear()} …`), not in the dictionary (C6). Note in a
       source comment that `output: 'static'` freezes the year at build time, deliberately.
       `footer.legal.*` is not rendered (O3).
-- [ ] Task 2.7 `src/components/SiteHeader.astro`: render a `bookCall` CTA from `nav.bookCall` if O5 says
+- [x] Task 2.7 `src/components/SiteHeader.astro`: render a `bookCall` CTA from `nav.bookCall` if O5 says
       yes; otherwise record that the parked key is deliberately unrendered. Keep the existing
       `menuLabel` / `primaryNavLabel` / `languageNavLabel` wiring untouched.
-- [ ] Task 2.8 `src/pages/index.astro` and `src/pages/[lang]/index.astro`: rename the `nav` array entry
+- [x] Task 2.8 `src/pages/index.astro` and `src/pages/[lang]/index.astro`: rename the `nav` array entry
       from `t.nav.work` to `t.nav.caseStudies` (**href stays `#work`**), update the `BaseLayout` title
       props to `t.site.*`, and pass `tagline` / `builtWith` to `SiteFooter`.
-- [ ] Task 2.9: Audit the additions against the CSP rules **before** building. No external resource is
+- [x] Task 2.9: Audit the additions against the CSP rules **before** building. No external resource is
       introduced (C7 forbids the calendar iframe), so the expected answer is **no `security.csp` change**.
       Prove it rather than assume it (acceptance criteria below).
 
+> **RECORDED 2026-10-19 — Phase 2 implementation notes.**
+>
+> - `src/config.ts` gained `contactEmail = 'contact@vgr.cat'` beside `bookingUrl`, mirroring the Worker's
+>   `CONTACT_DESTINATION` variable, so the `mailto:` target is not duplicated in markup. `ContactSection`
+>   takes `emailLabel` + `emailAddress` and builds the `href` itself.
+> - `ContactForm`'s `labels` prop is now typed `Dictionary['contact']['form']` and reads `nameLabel` /
+>   `emailLabel` / `messageLabel` / `submitButton` / `turnstile`. The `organization` input and the
+>   service-type `<select>` are **not** added here — that is Phase 3, Task 3.1.
+> - Both index pages pass `bookCallLabel={t.nav.bookCall}` / `bookCallHref={bookingUrl}` to `SiteHeader`,
+>   which renders the CTA only when both are present.
+> - `services.ctaLearnMore` is deliberately unrendered (O2: no detail pages).
+> - Files changed: `Hero`, `ServiceCard`, `HomeSections`, `ContactSection`, `SiteFooter`, `SiteHeader`,
+>   `ContactForm`, `config.ts`, and both index pages. `CaseStudy.astro` is unchanged (see 2.4).
+
 #### Acceptance Criteria
 
-- [ ] `npm run lint` passes — 34 `astro/jsx-a11y` rules at error level, zero suppressions. → `_(output)_`
-- [ ] `npm run check` and `npm run build` pass; build emits **7 pages**. → `_(output)_`
-- [ ] The emitted CSP is byte-identical in the directives it lists (only the Astro-owned hashes may
+- [x] `npm run lint` passes — 34 `astro/jsx-a11y` rules at error level, zero suppressions. → `_(output)_`
+- [x] `npm run check` and `npm run build` pass; build emits **7 pages**. → `_(output)_`
+- [x] The emitted CSP is byte-identical in the directives it lists (only the Astro-owned hashes may
       differ): `grep -o 'content-security-policy[^>]*' dist/index.html` recorded, and **no new resource
       string** appears. → `_(recorded before/after)_`
-- [ ] A real browser on the built output reports `violations: []` for `/`, `/ca/` and `/es/`.
+- [x] A real browser on the built output reports `violations: []` for `/`, `/ca/` and `/es/`.
       → `_(recorded output)_`
-- [ ] Overflow measured at 320 / 375 / 768 px on all three locales using the `documentElement.scrollWidth`
+- [x] Overflow measured at 320 / 375 / 768 px on all three locales using the `documentElement.scrollWidth`
       vs `clientWidth` method from the in-flight plan's Task 6.5. Expectation: **324 px at 320 px, from
       the Turnstile widget only** — unchanged from the accepted limitation. Any *new* offender is a defect.
       → `_(recorded table)_`
-- [ ] Every new form control has a programmatic label, and `Hero.astro`'s `h1` contains exactly one
+- [x] Every new form control has a programmatic label, and `Hero.astro`'s `h1` contains exactly one
       heading. → `_(method described + output)_`
-- [ ] Contrast for any new text style is checked against the existing `@theme` tokens; no new colour is
+- [x] Contrast for any new text style is checked against the existing `@theme` tokens; no new colour is
       introduced (`grep -rn '@theme' src/styles/global.css` recorded). → `_(output)_`
+
+> **RECORDED 2026-10-19 — Phase 2 acceptance criteria.**
+>
+> ```
+> $ npm run check
+> Result (30 files):
+> - 0 errors
+> - 0 warnings
+> - 0 hints
+> check exit=0
+>
+> $ npm run lint
+> lint exit=0
+>
+> $ npm run build
+> [build] 7 page(s) built in 843ms
+> build exit=0
+> ```
+>
+> **CSP (Task 2.9)** — `git diff --stat astro.config.mjs src/styles/global.css` is **empty**, i.e. no
+> `security.csp` or token change. The emitted directive list is unchanged:
+>
+> ```
+> default-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';
+> frame-src https://challenges.cloudflare.com; connect-src 'self' https://cloudflareinsights.com;
+> script-src https://challenges.cloudflare.com https://static.cloudflareinsights.com <8 sha256 hashes>;
+> style-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+> ```
+>
+> No new resource string: the only new URL is `https://calendar.app.google/…`, which is an `<a href>`
+> (C7 — no iframe), and `mailto:contact@vgr.cat` needs no entry. `astro.config.mjs` was not edited.
+>
+> **Browser run** (`npm run preview` on `:4321`, then Playwright with a `securitypolicyviolation`
+> listener installed via `addInitScript` before navigation):
+>
+> | Path | `violations` | `<h1>` count | 320 px scroll/client | 375 | 768 |
+> | --- | --- | --- | --- | --- | --- |
+> | `/` | `[]` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/ca/` | `[]` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/es/` | `[]` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+>
+> The 324 px at 320 px is the documented Turnstile-widget limitation, not a new offender. Recorded
+> honestly: the console does log Turnstile's own `connect-src` refusals for `data:,` **inside its
+> iframe's** policy, and one `requestFailed` for a `challenges.cloudflare.com` sub-domain; neither raised
+> a `securitypolicyviolation` event on our document, and neither is caused by this change (the widget
+> predates it).
+>
+> **Labels and headings:** no new form control was added in Phase 2 (the `organization` field and the
+> service-type `<select>` arrive in Task 3.1), so the label criterion is trivially met for this phase and
+> is re-checked in Phase 3. `<h1>` count measured in the built HTML: `1` for each of `dist/index.html`,
+> `dist/ca/index.html`, `dist/es/index.html`.
+>
+> **Contrast / tokens:** `grep -n '@theme' src/styles/global.css` → lines 5 and 16 (the existing block and
+> its comment); the file is unchanged. Every new class uses existing tokens (`text-accent`, `text-muted`,
+> `text-bg`, `bg-accent`, `border-border`, `bg-surface`); no colour was introduced.
 
 ---
 

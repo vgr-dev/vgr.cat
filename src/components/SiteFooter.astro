@@ -1,13 +1,19 @@
 ---
 interface Props {
-  note: string;
+  tagline: string;
+  builtWith: string;
 }
 
-const { note } = Astro.props;
+const { tagline, builtWith } = Astro.props;
+// `output: 'static'` freezes the year at build time; deliberate, see plan C6.
+const year = new Date().getFullYear();
 ---
 
 <footer class="border-t border-border">
-  <div class="mx-auto max-w-5xl px-6 py-8 text-sm text-muted">
-    <p>{note}</p>
+  <div class="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+    <p>{tagline}</p>
+    <p class="text-xs">
+      © {year} VGR. {builtWith}
+    </p>
   </div>
 </footer>

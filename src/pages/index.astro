@@ -5,18 +5,19 @@ import SiteFooter from '../components/SiteFooter.astro';
 import HomeSections from '../components/HomeSections.astro';
 import { defaultLocale } from '../i18n/config';
 import { useTranslations } from '../i18n';
+import { bookingUrl } from '../config';
 
 const lang = defaultLocale;
 const t = useTranslations(lang);
 const nav = [
   { href: '#services', label: t.nav.services },
-  { href: '#work', label: t.nav.work },
+  { href: '#work', label: t.nav.caseStudies },
   { href: '#about', label: t.nav.about },
   { href: '#contact', label: t.nav.contact },
 ];
 ---
 
-<BaseLayout lang={lang} title={t.meta.title} description={t.meta.description}>
+<BaseLayout lang={lang} title={t.site.title} description={t.site.description}>
   <SiteHeader
     slot="header"
     lang={lang}
@@ -25,7 +26,13 @@ const nav = [
     menuLabel={t.header.menuLabel}
     primaryNavLabel={t.header.primaryNavLabel}
     languageNavLabel={t.header.languageNavLabel}
+    bookCallLabel={t.nav.bookCall}
+    bookCallHref={bookingUrl}
   />
   <HomeSections lang={lang} />
-  <SiteFooter slot="footer" note={t.footer.note} />
+  <SiteFooter
+    slot="footer"
+    tagline={t.footer.tagline}
+    builtWith={t.footer.builtWith}
+  />
 </BaseLayout>

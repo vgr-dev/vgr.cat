@@ -19,3 +19,6 @@ export const turnstileAction = 'contact';
  * (`scripts/check-placeholders.mjs`) treats an unresolved booking URL as a release blocker.
  */
 export const bookingUrl = 'https://calendar.app.google/3dd7SXGnZqUZsWXm6';
+
+/** Public contact address. Mirrors the Worker's `CONTACT_DESTINATION` variable. */
+export const contactEmail = 'contact@vgr.cat';

@@ -1,15 +1,10 @@
 ---
 import { turnstileSiteKey, turnstileAction } from '../config';
+import type { Dictionary } from '../i18n';
 
 interface Props {
   lang: string;
-  labels: {
-    name: string;
-    email: string;
-    message: string;
-    submit: string;
-    turnstile: string;
-  };
+  labels: Dictionary['contact']['form'];
 }
 
 const { lang, labels } = Astro.props;
@@ -23,7 +18,7 @@ const inputClass =
   <input type="hidden" name="elapsed" value="" data-elapsed />
 
   <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.name}</span>
+    <span class="text-sm font-medium">{labels.nameLabel}</span>
     <input
       name="name"
       required
@@ -34,7 +29,7 @@ const inputClass =
   </label>
 
   <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.email}</span>
+    <span class="text-sm font-medium">{labels.emailLabel}</span>
     <input
       name="email"
       type="email"
@@ -46,7 +41,7 @@ const inputClass =
   </label>
 
   <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.message}</span>
+    <span class="text-sm font-medium">{labels.messageLabel}</span>
     <textarea
       name="message"
       rows="5"
@@ -73,7 +68,7 @@ const inputClass =
     type="submit"
     class="justify-self-start rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
   >
-    {labels.submit}
+    {labels.submitButton}
   </button>
   <p class="text-sm text-muted">{labels.turnstile}</p>
 </form>

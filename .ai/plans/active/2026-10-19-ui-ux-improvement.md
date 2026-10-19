@@ -2524,36 +2524,117 @@ from Phase 2 — and the document stays at `305 / 305`.
 - **Files likely to change:** `package.json`, `package-lock.json`, new `playwright.config.ts`, new
   `tests/**`, `.github/workflows/ci.yml`.
 - **Detailed implementation tasks:**
-  1. Add `@playwright/test` and `@axe-core/playwright` as devDependencies; add `test:e2e` and `test:e2e:ui`
-     scripts. [M]
-  2. Config: `webServer: { command: 'npm run preview', port: 4321, reuseExistingServer: true }`; projects for
-     `chromium` desktop at 1440 × 900 and a `375 × 812` mobile emulation. [S]
-  3. Tests — structure: single `h1`, no heading-level skips, skip link is the first tab stop, landmarks on all
-     7 routes. [S]
-  4. Tests — layout: at 320 CSS px `scrollWidth === clientWidth` on all 7 routes; at 640 px no prose column
-     below 280 px. [S]
-  5. Tests — form: empty submit → focus in summary; summary link → focus lands on the field; stubbed
-     429/403/502 render distinct messages; busy state + single request; values preserved. [M]
-  6. Tests — a11y: `axe.analyze()` on all 7 routes with `color-contrast` enabled, asserting zero violations
-     of the selected rule set. [S]
-  7. Add the job to `ci.yml` following
-     `.github/instructions/workflows.instructions.md` (SHA-pinned actions, `permissions: contents: read`,
-     `concurrency`, browser install via the official Playwright container or `npx playwright install
-     --with-deps`). [S]
+  1. [x] `@playwright/test` and `@axe-core/playwright` are dev dependencies; `test:e2e` and `test:e2e:ui`
+     scripts added, plus `build:e2e` (the always-passes test sitekey, per `AGENTS.md`) and `pretest:e2e` /
+     `posttest:e2e` so a run always starts from a fresh build and leaves no daemon behind.
+  2. [x] `playwright.config.ts` with `desktop` (1440 × 900) and `mobile` (375 × 812, touch, 2× DPR) projects.
+     The `webServer` command is not `npm run preview` alone — see deviation 2.
+  3. [x] `tests/structure.spec.ts`: one `h1`, no heading-level skips, the four landmarks, and the skip link as
+     both the first tab stop and a working route into `main` — for all **10** routes (deviation 1).
+  4. [x] `tests/layout.spec.ts`: `scrollWidth === clientWidth` at 320 px on every route, the same at 320 px
+     with the widget forced to its 300 px minimum, and no prose cell below 280 px at 640 px on the three
+     home pages.
+  5. [x] `tests/form.spec.ts`: empty submit → focus in the summary with all five fields listed; summary link →
+     focus on the field; fixing one field lowers the count; stubbed 429/403/502 render distinct copy with a
+     `mailto:` link; busy state keeps focus and blocks a second request; values survive a failure; a
+     multi-line message is accepted.
+  6. [x] `tests/a11y.spec.ts`: `AxeBuilder` with `wcag2a`/`wcag2aa`/`wcag22aa` (so `color-contrast` runs) on
+     all 10 routes, asserting zero violations.
+  7. [x] `e2e` job in `ci.yml`: `needs: validate`, SHA-pinned `checkout`/`setup-node`/`upload-artifact`,
+     `npx playwright install --with-deps chromium`, report uploaded on failure. Top-level `permissions:
+     contents: read` and `concurrency` were already there; no secrets are referenced.
 - **Explicitly out of scope:** visual-regression snapshots (add later if churn justifies it), Safari/Firefox
   projects, connecting tests to RUM.
 - **Risks:** axe `color-contrast` is unreliable on elements over gradient/opacity backgrounds — there are
   none here, so it is safe. CI must not need `TURNSTILE_SECRET_KEY`; the form tests stub the endpoint with
   `page.route`, so no secret is required.
 - **Acceptance criteria:**
-  - [ ] `npm run test:e2e` passes locally against a fresh `npm run build`.
-  - [ ] A deliberately reintroduced regression (removing the skip link) fails the suite.
-  - [ ] CI runs the suite on PRs and on `main` and fails the build on a violation.
+  - [x] `npm run test:e2e` passes locally against a fresh `npm run build` — **110 tests, 0 skipped, 6.3 s**
+    (`pretest:e2e` performs the build, so "fresh" is structural rather than a convention).
+  - [x] A deliberately reintroduced regression fails the suite — removing the skip link from `PageShell.astro`
+    turned the structure project from 20 passed into **10 failed**, and restoring it went back to 20 passed.
+  - [x] CI runs the suite on PRs and on `main` and fails the build on a violation — `ci.yml` triggers on
+    `pull_request`, `push: branches: [main]` and `workflow_dispatch`, and the `e2e` job's failure fails `CI`,
+    which is what gates `Deploy`. **Not executed here** (no Actions runner); see limitations.
 - **Automated validation:** the suite itself, plus the existing gate.
 - **Manual validation:** confirm the suite is not silently skipping (assert test counts are non-zero).
 - **Dependencies on other phases:** 1–3 minimum. **Blocks** Phase 8's confidence.
 - **Parallelisation opportunities:** the harness/config can be written during Phase 1; assertions land per
   phase.
+
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **Ten routes, not seven.** Phase 4 added the three privacy pages; the suite enumerates them from
+   `tests/routes.ts` so a new page cannot be added without the structural and axe assertions seeing it.
+2. **`webServer` cannot be `npm run preview` alone.** In Astro 7 that command **daemonises** — it prints a pid
+   and exits, which Playwright reads as "process exited before the URL was ready". The command starts the
+   daemon and then holds a foreground `node -e setTimeout` alive; `posttest:e2e` runs `astro preview stop`
+   afterwards, so a run leaves nothing behind.
+3. **The form tests abort `challenges.cloudflare.com` on purpose.** Letting a third-party CDN decide whether
+   the state-machine tests run would turn an outage into a red build. With the script blocked,
+   `ensureWidget()` fails fast and `awaitToken()` returns immediately — which is also how a blocked CDN
+   behaves in production. The widget's own loading behaviour is asserted in `network.spec.ts`, where the
+   `<script>` element is counted rather than the response, so it too survives a CDN failure.
+4. **The e2e build uses the always-passes test sitekey.** `build:e2e` sets
+   `PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA`, exactly as `AGENTS.md` prescribes for automated
+   runs. Without it the production sitekey refuses `127.0.0.1` (error 110200) and every submission test
+   would sit in the token wait.
+5. **CI builds its own `dist/` instead of downloading `validate`'s artifact.** It costs roughly ten seconds
+   and buys the property that a local run and a CI run execute the identical path — which is what makes
+   AC 1 meaningful.
+6. **`astro check` now type-checks the suite** (37 → 44 files), and `tsconfig.json` excludes
+   `playwright-report`/`test-results`/`blob-report` so a generated report never enters the count.
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 44 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 10 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+$ npm audit --audit-level=high  → found 0 vulnerabilities
+
+$ npx playwright test --list
+Total: 110 tests in 5 files
+
+$ npm run test:e2e
+  110 passed (6.3s)
+  > posttest:e2e → {"message":"Stopped preview server (pid 336911)."…}
+```
+
+Suite shape (both projects, so each assertion runs at 1440 × 900 and at 375 × 812):
+
+| File | What it asserts |
+| --- | --- |
+| `structure.spec.ts` | one `h1`, no level skips, `header`/`footer`/`main#main-content`/`nav`, skip link first and functional |
+| `layout.spec.ts` | 320 px no horizontal scroll (10 routes + widget at its 300 px minimum), 640 px no prose cell under 280 px |
+| `form.spec.ts` | summary focus/count/links, 429/403/502 copy, busy + single request, values preserved, multi-line accepted |
+| `a11y.spec.ts` | axe `wcag2a`/`wcag2aa`/`wcag22aa` with `color-contrast`, zero violations |
+| `network.spec.ts` | no third-party request before the form is near, one font file, exactly one challenge script + widget |
+
+**Regression proof** (AC 2):
+
+```console
+$ # skip link removed from PageShell.astro
+$ npm run build:e2e && npx playwright test tests/structure.spec.ts --project=desktop
+  10 failed   [desktop] › skip link of / … (one per route)
+  10 passed
+
+$ # skip link restored (git diff empty)
+$ npm run build:e2e && npx playwright test tests/structure.spec.ts --project=desktop
+  20 passed (1.0s)
+```
+
+#### Limitations of this verification
+
+- **The `e2e` job has never run on a GitHub runner.** The workflow is format-checked, mirrors `validate`'s
+  pinned actions, and references no secrets, but its first real execution is the next push.
+- Chromium only, by decision; Safari and Firefox are out of scope for this plan.
+- The suite cannot verify the real challenge, Siteverify or email delivery — it stubs at `/api/contact`.
+  Those remain Phase 8's manual pass against production.
+- No throttled-network run; the 8 s token wait is exercised only through its blocked-CDN branch.
 
 ### Phase 8: Final manual validation
 
@@ -2561,24 +2642,110 @@ from Phase 2 — and the document stays at `305 / 305`.
 - **Prerequisites:** all other phases.
 - **Scope:** keyboard, screen reader, zoom, reduced motion, no-JS, real device, before/after measurements.
 - **Detailed implementation tasks:**
-  1. Keyboard-only traversal of all 7 routes, recording the first 10 tab stops. [S]
-  2. Screen-reader pass (NVDA or VoiceOver) across: header, nav, form (each state), thanks, 404. [M]
-  3. 400 % zoom and 200 % text-only zoom at 1280 px. [S]
-  4. `prefers-reduced-motion: reduce` emulation across hover/focus/scroll-spy. [XS]
-  5. No-JS run: form hidden, fallback visible, no raw JSON reachable. [S]
-  6. Long-content pass on `#work` at 375 px; record the new page height next to 16,779 px. [XS]
-  7. Record every measurement in this plan's evidence block. [S]
+  1. [x] Keyboard-only traversal of all **10** routes (deviation 1), recording the first ten tab stops.
+  2. [ ] **Screen-reader pass — not performed.** Needs NVDA or VoiceOver and a human; the accessibility
+     tree was inspected instead (see evidence), which is not the same thing.
+  3. [x] 400 % zoom (320 × 256) and 200 % text-only zoom (32 px root at 1280) — nothing clipped in either.
+  4. [x] `prefers-reduced-motion: reduce` across hover, focus and the scroll-spy.
+  5. [x] No-JS run: form hidden, fallback visible, no JSON reachable.
+  6. [x] Long-content pass on `#work` at 375 px, with the new height recorded next to 16,779 px.
+  7. [x] Every measurement recorded in the evidence block below.
 - **Explicitly out of scope:** production deployment.
 - **Risks:** screen-reader testing may surface issues requiring a new phase; budget for it.
 - **Acceptance criteria:**
-  - [ ] No interaction leaves focus on `<body>`.
-  - [ ] Every state of the form is announced and understandable without sight.
-  - [ ] Nothing is clipped at 320 px or at 400 % zoom.
-  - [ ] The no-JS path never shows a JSON document.
+  - [x] No interaction leaves focus on `<body>` — checked across the four interactions that used to lose it:
+        empty submit → summary, summary link → field, 429 → summary, panel open/close → toggle.
+  - [ ] **Deferred:** every state of the form is announced and understandable without sight. The accessible
+        tree supports it, but only a screen reader can confirm the announcements.
+  - [x] Nothing is clipped at 320 px or at 400 % zoom.
+  - [x] The no-JS path never shows a JSON document.
 - **Automated validation:** none new.
 - **Manual validation:** all of the above, recorded.
 - **Dependencies on other phases:** all.
 - **Parallelisation opportunities:** none.
+
+#### Recorded validation (2026-10-19)
+
+**Keyboard traversal.** First ten tab stops on each of the ten routes; every locale follows the same
+order, so only `/` is quoted:
+
+```
+1 a  Skip to main content        6 a  Contact
+2 a  vgr.cat                     7 a  EN (English)
+3 a  Services                    8 a  CA (Català)
+4 a  Case Studies                9 a  ES (Español)
+5 a  About                      10 a  Book a call
+```
+
+`/ca/` and `/es/` are identical apart from the labels (`Salta al contingut principal`, `Serveis`,
+`Concertar una trucada` / `Saltar al contenido principal`, `Servicios`, `Agendar una llamada`). The
+privacy, thanks and 404 routes produce the same ten stops.
+
+**Focus never lands on `<body>`:**
+
+```
+empty submit      → div (the status region, tabindex="-1")
+summary link #3   → input#contact-organization
+429 response      → div (status), role=alert, aria-live=assertive, aria-atomic=true,
+                    "Too many attempts. Please try again in about a minute."
+                    + "Or reach me directly: contact@vgr.cat · Book a 30-min technical call"
+mobile panel open → button#nav-toggle, aria-expanded=true
+Escape            → button#nav-toggle, aria-expanded=false
+```
+
+**Accessible tree, invalid state** (`ariaSnapshot` of the form):
+
+```
+- alert:
+  - paragraph: Please fix 5 fields.
+  - list:
+    - listitem: - link "Enter your name.": - /url: "#contact-name"
+    - listitem: - link "Enter your email address.": …
+    - listitem: - link "Enter your organization.": …
+    - listitem: - link "Select a focus area.": …
+    - listitem: - link "Describe your project or question.": …
+- textbox "Your Name" [invalid]
+- paragraph: Enter your name.
+- textbox "Professional Email" [invalid]
+- paragraph: We reply to this address.
+```
+
+**Zoom.** 400 % (320 × 256 CSS px) and 200 % text-only (32 px root at 1280) — in both, the document
+measures `305 / 305` and `1265 / 1265` and no element with a non-visible overflow axis clips its content.
+The only element reporting a mismatch is the skip link, at its intentional 1 px `sr-only` size.
+
+**Reduced motion.** With `prefers-reduced-motion: reduce`: button and link `transition-duration` is
+`1e-05s` (the 0.01 ms guard), `scroll-behavior` is `auto`, and the interaction cues still work — hover
+still reaches `opacity: 0.9`, focus still shows a `2px solid rgb(11, 95, 255)` outline, and the scroll-spy
+still marks the visible section (`work`).
+
+**No JavaScript.** `html` has no `js` class, the form computes to `display: none`, `.no-js-fallback`
+computes to `block` with `mailto:contact@vgr.cat` and the booking URL, and the document body is not a JSON
+document.
+
+**Long content at 375 px** (for UX-019, which recorded 16,779 px at audit time and 19,291 px after the
+content rework):
+
+```
+page height          21,145 px
+#work height         10,327 px
+#contact starts at   18,929 px
+```
+
+The growth over 19,291 px is the IoT case study gaining its three sections in this round.
+
+#### Deviations and limitations
+
+1. **Ten routes, not seven** — Phase 4 added the three privacy pages; the traversal covers all of them.
+2. **The screen-reader pass is deferred, not claimed.** Every other task in this phase was executed here;
+   NVDA/VoiceOver needs the owner. Until it runs, AC 2 stays unticked and "the form is understandable
+   without sight" is supported by the accessibility tree, not by listening.
+3. **Zoom was emulated by viewport and root font size**, not by a browser zoom control: Playwright cannot
+   drive Chrome's zoom, so 400 % is modelled as a 320 × 256 CSS viewport and text-only zoom as a 32 px root
+   font. Both reproduce the reflow the criterion is about.
+4. **The local token wait is long by design.** With the production sitekey on `127.0.0.1` the challenge
+   errors (110200), so `awaitToken()` runs its full 8 s before every local submission. The form tests abort
+   the CDN for that reason; manual passes should do the same or use `PUBLIC_TURNSTILE_SITE_KEY`.
 
 **Ordering summary.** 1 → {2, 3} in parallel → 4 → 5 → 6 (parallel with 5) → 7 (assertions per phase) → 8.
 Hard dependencies: 1 before everything; 4 before 5 (same component); 2 before 6 (widget markup);

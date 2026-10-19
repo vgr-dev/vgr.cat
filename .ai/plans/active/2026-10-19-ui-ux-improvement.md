@@ -68,6 +68,11 @@ measurements are left verbatim as the record of the audited state.
 - **Desired:** one shape for all four — which is exactly UX-007's decision (content plan D-5), now with a
   visible cost.
 - **Status:** Confirmed. It **strengthens** the case for landing UX-007; it does not change the recommended fix.
+- **Resolution note (2026-10-19):** resolved. On the owner's instruction the IoT article gained the same three
+  sections as the others (`#### The Challenge / The Architecture / Measurable Impact`, and the CA/ES
+  equivalents), written only from facts already in its summary. Measured after the build: every locale
+  renders 4 × `H3` titles and 12 × `H4` sections with no level skip, so all four articles share one shape.
+  The prose sections were authored here, so they are worth a read before they ship.
 
 **UX-030 [Low] The focus select grew to six options, and its longest label sets the control's minimum width.**
 
@@ -2248,8 +2253,10 @@ summary, and was posted verbatim as `"Primera línea\nSegunda línea\nTercera l�
 
 #### Known gaps after this phase
 
-- `banco-estado-iot` still has no body sections, so it is the one article that does not match the other
-  three. Adding matching prose is authored content, not markup, so it is left to the owner.
+- ~~`banco-estado-iot` still has no body sections~~ — **closed 2026-10-19**: the owner asked for them, and the
+  article now carries the same three `####` sections as the other three, in all three locales, written only
+  from facts already present in its summary (`200+ offices`, gateway/MQTT/Express ingest, Django + PHP
+  service layer, branch-by-branch rollout). Verified: 4 × `H3` + 12 × `H4` per locale, no level skip.
 - The privacy copy describes the real data flow (Cloudflare Worker → Email Service, Turnstile check,
   aggregate Web Analytics) but has not had a legal review; the owner asked to author it and should read
   the three locales before it ships.

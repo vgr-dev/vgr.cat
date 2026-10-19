@@ -12,7 +12,8 @@ static-assets project** — no adapter and no SSR, but it does ship a **small Wo
 routing stays asset-first with `assets.run_worker_first: ["/api/*"]`, so the prerendered pages keep
 winning. Live at `https://vgr.cat`, deployed by GitHub Actions once `CI` passes on `main`.
 
-Node **24** (pinned in `.nvmrc`), npm with a committed `package-lock.json`.
+Node **24** (pinned in `.nvmrc`, and `eslint-plugin-astro` v3 requires at least `24.16.0`), npm with a
+committed `package-lock.json`.
 
 ---
 
@@ -101,11 +102,16 @@ wrong, raise it with the user rather than silently reverting it.
 
 - **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
   `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
-- **ESLint is pinned to `^9`, not 10.** `eslint-plugin-jsx-a11y@6.10.2` — a peer of
-  `eslint-plugin-astro`'s a11y configs — peers `eslint@^3 … ^9`, so an ESLint 10 major bump fails
-  `npm ci` with `ERESOLVE`. Same rule as the TypeScript cap above: align the version, never
-  `--legacy-peer-deps`. Astro's a11y rules appear under the `astro/jsx-a11y/*` namespace, several at
-  error level.
+- **The lint stack is ESLint 10 + `eslint-plugin-astro@^3` + `eslint-plugin-jsx-a11y-x`.** Plugin v3
+  requires `eslint@>=10.0.0` and Node `^22.22.3 || ^24.16.0`, so `.nvmrc`'s `24` must resolve to a
+  current 24.x (24.15 is too old and only warns). Upstream `eslint-plugin-jsx-a11y@6.10.2` still peers
+  `eslint@^3 … ^9`, so the a11y configs use the maintained fork `eslint-plugin-jsx-a11y-x` — the Astro
+  plugin documents either as supported, so this is the recommended pairing, not a workaround. Do not
+  "solve" a peer conflict with `--legacy-peer-deps`. This stack also removed the old
+  `fast-glob → micromatch → braces` chain (`braces` has no patched release for CVE-2026-93687), so
+  `npm audit` is expected to report **0 vulnerabilities** — keep it there. Astro's a11y rules still
+  appear under the `astro/jsx-a11y/*` namespace, 34 of them at error level, and `eslint .` does lint
+  `.astro` files (19 files, 15 of them `.astro`).
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
   under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
   `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the

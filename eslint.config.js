@@ -1,5 +1,4 @@
 import astro from 'eslint-plugin-astro';
-import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
@@ -11,16 +10,8 @@ export default [
       'worker-configuration.d.ts',
     ],
   },
-  ...astro.configs['flat/recommended'],
-  ...astro.configs['flat/jsx-a11y-recommended'],
-  {
-    // Astro frontmatter is TypeScript, so the Astro parser needs a TS sub-parser.
-    files: ['**/*.astro'],
-    languageOptions: {
-      parserOptions: {
-        parser: tsParser,
-        extraFileExtensions: ['.astro'],
-      },
-    },
-  },
+  // The plugin wires `astro-eslint-parser` plus the TypeScript sub-parser for
+  // frontmatter itself, so no manual parser block is needed.
+  ...astro.configs.recommended,
+  ...astro.configs['jsx-a11y-recommended'],
 ];

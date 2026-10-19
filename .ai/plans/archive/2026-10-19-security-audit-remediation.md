@@ -747,3 +747,29 @@ Phase 3 edits. The three-commit shape above keeps H-1/M-2 revertible independent
 - [x] Local `wrangler dev` support for the `ratelimits` binding — **resolved, not deferred**: the dev server
       reports `env.CONTACT_RATE_LIMITER  Rate Limit  5 requests/60s` and the sixth POST returned `429`, so
       Criterion 2 of Phase 2 is genuinely verified locally.
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-19
+- **Verified Commit**: 8c158d2
+- **Sign-off**: Manual Review Passed
+
+**Deferred criteria (archived with 7 unticked boxes, by explicit user confirmation on 2026-10-19).** Every
+Phase task (0.1–5.5) and every Acceptance Criterion is ticked. The seven remaining boxes are:
+
+1. **Six user-owned GitHub settings** (recorded evidence, Task 0.3 block): `production` environment reviewers
+   and a `main`-only deployment branch rule, fork-PR workflow policy, secret scanning + push protection,
+   Dependabot alerts, CodeQL default setup, signed-commit re-confirmation. None is reachable by a repository
+   change, so no agent could complete them. Tracked in the audit addendum under "Requires a human".
+2. **"Feature end-to-end functionality verified"** (§5), left unticked deliberately: the contact happy path
+   cannot be proven with Turnstile test keys because Siteverify's `action` gate rejects them. Rejection and
+   limit paths were verified locally; the happy path rests on pre-existing production evidence.
+
+**Also carried, not closed:** the two deferrals — a global cross-location rate ceiling (needs a Durable Object)
+and content-markdown sanitisation (audit L-7) — plus the review finding raised after deployment, that
+`MAX_BODY_BYTES` (16 KiB) is smaller than a worst-case legitimate multipart body (~22.4 KB, measured).
+
+**In-body paths.** Several references above still read `.ai/plans/active/...`. That is deliberate: they occur
+inside recorded command output and recorded evidence, and rewriting them would falsify the record.

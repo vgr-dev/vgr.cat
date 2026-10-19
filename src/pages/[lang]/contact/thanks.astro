@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Container from '../../../components/Container.astro';
 import {
   defaultLocale,
   locales,
@@ -20,13 +21,15 @@ const homeHref = localizedPath(lang, '/');
 ---
 
 <BaseLayout lang={lang} title={t.thanks.title} description={t.thanks.body}>
-  <div class="mx-auto max-w-5xl px-6 py-24">
-    <h1 class="text-3xl font-semibold tracking-tight">{t.thanks.heading}</h1>
-    <p class="mt-4 max-w-2xl text-muted">{t.thanks.body}</p>
-    <p class="mt-8">
-      <a href={homeHref} class="text-accent hover:underline">
-        {t.thanks.back}
-      </a>
-    </p>
-  </div>
+  <main id="main-content">
+    <Container class="py-24">
+      <h1 class="text-3xl font-semibold tracking-tight">{t.thanks.heading}</h1>
+      <p class="mt-4 max-w-2xl text-muted">{t.thanks.body}</p>
+      <p class="mt-8">
+        <a href={homeHref} class="text-accent hover:underline">
+          {t.thanks.back}
+        </a>
+      </p>
+    </Container>
+  </main>
 </BaseLayout>

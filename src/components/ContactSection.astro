@@ -1,4 +1,7 @@
 ---
+import Container from './Container.astro';
+import Button from './Button.astro';
+
 interface Props {
   eyebrow: string;
   heading: string;
@@ -28,7 +31,7 @@ const {
 } = Astro.props;
 ---
 
-<section id="contact" class="mx-auto max-w-5xl px-6 py-20">
+<Container as="section" id="contact" class="py-20">
   <p class="text-sm font-medium text-accent">{eyebrow}</p>
   <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
     {heading}
@@ -40,12 +43,9 @@ const {
 
   <div class="mt-12 border-t border-border pt-8">
     <p class="text-sm font-medium">{orDivider}</p>
-    <a
-      href={calendarHref}
-      class="mt-4 inline-block rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
-    >
+    <Button href={calendarHref} class="mt-4">
       {calendarLabel}
-    </a>
+    </Button>
 
     <dl class="mt-8 grid gap-6 text-sm sm:grid-cols-3">
       <div>
@@ -65,4 +65,4 @@ const {
       </div>
     </dl>
   </div>
-</section>
+</Container>

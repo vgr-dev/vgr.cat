@@ -18,20 +18,22 @@ const variants = locales.map((locale) => ({
   description={fallback.body}
   noindex
 >
-  {variants.map(({ locale, copy, isDefault, href }) => (
-    <section
-      data-notfound={locale}
-      data-title={copy.title}
-      data-description={copy.body}
-      hidden={!isDefault}
-    >
-      <h1>{copy.heading}</h1>
-      <p>{copy.body}</p>
-      <p>
-        <a href={href}>{copy.back}</a>
-      </p>
-    </section>
-  ))}
+  <main id="main-content">
+    {variants.map(({ locale, copy, isDefault, href }) => (
+      <section
+        data-notfound={locale}
+        data-title={copy.title}
+        data-description={copy.body}
+        hidden={!isDefault}
+      >
+        <h1>{copy.heading}</h1>
+        <p>{copy.body}</p>
+        <p>
+          <a href={href}>{copy.back}</a>
+        </p>
+      </section>
+    ))}
+  </main>
 </BaseLayout>
 
 <script>

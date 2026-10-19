@@ -21,6 +21,7 @@ export const ca: Dictionary = {
     menuLabel: 'Mostra o amaga el menú de navegació',
     primaryNavLabel: 'Navegació principal',
     languageNavLabel: 'Seleccioneu l’idioma',
+    skipToContent: 'Salta al contingut principal',
   },
   hero: {
     badge:

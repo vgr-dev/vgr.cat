@@ -1,12 +1,10 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteHeader from '../../components/SiteHeader.astro';
-import SiteFooter from '../../components/SiteFooter.astro';
+import PageShell from '../../components/PageShell.astro';
 import HomeSections from '../../components/HomeSections.astro';
 import { locales, defaultLocale, type Locale } from '../../i18n/config';
 import { useTranslations } from '../../i18n';
-import { bookingUrl } from '../../config';
 
 export const getStaticPaths = (() =>
   locales
@@ -15,30 +13,10 @@ export const getStaticPaths = (() =>
 
 const { lang } = Astro.params as { lang: Locale };
 const t = useTranslations(lang);
-const nav = [
-  { href: '#services', label: t.nav.services },
-  { href: '#work', label: t.nav.caseStudies },
-  { href: '#about', label: t.nav.about },
-  { href: '#contact', label: t.nav.contact },
-];
 ---
 
 <BaseLayout lang={lang} title={t.site.title} description={t.site.description}>
-  <SiteHeader
-    slot="header"
-    lang={lang}
-    brand={t.header.brand}
-    nav={nav}
-    menuLabel={t.header.menuLabel}
-    primaryNavLabel={t.header.primaryNavLabel}
-    languageNavLabel={t.header.languageNavLabel}
-    bookCallLabel={t.nav.bookCall}
-    bookCallHref={bookingUrl}
-  />
-  <HomeSections lang={lang} />
-  <SiteFooter
-    slot="footer"
-    tagline={t.footer.tagline}
-    builtWith={t.footer.builtWith}
-  />
+  <PageShell lang={lang}>
+    <HomeSections lang={lang} />
+  </PageShell>
 </BaseLayout>

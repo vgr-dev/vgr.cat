@@ -1,4 +1,6 @@
 ---
+import Container from './Container.astro';
+import Button from './Button.astro';
 import LanguagePicker from './LanguagePicker.astro';
 import { defaultLocale, type Locale } from '../i18n/config';
 
@@ -31,8 +33,8 @@ const {
 ---
 
 <header class="border-b border-border">
-  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
-    <a href="#top" class="font-semibold tracking-tight">
+  <Container class="flex items-center justify-between gap-4 py-4">
+    <a href="#main-content" class="font-semibold tracking-tight">
       {brand}
     </a>
 
@@ -41,7 +43,7 @@ const {
       id="nav-toggle"
       aria-expanded="false"
       aria-controls="site-nav"
-      class="inline-flex items-center rounded border border-border p-2 sm:hidden"
+      class="inline-flex items-center rounded border border-control-border p-2 sm:hidden"
     >
       <span class="sr-only">{menuLabel}</span>
       <svg
@@ -74,15 +76,12 @@ const {
       </nav>
       <LanguagePicker current={lang} label={languageNavLabel} />
       {bookCallLabel && bookCallHref && (
-        <a
-          href={bookCallHref}
-          class="rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg hover:opacity-90"
-        >
+        <Button href={bookCallHref} size="sm">
           {bookCallLabel}
-        </a>
+        </Button>
       )}
     </div>
-  </div>
+  </Container>
 </header>
 
 <script>

@@ -2,21 +2,35 @@
 @import '@fontsource-variable/inter';
 @plugin '@tailwindcss/typography';
 
-@theme {
+@theme static {
   --color-bg: #ffffff;
   --color-fg: #1a1a1a;
   --color-muted: #5b6470;
   --color-accent: #0b5fff;
+  /* Decorative hairlines only. Never use this for a control boundary: at 1.24:1 it fails
+     WCAG 1.4.11, which is why the control tokens below exist. */
   --color-border: #e4e7ec;
   --color-surface: #f7f8fa;
+  /* Control boundary and fill. Measured light: border 3.66:1 vs page and 3.45:1 vs its own fill.
+     Dark values are overridden below. */
+  --color-control-bg: #f7f8fa;
+  --color-control-border: #808690;
+  /* Validation states. Consumed from Phase 2 onward. Measured light: 6.57:1 (text) / 4.83:1 (border). */
+  --color-danger: #b42318;
+  --color-danger-border: #d92d20;
   --font-sans:
     'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* Tailwind 4's @theme does not accept @media; keep dark overrides as plain custom properties. */
+/* Tailwind 4's @theme does not accept @media; keep dark overrides as plain custom properties.
+   Non-colour tokens live here too: they are not utility namespaces, so `@theme` would not emit
+   them and `var()` references would silently resolve to nothing. */
 :root {
   color-scheme: light dark;
   --measure: 68ch;
+  --space-section: 3rem;
+  --duration-fast: 150ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +41,24 @@
     --color-accent: #7aa7ff;
     --color-border: #262a31;
     --color-surface: #16181d;
+    /* Measured dark: border 3.91:1 vs page and 3.67:1 vs its own fill. */
+    --color-control-bg: #16181d;
+    --color-control-border: #6b7280;
+    --color-danger: #ff8f85;
+    --color-danger-border: #f97583;
+  }
+}
+
+/* Nothing in the site animates today; this exists so the transition tokens above cannot make it
+   animate for someone who asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -4,9 +4,97 @@
 - **Audited commit:** `3cc7b3b` (`git rev-parse --short HEAD`), working tree clean
 - **Plan type:** read-only UI/UX audit **plus** implementation specification. No application change was
   made. Nothing was built, deployed, or submitted to a production form.
-- **Companion plan:** `.ai/plans/active/2026-10-19-security-audit.md` exists and is independent of this
-  one. Neither blocks the other; they touch `ContactForm.astro` from different angles (that plan is
-  read-only, this one changes behaviour) and must not be merged blindly.
+- **Companion plan:** `.ai/plans/archive/2026-10-19-security-audit.md` (moved from `active/` on 2026-10-19) is
+  independent of this one. Neither blocks the other; they touch `ContactForm.astro` from different angles (that
+  plan is read-only, this one changes behaviour) and must not be merged blindly.
+
+## Re-evaluation — 2026-10-19 (after the content rework)
+
+The content rework (`2026-10-19-content-rework.md`, Phases 1–5) landed after this audit was written, from the
+same base commit. Every finding below was **re-measured on the post-rework build** (`npm run build` →
+`npm run preview`, 7 pages). **Where this section disagrees with the body, this section wins.** The original
+measurements are left verbatim as the record of the audited state.
+
+### What the rework touched, and why it matters here
+
+| Rework phase | UI surface affected |
+| --- | --- |
+| 1 — Tier A copy | `hero.*`, `services.*`, `caseStudies.*`, `about.*`, `contact.subtitle`, `footer.tagline`, `site.title/description/jobTitle` |
+| 2 — IoT pillar | `#services` grid `sm:grid-cols-3` → `md:grid-cols-2`; a 4th card; a 5th `<option>` in the contact select |
+| 3 — bank case study | a 4th article in `#work`; explicit `caseStudyOrder` sort replaces alphabetical order |
+| 4 — experience list | new `h3` + `<dl>` in `#about` |
+| 5 — structured data | JSON-LD `Person.knowsAbout` only — no visual change |
+
+### Resolved by the rework
+
+| ID | Status | Re-measured evidence |
+| --- | --- | --- |
+| **UX-012 (services part only)** | **RESOLVED** | `#services .grid` is `md:grid-cols-2`. 375 → 1 col (prose 262 px); 640 → 1 col (prose 527 px); 768 → **2 cols, prose 291 px**; 1024 → 2 cols (419 px); 1440 → 2 cols (426 px). No orphan, no horizontal overflow. The 176 px / 227 px columns in the original finding no longer exist. |
+
+### Still open — re-measured, values unchanged
+
+| ID | Re-measurement |
+| --- | --- |
+| UX-001 skip link | anchors matching `/skip/i` → **0** |
+| UX-002 control boundary | light: border **1.24:1** vs page, **1.17:1** vs its own fill; dark: **1.23:1** vs fill |
+| UX-003 320 px reflow | `scrollWidth 324` vs `clientWidth 305`; grid column **300 px** inside a **257 px** form; widget 300 px at x=24 |
+| UX-004 mobile panel | open panel `display:block`, **x=145, w=191, h=190** in a 360 px header |
+| UX-008 dead-end pages | `404.html` and `contact/thanks` → **0** `<header>`, **0** `<nav>`, **0** `<footer>`; 404 still ships **3** `h1` |
+| UX-013 contact `<dl>` | still **3 columns × 309 px with 2 children** |
+| UX-017 error copy | `en` still names no address; `ca` still does |
+| UX-018 Turnstile eager | `api.js` + challenge iframe both requested on first load |
+| UX-020 thanks pages | **3** `contact/thanks` URLs still in `sitemap-0.xml`; **no** `robots` meta |
+| UX-023 dead keys | 0 consumers for `successMessage`, `namePlaceholder`, `emailPlaceholder`, `messagePlaceholder`, `ctaLearnMore` |
+| UX-025 font loading | `rel="preload"` → **0**; one woff2 fetched (48,256 B decoded) |
+
+### Numbers that are now stale in the body
+
+| Where | Was | Is |
+| --- | --- | --- |
+| UX-019, §8, J1 | page **16,779 px**; `#work` **8,205 px**; `#contact` top **15,085 px** at 375 px | page **19,291 px**; `#work` **9,027 px**; `#contact` top **17,623 px**; `#about` top 15,155 px. The experience list alone added ~571 px |
+| §3 content collections | 18 markdown files | **24** (4 services + 4 case studies × 3 locales). `astro check` still reports **30 files** |
+| UX-007 | 12 `h3` in `#work` | **13** (4 card titles + 9 sibling prose) |
+
+### New findings introduced by the rework
+
+**UX-029 [Medium] The four case studies are now inconsistent in shape.**
+
+- **Type:** Content problem / Visual inconsistency
+- **Evidence:** `eu-inspection-tooling`, `topten-ecosystem` and `topten-scout` each carry three `###` headings
+  duplicating their `<dl>`; the new `banco-estado-iot.*.md` has **one paragraph and no headings**. Measured
+  article heights at 375 px: **2,424 / 2,591 / 2,637 / 1,068 px**.
+- **Why it matters:** a reader scanning `#work` sees three long articles and one less than half their size with
+  no explanation; a screen-reader user finds nine `h3`s for three articles and none for the fourth.
+- **Desired:** one shape for all four — which is exactly UX-007's decision (content plan D-5), now with a
+  visible cost.
+- **Status:** Confirmed. It **strengthens** the case for landing UX-007; it does not change the recommended fix.
+
+**UX-030 [Low] The focus select grew to six options, and its longest label sets the control's minimum width.**
+
+- **Type:** Responsive defect (latent — currently masked by UX-003)
+- **Evidence:** `select.options.length === 6`; longest label `RegTech / EPREL Integration / ESPR Readiness`;
+  `select.scrollWidth 298` inside a 300 px column. That column is 300 px only because the Turnstile widget
+  forces it there.
+- **Why it matters:** once UX-003 is fixed (column → 257 px) the **selected option text will clip**, because a
+  native `<select>` cannot wrap its closed-state label.
+- **Desired:** after the reflow fix, shorten the option labels or move the long descriptions into an
+  `aria-describedby` hint so the closed control stays readable at 320 px.
+- **Status:** confirmed by measurement; the clipping is **predicted, not observed** — it cannot appear until
+  UX-003 lands.
+
+**UX-031 [Opportunity] `caseStudyOrder` is now an explicit ordering the UI must respect.**
+
+The rework replaced alphabetical collection order with a `caseStudyOrder` array keyed on `translationKey`
+(unknown keys sort last). A future reorder must edit that array, not the filenames. Recorded so a later phase
+does not "fix" the order by renaming files. **Status:** informational.
+
+**Not a new defect:** the `#about` experience `<dl>` is single-column at 672 px with 3 entries, and `#about`
+reads `H2 → H3 → H3` with no level skip. It is unaffected by UX-013.
+
+### Companion-plan paths
+
+`2026-10-19-security-audit.md` has moved from `active/` to `archive/`. Paths elsewhere in this plan that still
+say `active/` are left as recorded; read them as `archive/`.
 
 ---
 
@@ -566,6 +654,11 @@ Medium (evidence + unverified condition) / Low (needs research).
 - **Dependencies:** must land before UX-012 (grid change) to avoid two edits to the same component.
 - **Status:** Confirmed (structure); the copy-removal decision is **Requires product input**
 
+> **Re-evaluated 2026-10-19:** still open, but the rework changed its shape — `#work` now carries **13** `h3`
+> (4 titles + 9 sibling prose), and the 4th article (`banco-estado-iot`) has **no** body headings, so the four
+> articles no longer match each other. See **UX-029** in the Re-evaluation section. The recommended fix is
+> unchanged; the cost of deferring it is now visible on the page.
+
 ### [UX-008] The 404 and thanks pages are chrome-less dead ends; the 404 ships three `h1` elements
 
 - **Type:** Information architecture / Confirmed defect
@@ -725,6 +818,12 @@ Medium (evidence + unverified condition) / Low (needs research).
   in five files, not a token change.
 - **Dependencies:** UX-007 edits `CaseStudy.astro`; sequence after it.
 - **Status:** Confirmed
+
+> **Re-evaluated 2026-10-19 — the services half of this finding is RESOLVED.** The content rework changed
+> `#services` to `md:grid-cols-2`, measured 2 columns at 768/1024/1440 with prose 291/419/426 px and single
+> column at 375/640. **What remains open from UX-012:** the hero metrics `<dl>`, the `CaseStudy` `<dl>` and the
+> `#contact dl` are all still `sm:grid-cols-3` (309 px columns measured at 1440 px). Do not re-apply the
+> services change — it is already in the tree.
 
 ### [UX-013] The contact `<dl>` declares three columns but has two items
 
@@ -901,6 +1000,10 @@ Medium (evidence + unverified condition) / Low (needs research).
 - **Dependencies:** UX-007 first (length), UX-004 (header structure).
 - **Status:** Length **confirmed**; the claim that length reduces contact completions is a **hypothesis**
   requiring analytics. Do not present it as a defect.
+
+> **Re-evaluated 2026-10-19:** the page grew. At 375 px it is now **19,291 px** (was 16,779), `#work` is
+> **9,027 px** (was 8,205) and `#contact` starts at **17,623 px** (was 15,085). Every figure quoted in §8 and J1
+> from the original audit is stale and superseded by these.
 
 ### [UX-020] Confirmation pages are indexable and present in the sitemap
 
@@ -1521,34 +1624,28 @@ XS/S/M/L/XL from the prioritisation model.
   `src/pages/[lang]/index.astro`.
 - **Components likely to change:** all presentational ones, mechanically.
 - **Detailed implementation tasks:**
-  1. Add `--color-control-border`, `--color-control-bg`, `--color-danger`, `--color-danger-border`,
-     `--space-section`, `--duration-fast`, `--ease-standard` to `@theme`, **and** their dark overrides to
-     the existing `@media (prefers-color-scheme: dark) { :root { … } }` block. [Effort M]
-  2. Choose control-border values that measure ≥3:1 against both the control fill and the page background in
-     both themes; record the measured numbers in the phase's evidence block. Do not guess. [S]
-  3. Add `Container.astro` (+ `as` prop) and replace `mx-auto max-w-5xl px-6` in 6 components. [S]
-  4. Add `Button.astro` with `primary`/`secondary` variants and a shared hover/focus/active/disabled
-     treatment; replace the 4 duplicated accent-button strings and the hero's outline button. [M]
-  5. Add `PageShell.astro` that renders the skip link, header, `<main id="main-content" tabindex="-1">` and
-     footer; keep `BaseLayout` as the document shell. [M]
-  6. Add the skip link: first focusable element, `sr-only` until focused, visually positioned over the
-     header, `href="#main-content"`. [S]
-  7. Add the reduced-motion guard and consume `--measure` on prose wrappers (or delete the token and record
-     the decision — §13 D-9). [S]
+  1. [x] Add the semantic tokens, with dark overrides — see the token-placement deviation below.
+  2. [x] Control-border values chosen by measurement, not guesswork; numbers in the evidence block.
+  3. [x] `Container.astro` added (`as` + `id` props) and every `mx-auto max-w-5xl px-6` replaced.
+  4. [x] `Button.astro` added with `primary`/`secondary` variants, `md`/`sm` sizes and a shared
+     hover/active/disabled treatment; all five call sites migrated, including the form submit.
+  5. [x] `PageShell.astro` added; `BaseLayout` reduced to a document shell.
+  6. [x] Skip link: first focusable element, `sr-only` until focused, `focus:fixed`, `href="#main-content"`.
+  7. [x] Reduced-motion guard added. **`--measure` was deliberately not consumed** — see the deviation.
 - **Explicitly out of scope:** form behaviour, error copy, breakpoint changes, footer content, 404/thanks
   chrome, Turnstile.
 - **Risks:** introducing a component abstraction the codebase does not need; token duplication between
   `@theme` and the dark block (the single most likely regression). Mitigate by measuring contrast in a
   browser in both themes and pasting the numbers into the plan.
 - **Acceptance criteria:**
-  - [ ] A skip link is the first Tab stop on `/`, `/ca/`, `/es/`, is invisible until focused, and moves focus
+  - [x] A skip link is the first Tab stop on `/`, `/ca/`, `/es/`, is invisible until focused, and moves focus
         to `<main>`.
-  - [ ] Every form control's boundary measures ≥3:1 against its own fill and the page background in light and
+  - [x] Every form control's boundary measures ≥3:1 against its own fill and the page background in light and
         dark themes (numbers recorded).
-  - [ ] No visual change to decorative borders (header/footer rules, card outlines) compared with the
+  - [x] No visual change to decorative borders (header/footer rules, card outlines) compared with the
         pre-phase build.
-  - [ ] `grep -c 'mx-auto max-w-5xl' src/` → `0` outside the `Container` component.
-  - [ ] Every focusable element shows a 2 px focus outline; verify Tab through the header at 375 px and
+  - [x] `grep -c 'mx-auto max-w-5xl' src/` → `0` outside the `Container` component.
+  - [x] Every focusable element shows a 2 px focus outline; verify Tab through the header at 375 px and
         1440 px.
 - **Automated validation:** `npm run format:check && npm run check && npm run lint && npm run build`.
 - **Manual validation:** keyboard Tab through the page in both themes; compare computed border colours with
@@ -1557,7 +1654,92 @@ XS/S/M/L/XL from the prioritisation model.
 - **Parallelisation opportunities:** the token work and the `Container` extraction can proceed in parallel
   with Phase 7's harness setup.
 
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **Token placement was split.** Colour tokens went into `@theme static`; `--space-section`,
+   `--duration-fast`, `--ease-standard` and the existing `--measure` stayed in the plain `:root` block.
+   Reasons: (a) `@theme` tree-shakes tokens that no generated utility references, so `--color-danger*` would
+   have been emitted in the dark block but not in light, producing a half-defined token; `static` forces every
+   declared token out. (b) The three non-colour tokens are not Tailwind utility namespaces, so `@theme` would
+   not reliably emit them and a `var()` reference would silently resolve to nothing.
+2. **`--measure` is not consumed here.** Task 7 allowed "consume or delete"; neither was done, because Phase 5
+   owns exactly this work ("Prose measure: apply `--measure`; verify the hero subtitle still looks
+   intentional"). Consuming it now would duplicate Phase 5 and change line length in a foundation phase.
+   **This sub-task is deferred, not done** — UX-021 remains open.
+3. **`--space-section` is consumed** in the three `py-12` sections via `py-[var(--space-section)]`, with the
+   value set to `3rem` so the rendered padding is unchanged (verified: 48 px). Hero `py-20 sm:py-28` and
+   contact `py-20` keep their literal values; unifying that split is Phase 5's rhythm work.
+4. **`BaseLayout` lost its `<main>`**, so 404 and the two thanks pages now supply their own
+   `<main id="main-content">`. That is a structural necessity of moving `main` into `PageShell`, not a
+   chrome addition — those pages still have no header, nav or footer (UX-008 remains open).
+5. **`Button` gained a `size` prop.** Without it, unifying to one padding would have visibly resized the
+   header CTA, which currently uses `px-4 py-2 text-sm`.
+6. **`Container` needed an `id` prop** — `astro check` rejected `<Container id="…">` until it was declared.
+7. **Two control boundaries changed colour by design:** the header nav-toggle border and the hero's secondary
+   CTA moved from `--color-border` (1.24:1) to `--color-control-border` (≥3:1). They are controls, not
+   decorative rules. Decorative borders are untouched — see the measured colours below.
+8. **`astro check` now reports 33 files**, up from 30, because three components were added.
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check   → exit 0
+$ npm run lint           → exit 0
+$ npm run check          → 33 files, 0 errors, 0 warnings, 0 hints
+$ npm run build          → 7 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+$ grep -rn 'mx-auto max-w-5xl' src/ | grep -v Container.astro | wc -l
+0
+```
+
+**Token emission** (`dist/_astro/*.css`):
+
+```
+--color-control-border : #808690 (light) → #6b7280 (dark)
+--color-control-bg     : #f7f8fa (light) → #16181d (dark)
+--color-danger         : #b42318 (light) → #ff8f85 (dark)
+--color-danger-border  : #d92d20 (light) → #f97583 (dark)
+--space-section: 3rem      --measure: 68ch
+--duration-fast: .15s      --ease-standard: cubic-bezier(.4, 0, .2, 1)
+py-[var(--space-section)]  → padding-block: var(--space-section)
+```
+
+**Skip link and focus** (browser, built site):
+
+```
+/      first Tab → <a> "Skip to main content"  href="#main-content"  visible, position:fixed, top 16px
+       Enter      → activeElement = <main id="main-content">, location.hash = #main-content
+/ca/   first Tab → <a> "Salta al contingut principal"  href="#main-content"  visible
+1440px header Tab stops 1–9 → all 2px solid outline (skip link, brand, 4 nav links, 3 language links)
+ 375px Tab stops 1–4        → all 2px solid outline
+```
+
+**Control boundaries** (computed styles, all four controls identical):
+
+| Theme | Border | vs page | vs own fill | fill vs page |
+| --- | --- | --- | --- | --- |
+| light | `rgb(128,134,144)` | **3.66:1** | **3.45:1** | 1.06:1 |
+| dark | `rgb(107,114,128)` | **3.91:1** | **3.67:1** | 1.06:1 |
+
+Both themes clear the 3:1 requirement against both backgrounds. Before this phase the same measurements were
+1.24:1 / 1.17:1 (light) and 1.23:1 (dark) — that is UX-002's defect, now fixed at the token level.
+
+**Decorative borders unchanged** — computed colours still `rgb(228,231,236)` for the header rule, the footer
+rule and a service card outline, i.e. the original `--color-border`.
+
+**Layout unchanged:** `#services` / `#work` / `#about` padding-block **48 px** (was `py-12`), `#contact`
+80 px, hero 112 px at 1440 px, container max-width **1024 px**. Horizontal overflow at 320 px is still the
+pre-existing 324 vs 305 (UX-003, untouched by this phase); 375 px and 1440 px are clean.
+
+**Transitions compiled:** the button resolves `transition-duration: 0.15s`,
+`transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1)`,
+`transition-property: color, background-color, border-color, opacity` — the new duration/easing tokens are
+consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built CSS.
+
 ### Phase 2: Contact form state model and accessibility
+
 
 - **Goal:** make the form completable, recoverable, and comprehensible with keyboard, screen reader, slow
   network, and no JavaScript.

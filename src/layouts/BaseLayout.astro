@@ -107,10 +107,11 @@ const jsonLd = buildJsonLd({ locale: lang, t });
     */}
   </head>
   <body>
-    <slot name="header" />
-    <main id="top">
-      <slot />
-    </main>
-    <slot name="footer" />
+    {/*
+      Document shell only — html/head/body. Page chrome lives in `PageShell` so the skip link and the
+      `main` landmark cannot be assembled twice, and so pages that intentionally have no chrome can
+      supply their own `<main>`.
+    */}
+    <slot />
   </body>
 </html>

@@ -1,0 +1,21 @@
+---
+/**
+ * Page container: the single owner of horizontal rhythm and max width.
+ *
+ * Replaces the `mx-auto max-w-5xl px-6` string that was copy-pasted into nine elements, so a
+ * change to the page width is one edit instead of nine.
+ */
+interface Props {
+  as?: 'div' | 'section';
+  /** Anchor target for in-page navigation (`#services`, `#work`, …). */
+  id?: string;
+  class?: string;
+}
+
+const { as = 'div', id, class: className, ...rest } = Astro.props;
+const Tag = as;
+---
+
+<Tag id={id} class:list={['mx-auto max-w-5xl px-6', className]} {...rest}>
+  <slot />
+</Tag>

@@ -21,6 +21,7 @@ export const es: Dictionary = {
     menuLabel: 'Mostrar u ocultar el menú de navegación',
     primaryNavLabel: 'Navegación principal',
     languageNavLabel: 'Seleccione el idioma',
+    skipToContent: 'Saltar al contenido principal',
   },
   hero: {
     badge:

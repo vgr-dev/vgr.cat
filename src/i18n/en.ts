@@ -30,6 +30,7 @@ export const en = {
     menuLabel: 'Toggle navigation menu',
     primaryNavLabel: 'Primary navigation',
     languageNavLabel: 'Select language',
+    skipToContent: 'Skip to main content',
   },
   hero: {
     badge: 'Available for European & Catalan software engineering and advisory',

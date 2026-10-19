@@ -1938,7 +1938,7 @@ paraphrased):
       > **Decision: leave it as it is and carry it as a security issue needing revision at a later time.**
       > The endpoint is live and public, which makes this the one open security question in this plan —
       > tracked in §6, not changed here, because altering zone security configuration is the user's call.
-- [ ] Task 6.8: Land the work on `main` with **signed** commits and let `Deploy` run. (Superseded
+- [x] Task 6.8: Land the work on `main` with **signed** commits and let `Deploy` run. (Superseded
       2026-10-16: branch protection was removed, so a branch and PR are optional — see the note below.
       Do not commit or push without explicit authorization.)
 
@@ -1952,6 +1952,46 @@ paraphrased):
       > **Verified for the four commits awaiting a push on 2026-10-16:**
       > `git log --format='%h %G? %GS'` reports **`G`** for all four, signed by
       > `Victor Gonzalez (VGR) <victor@vgr.cl>` — so they satisfy the retained requirement.
+      >
+      > **COMPLETE 2026-10-19 — landed and deployed; the tick rests on measured runs, not on intent.** The
+      > user committed and pushed the pending plan change themselves (no agent commit or push was run —
+      > authorisation was explicitly declined earlier in the session, then given by the user acting
+      > directly). Verbatim:
+      >
+      > ```
+      > $ git status --short                    # (empty)
+      > $ git status -sb | head -1
+      > ## main...origin/main
+      > $ git log --format='%h %G? %GS | %ci | %s' -1
+      > a012c81 G Victor Gonzalez (VGR) <victor@vgr.cl> | 2026-10-19 12:29:53 +0200 | docs: close pending tasks
+      > $ git show --stat --oneline HEAD
+      > a012c81 docs: close pending tasks
+      >  .../active/2026-10-15-portfolio-regtech-site.md | 62 ++++++++++++++++++++--
+      >  1 file changed, 59 insertions(+), 3 deletions(-)
+      > ```
+      >
+      > | Run | ID | Event | Conclusion | Head SHA | Timing |
+      > | --- | --- | --- | --- | --- | --- |
+      > | `CI` | `39237885008` | `push` | **`success`** | `a012c81802723ad0d2352af4d37b21417f003776` | 29 s, created `10:30:01Z` |
+      > | `Deploy` | `39237954163` | `workflow_run` | **`success`** | `a012c81802723ad0d2352af4d37b21417f003776` | 38 s, `10:30:32Z` → `10:31:10Z` |
+      >
+      > Both runs target the same `head_sha`, so the commit `CI` validated is the commit that deployed —
+      > the property Task 4.8's `workflow_run` gate exists to guarantee. `Deploy` started **31 s after**
+      > the `CI` push run rather than alongside it, which is the second measured confirmation of the
+      > ordering (the first is recorded under Task 4.8).
+      >
+      > **Scope correction, recorded rather than glossed.** This push carried **only the plan file**, not
+      > application source. All application code was already on `main` at `c85d3e8`, with its own green
+      > `CI` → `Deploy` pair (`39235357668` / `39235452500`, 2026-10-19T10:09Z). Nothing in this tick claims
+      > that a code change shipped in `a012c81`.
+      >
+      > **Not verified here:** the Cloudflare-side deployment record for `a012c81`. The Workers API is not
+      > readable with the credentials available in this session — the same limit recorded under Task 4.9 —
+      > so the evidence is the workflow conclusion plus its `head_sha`, not a fresh Workers deployment read.
+      >
+      > **One item this task does not close:** the tick itself (and the Task 6.6 closure it accompanies) is
+      > uncommitted at the time of writing, so landing it needs one more signed commit — the same
+      > chicken-and-egg the checkbox has by design, since Deploy evidence can only exist after a push.
 
 #### Acceptance Criteria
 
@@ -2055,8 +2095,13 @@ paraphrased):
       > Two items are deliberately **not** ticked and are marked deferred with their reason rather than
       > inferred: the first-paint half of the checksum criterion (no paint-timing data available) and
       > Task 6.6 (copy does not exist yet). Everything else deferred in this plan is listed in §6.
-- [ ] Plans and decision records are archived with the `## Archive Metadata` footer when complete. Do
+- [x] Plans and decision records are archived with the `## Archive Metadata` footer when complete. Do
       **not** delete `.ai/plans/active/.gitkeep`, and do **not** run Prettier on `.ai/`.
+      > **DONE 2026-10-19.** This file and its companion `2026-10-15-portfolio-regtech-site-ia.md` were
+      > moved together into `.ai/plans/archive/`, with the footer appended to each. Verified afterwards:
+      > `.ai/plans/active/` contains **exactly one** entry, `.gitkeep` (`ls -A` → `.gitkeep`), and
+      > `.ai/plans/archive/` lists both files. Prettier was not run on `.ai/` — it is in `.prettierignore`,
+      > which is why `format:check` stays clean with these long lines.
 
 ---
 
@@ -2066,6 +2111,13 @@ None of these is finished, and none is a surprise: each was consciously left in 
 that reopens it. The plan cannot be archived with these open until the user confirms the deferrals
 (see `.github/instructions/plans.instructions.md`), so the archive footer is not appended yet.
 
+> **CONFIRMED 2026-10-19 — the deferrals below are accepted and the plan is archived.** The user's words
+> were *"we can finalize it. nothing else to finish"*, which is the explicit confirmation the rule above
+> requires. The two rows that had since been finished (Task 6.6 and Task 6.8) were marked complete in
+> place; every other row stays deferred on the terms recorded beside it. The footer restates them so they
+> survive the move. Deliberately left as a dated note rather than an edit to the paragraph above, which
+> described the state as it stood on 2026-10-16.
+
 | Item | State | Reopen when |
 | --- | --- | --- |
 | **Security:** enabled but inert `block` rule "Contact Rate Limit" on `/api/contact` (ruleset `05d3061297a5476f91ff8f0c91b4c46b`, dynamic-redirect phase) | **Deferred as a security issue** by the user on 2026-10-16 | Before public launch, or at the next zone-security review. Measured inert — the endpoint answers with the Worker's own `405`/`400`, never a Cloudflare `403` — so nothing is protected by it. A real limit needs a **Rate Limiting Rule** (`http_ratelimit` phase). Details under Task 6.7. |
@@ -2074,5 +2126,58 @@ that reopens it. The plan cannot be archived with these open until the user conf
 | First-paint half of the checksum/first-paint criterion | **Deferred** — this browser instance reports no paint timing, and Lighthouse is not in the dependency tree | When a Lighthouse dev dependency is authorised, or when a change touches CSS or fonts. The checksum half is complete and clean. |
 | Phase 5 criterion "the beacon request succeeds" | **Deferred on environment grounds, not doubt** — the beacon is emitted and permitted (zero violations), but `static.cloudflareinsights.com` does not resolve from the agent sandbox (`net::ERR_NAME_NOT_RESOLVED`) | From any network that resolves the beacon host: assert the POST to `cloudflareinsights.com/cdn-cgi/rum`, or simply confirm pageviews appear in Web Analytics for `vgr.cat` — the same fact seen from the other end. |
 | Task 6.6 — final EN/CA/ES copy and deletion of the `ALLOW_PLACEHOLDER_COPY` variable | **COMPLETE 2026-10-19** — this row read "**Blocked** on user-supplied copy (~196 `TODO(copy)` sentinels)" and was not updated when the copy landed; measured state is **0 sentinels** and the repository variable **deleted** (evidence under Task 6.6) | — |
-| Task 6.8 — land the work on `main` | **Awaiting explicit authorisation** (hard rule 1) | On the user's word. Commits must be signed. |
+| Task 6.8 — land the work on `main` | **COMPLETE 2026-10-19** — this row read "**Awaiting explicit authorisation** (hard rule 1)"; commit `a012c81` was signed (**`G`**) and pushed by the user, and `CI` `39237885008` → `Deploy` `39237954163` both concluded `success` on the same `head_sha` (evidence under Task 6.8) | — |
 | `AGENTS.md` / `.github/instructions/cloudflare-config.instructions.md` claiming that "Wrangler reconciles routes on every deploy, so a route added only in the dashboard disappears on the next deploy" | **CORRECTED 2026-10-16** — `AGENTS.md` in commit `b542494`; the scoped instruction file and `README.md` in this round (closure note under Task 4.7) | — |
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-19
+- **Verified Commit**: a012c81
+- **Sign-off**: Manual Review Passed
+
+**Task completion: 39 / 39.** Every implementation task is complete, and so is the §5 criterion requiring
+this footer. The **two** checkboxes that remain unticked are *verification criteria*, not work items —
+Phase 5's "the beacon request succeeds" and Phase 6's checksum/first-paint comparison. Both were accepted
+as deliberately deferred by the user on 2026-10-19 (*"we can finalize it. nothing else to finish"*), which
+is the confirmation `.github/instructions/plans.instructions.md` requires before a plan may be archived
+with open criteria.
+
+### Deferred Checks
+
+| Criterion open at archive time | State | Reopen when |
+| --- | --- | --- |
+| **Phase 5 — "the beacon request succeeds"** | **Deferred on environment grounds, not doubt.** Cloudflare injects `beacon.min.js` and the meta CSP permits it — zero `securitypolicyviolation` events on `/`, `/ca/` and `/es/` in a real browser — but `static.cloudflareinsights.com` does not resolve from the agent sandbox (`net::ERR_NAME_NOT_RESOLVED`), so the POST to `cloudflareinsights.com/cdn-cgi/rum` could never be observed from here. | Any load from a network that resolves the host, or pageviews appearing in Web Analytics for `vgr.cat` — the same fact seen from the other end. |
+| **Phase 6 — checksum / first-paint comparison** | **Half verified, half deferred.** Checksum: every delivered artefact (3 HTML pages, `robots.txt`, `og-default.png`, `404.html`, 8 `_astro/*` files) is byte-identical between the local build and production. First-paint: not measurable — this browser reports no paint timing and Lighthouse is not in the dependency tree. | A Lighthouse dev dependency being authorised, or a change touching CSS or fonts. |
+| **Task 6.7 — inert `block` rule on `/api/contact`** | **Accepted by the user 2026-10-16** and carried as a security issue. Ruleset `05d3061297a5476f91ff8f0c91b4c46b` is enabled but never fires: the endpoint answers with the Worker's own `405`/`400`, never a Cloudflare `403`. | Before public launch, or at the next zone-security review. The mechanism is a **Rate Limiting Rule** (`http_ratelimit` phase), not a `block` in the dynamic-redirect phase. |
+| **Task 6.5 — horizontal scroll below ~324 px** | **Accepted by the user 2026-10-16** (option A). Turnstile's `normal` widget has a 300 px minimum, so `24 px + 300 px = 324 px` and the page scrolls sideways below that. Nothing is clipped or unreachable. | A widget-size change is wanted, or traffic shows 320 px devices. `data-size="compact"` is the one-attribute fix and needs a **production** check, because `challenges.cloudflare.com` is unreachable from the agent sandbox. |
+| **Zone `min_tls_version = "1.0"`** | **Not raised**; no task requires it. `ssl` is `strict` ✓ and `tls_1_3` is on. | Next zone review. |
+
+### Open items handed over
+
+- **`messageId` values were never captured** for the contact happy path. The Worker discards
+  `EmailSendResult`, and the only documented per-event source (`emailSendingAdaptive`) returned no rows,
+  while the Email Sending REST endpoints answer `10001`. Delivery itself **is** confirmed: both the
+  notification and the auto-reply were received. To finish it, log `messageId` in the Worker, or read the
+  IDs from the dashboard's Email Sending activity log.
+- **Replay of a Turnstile token was not observed as rejected.** The same token was submitted four times with
+  four `303`s and no `siteverify rejected` log line, so `timeout-or-duplicate` could not be reproduced. The
+  Worker relies on Cloudflare's documented single-use guarantee. Recorded as **unverified**, not passed.
+- **`npm ci` now reports 0 vulnerabilities**, superseding the 7 (2 moderate, 5 high) recorded under Task
+  6.1. The ESLint 10 / `eslint-plugin-astro` v3 migration in `c85d3e8` cleared them. The Task 6.1 note was
+  left as written, per the evidence standard.
+- **The 196-sentinel figure** in Task 6.6's header context was already superseded there (measured: 145
+  across 16 files, then 135 across 15, then 0) and is not corrected again here.
+
+### Path note
+
+This plan and its companion `2026-10-15-portfolio-regtech-site-ia.md` were moved from `.ai/plans/active/`
+to `.ai/plans/archive/` on 2026-10-19. Body references to `.ai/plans/active/...` are **pre-move paths left
+unedited on purpose** — several occur inside recorded command output and verification evidence, where
+rewriting them would falsify the record.
+
+`a012c81` is the last commit that carried **application** state (it carried only this plan file, but it is
+the deployed commit: `CI` `39237885008` → `Deploy` `39237954163`, both green on that SHA). The archival
+commit also carries the two plan edits that were uncommitted when the archive was written — the Task 6.6
+closure and the Task 6.8 tick.

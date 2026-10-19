@@ -54,3 +54,22 @@ House style for the final EN/CA/ES copy. Until then every string carries a `TODO
   "compliment normatiu", "supervisió de mercat" — not a machine gloss of the English. Same for Spanish.
   Where a phrase only works in English, rewrite it per locale rather than translate it.
 - **Keep sentences short.** The layout is typographic and single-column; long clauses read badly in it.
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-19
+- **Verified Commit**: a012c81
+- **Sign-off**: Manual Review Passed
+
+Companion to `2026-10-15-portfolio-regtech-site.md` (Task 1.1), archived together with it on 2026-10-19 —
+both moved from `.ai/plans/active/` to `.ai/plans/archive/`.
+
+This document is a **completed deliverable rather than a task list**: it records the agreed single-page
+inventory (8 sections), the decision that calendar booking is both the hero CTA and the contact action, and
+the tone guidelines the copy phase was written against. The parent plan's Phases 2–6 built to it and the
+final EN/CA/ES copy shipped, so there is nothing left to tick here.
+
+In-body references to `.ai/plans/active/...` are **pre-move paths left unedited on purpose**, matching the
+parent plan's path note.

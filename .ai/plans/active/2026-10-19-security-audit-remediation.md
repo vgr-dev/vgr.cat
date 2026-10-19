@@ -3,9 +3,15 @@
 ## 1. Context & Objectives
 
 - **Goal**: Close the findings raised by the read-only security audit recorded in
-  `.ai/plans/active/2026-10-19-security-audit.md` — one High (H-1), three Medium (M-1…M-3) and six Low
-  (L-1…L-6) — without changing the settled architecture (static output, no adapter, Workers static assets,
-  meta-delivered CSP) and without weakening any existing control.
+  `.ai/plans/active/2026-10-19-security-audit.md` — one High (H-1), two Medium (M-2, M-3) and nine Low
+  (L-1…L-8 plus M-1, demoted into that band after live verification) — without changing the settled
+  architecture (static output, no adapter, Workers static assets, meta-delivered CSP) and without weakening
+  any existing control.
+  - **Verified 2026-10-19 via the Cloudflare MCP (read-only `GET`s):** the "Contact Rate Limit" rule is
+    **not** inert any more — it lives in the `http_ratelimit` phase, is enabled, and blocks at 5 req / 10 s per
+    `(ip.src, cf.colo.id)`. That downgraded M-1 to Low and invalidates the `AGENTS.md` / repo-memory gotcha that
+    says otherwise. Zone routes, cache rules, WAF and observability were also read; see the audit's
+    "Cloudflare API verification" block.
 - **Technical Strategy**:
   - **Risk-ordered phases.** The CI/CD trust boundary (H-1, M-2, L-6) ships first and independently, because it
     is the only path with production-write impact; endpoint hardening (M-1, M-3, L-1…L-5) ships second.
@@ -65,6 +71,9 @@
 - `scripts/check-production-env.mjs` - `[Modify]` - also reject a test key committed as
   `PRODUCTION_SITE_KEY` (L-4).
 - `public/_headers` - `[Modify]` - add `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy` (I-2).
+- `AGENTS.md` - `[Modify]` - correct the **stale** gotcha that says the contact rate-limit rule is inert in
+  the `dynamic-redirect` phase (verified false on 2026-10-19), and record that `check:production-env` now
+  validates the committed default sitekey.
 - `.ai/plans/active/2026-10-19-security-audit.md` - `[Modify]` - the audit is the source of truth; do **not**
   rewrite its recorded command output. Append a dated "Remediation status" note instead (§5).
 
@@ -91,10 +100,20 @@ that no repository change can satisfy.
       GitHub → `production` environment required reviewers + deployment branches restricted to `main`;
       fork-PR workflow policy; secret scanning + push protection; Dependabot alerts; CodeQL default setup;
       confirm `main` still requires signed commits.
-- [ ] Task 0.4: Produce the Cloudflare checklist: delete or re-phase the inert `dynamic-redirect`-phase
-      "Contact Rate Limit" rule; confirm `workers_dev` and `preview_urls` are off; confirm the Turnstile widget's
-      allowed hostnames contain `vgr.cat` and not `localhost`; confirm the API token is scoped to Workers
-      Scripts + Email only.
+- [ ] Task 0.4: Cloudflare side — **already verified read-only on 2026-10-19, do not re-derive**: the
+      `http_ratelimit` ruleset is present, enabled and correctly phased (5 req / 10 s per IP+colo, 10 s
+      mitigation); the only Worker route is `vgr.cat` (no wildcard) and there is no wildcard DNS record; there
+      are no cache rules and no custom WAF rules; zone HSTS is off, which is correct because the app sends
+      `Strict-Transport-Security` itself; observability is fully sampled, persisted, and
+      `redact_query_string: false`. **Remaining user actions (agent must not perform them):**
+      (a) raise `min_tls_version` from `1.0` to at least `1.2` (audit L-8);
+      (b) remove `127.0.0.1` and `localhost` from Turnstile widget `0x4AAAAAAFX7NYXtXTGajTgb` and use
+      `PUBLIC_TURNSTILE_SITE_KEY` for local development instead (audit I-12);
+      (c) confirm `workers_dev` / `preview_urls` are off — the script-settings payload omits both keys, which is
+      consistent with "off because `routes` is set" but does not assert it, so check and confirm no
+      `vgr-cat.vgr-spa-domains.workers.dev` hostname serves the site;
+      (d) confirm the API token's scope (the MCP credential cannot read `GET /user/tokens` → `9109`);
+      (e) decide whether `observability.redact_query_string` should be on (audit L-2).
 
 #### Acceptance Criteria
 
@@ -154,11 +173,15 @@ that no repository change can satisfy.
 ### Phase 2: Rate limit and bound the entire request before parsing (M-1, M-3)
 
 **Goal**: Every rejection is cheap, and no single client can drive unbounded e-mail volume or unbounded parse
-work.
+work. **This is defence in depth, not the closure of a missing control** — the edge already limits a single IP
+(verified), but that guarantee lives only in the dashboard and has drifted once, so it must also exist in the
+repository where it can be reviewed and regressed.
 
 #### Tasks
 
-- [ ] Task 2.1: In `wrangler.jsonc`, add a rate-limit binding next to `send_email` (M-1):
+- [ ] Task 2.1: In `wrangler.jsonc`, add a rate-limit binding next to `send_email` (M-1). The binding is a
+      **version-controlled second layer** in front of the already-active edge rule, deliberately set looser so
+      it never contradicts it:
 
       ```jsonc
       "ratelimits": [
@@ -237,8 +260,11 @@ work.
       with a clear message if the literal cannot be found (so a refactor cannot silently disable the guard).
       Do **not** import the `.ts` module from an `.mjs` script — parse the source text instead; that keeps the
       script runnable on the same Node with no loader flags.
-- [ ] Task 3.5: Update `AGENTS.md` only if a documented invariant actually changed (the Turnstile paragraph gains
-      "the committed default is validated too"). Do not restate the audit; link it.
+- [ ] Task 3.5: Update `AGENTS.md`: (a) the Turnstile paragraph gains "the committed default is validated too";
+      (b) **correct the stale contact-rate-limit gotcha** — the rule is in the `http_ratelimit` phase, enabled,
+      and does 5 req / 10 s per IP+colo (verified 2026-10-19 via the Cloudflare API), so the "inert
+      `/api/contact` block rule" open item must be closed rather than carried forward. Do not restate the
+      audit; link it. Update the repository memory (`/memories/repo/vgr.cat.md`) the same way.
 
 #### Acceptance Criteria
 
@@ -324,7 +350,9 @@ CSP or the inline-style strategy.
       2. Content-markdown sanitisation (audit L-7) — contained by the hash CSP; revisit when content is
          accepted from a non-maintainer or the CSP is relaxed.
       3. `.nvmrc` exact pin — only if the user declines (Task 4.2).
-      4. All GitHub and Cloudflare dashboard settings in Tasks 0.3/0.4 — user-owned, outside any agent's authority.
+      4. All GitHub settings in Task 0.3 and the remaining Cloudflare items in Task 0.4 (a)–(e) — user-owned,
+         outside any agent's authority. **Verified done 2026-10-19:** the `http_ratelimit` rule, the absence of a
+         wildcard route/DNS record, the absence of cache and custom WAF rules, and zone HSTS being off.
 - [ ] **Recorded uncertainty**: `workflow_run` trigger semantics were hardened defensively because the exact
       evaluation of `on.workflow_run.branches` for `pull_request`-origin runs could not be verified from the
       repository or without an authenticated API call. The added `event`/`head_repository` assertions make the

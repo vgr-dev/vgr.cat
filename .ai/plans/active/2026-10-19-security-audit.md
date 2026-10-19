@@ -105,9 +105,47 @@ $ grep -nE 'workers_dev|preview_urls|compatibility_flags|limits|triggers' wrangl
                                     # none declared
 ```
 
-**Not verified:** live HTTP headers, live CSP behaviour, Turnstile domain configuration, GitHub environment
-protection rules, Cloudflare rate-limit ruleset state, and e-mail deliverability. Each is either
-dashboard-only or would require production traffic.
+### Cloudflare API verification (2026-10-19, read-only)
+
+Account `VGR SpA Domains` (`94b2d5ba6453a558df79f8e77b02942b`), zone `vgr.cat`
+(`cde2a5cda4abb8c41587e343c2c487cc`). Read-only `GET`s only; no mutation, no request to a live hostname, and no
+secret value was read or printed.
+
+```console
+$ GET /zones/{zone}/settings          → ssl=strict, min_tls_version=1.0, always_use_https=on, tls_1_3=on,
+                                        security_header.strict_transport_security.enabled=false,
+                                        cache_level=aggressive, browser_cache_ttl=14400, development_mode=off
+$ GET /zones/{zone}/rulesets          → http_request_sanitize, http_request_firewall_managed (managed free v74),
+                                        ddos_l7, http_request_dynamic_redirect (zone v1), http_ratelimit (zone v1)
+                                        — NO http_request_cache_settings, NO http_request_firewall_custom
+$ GET /zones/{zone}/rulesets/05d3061297a5476f91ff8f0c91b4c46b
+  → rule "Contact Rate Limit", action=block, enabled=true,
+    expression: http.request.uri.path eq "/api/contact",
+    ratelimit: { characteristics: [ip.src, cf.colo.id], requests_per_period: 5, period: 10,
+                 mitigation_timeout: 10 }
+$ GET /zones/{zone}/rulesets/a6089f82e5914e45acbd3db0ad7a5a32
+  → single 301 rule: (http.request.full_uri wildcard r"https://www.*"), preserve_query_string
+$ GET /zones/{zone}/workers/routes   → only { pattern: "vgr.cat", script: "vgr-cat" }  (no wildcard route)
+$ GET /accounts/{id}/workers/scripts/vgr-cat/settings
+  → bindings: ASSETS(assets), CONTACT_DESTINATION(plain_text), NOTIFY(send_email), REPLY(send_email),
+               TURNSTILE_HOSTNAMES(plain_text), TURNSTILE_SECRET_KEY(secret_text)
+  → observability: enabled=true, head_sampling_rate=1, redact_query_string=false,
+                   logs={enabled:true, persist:true, invocation_logs:true, head_sampling_rate:1}, traces.disabled
+  → workers_dev / previews_enabled / preview_urls: absent from the payload (not asserted false)
+  → tail_consumers: 0, logpush: false
+$ GET /accounts/{id}/challenges/widgets → sitekey 0x4AAAAAAFX7NYXtXTGajTgb ("vgr.cat (Spin)"), mode=managed,
+                                          domains=[127.0.0.1, localhost, vgr.cat], bot_fight_mode=false
+$ GET /zones/{zone}/dns_records      → no "*" wildcard record; apex AAAA=100:: proxied (Worker sentinel);
+                                        www CNAME→vgr.cat proxied; MX vgr.cat→smtp.google.com
+$ GET /accounts/{id}/workers/subdomain → vgr-spa-domains
+```
+
+**Not verified:** live HTTP headers, live CSP behaviour, the *behaviour* of the edge rate limit (exercising it
+would mean probing production, which this audit forbids), `workers_dev` / preview-URL exposure (the settings
+payload simply omits those keys — proving exposure needs a request to a live hostname), GitHub environment
+protection rules and fork-PR policy, the Cloudflare API token's scope (`GET /user/tokens` → `9109
+Unauthorized`), and e-mail authentication (SPF/DKIM/DMARC records were listed by name only and were not
+assessed).
 
 ## Counts by severity
 
@@ -115,9 +153,19 @@ dashboard-only or would require production traffic.
 | --- | --- |
 | Critical | 0 |
 | High | 1 |
-| Medium | 3 |
-| Low | 6 |
-| Informational | 11 |
+| Medium | 2 |
+| Low | 9 |
+| Informational | 12 |
+
+**Corrections, 2026-10-19 (after live read-only Cloudflare API verification).** The corrections below leave the
+original numbers in place rather than overwriting them.
+
+1. The table as first written said *Medium 3 / Low 6*. That `Low 6` was itself an arithmetic error — findings
+   L-1 through L-7 are **seven**. Corrected counts before the API review were therefore
+   Critical 0 / High 1 / Medium 3 / Low 7 / Informational 11.
+2. The API review **demoted M-1 from Medium to Low** (an enabled, correctly-phased edge rate limit exists — see
+   the Correction note under M-1) and added **L-8** (`min_tls_version: 1.0`) and **I-12** (Turnstile widget
+   allows `localhost`). Current totals: Critical 0 / High 1 / Medium 2 / Low 9 / Informational 12.
 
 ## Was a production-compromise path identified?
 
@@ -262,11 +310,12 @@ git push / PR
   `github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success')`
   — and add required reviewers to the `production` environment as a second, independent gate.
 
-## [M-1] No server-side rate limiting anywhere on `POST /api/contact`; each accepted submission sends two e-mails, one to an arbitrary recipient
+## [M-1] No *global* abuse ceiling on `POST /api/contact`; e-mail amplification to arbitrary recipients is bounded only per-IP at the edge
 
-- **Severity:** Medium
-- **Confidence:** High for the code path; Medium for the dashboard rule (recorded as inert by the project,
-  not re-measured here).
+- **Severity:** **Low** (demoted from Medium on 2026-10-19 after live API verification — see the Correction note
+  below; the `M-1` ID is retained for traceability with the audit and the remediation plan)
+- **Confidence:** High for the code path and for the current zone state; the *behaviour* of the edge rule was
+  not exercised (that would require probing production).
 - **Category:** Abuse prevention / resource exhaustion / e-mail amplification
 - **CWE:** CWE-770 (Allocation of Resources Without Limits), CWE-799 (Improper Control of Interaction Frequency)
 - **Affected files:** `src/worker/index.ts`, `wrangler.jsonc`
@@ -276,9 +325,16 @@ git push / PR
   or paid attacker, and the widget is public); repeat.
 - **Evidence:** the Worker contains no counter, no KV/Durable-Object rate-limiter binding, no
   `RateLimit` binding, and no per-IP throttle. `wrangler.jsonc` declares only `send_email` bindings,
-  `vars`, and `assets`. The project's own records (`AGENTS.md`; `src/worker` review notes) state that the
-  Cloudflare "Contact Rate Limit" rule is `action=block` in the **`dynamic-redirect` phase**, which is inert —
-  a rate limit requires the `http_ratelimit` phase — and that the user chose to leave it as an open item.
+  `vars`, and `assets`.
+- **Correction (2026-10-19):** this finding originally asserted there was **no** rate limiting anywhere,
+  citing the project's records (`AGENTS.md`; `src/worker` review notes) that the "Contact Rate Limit" rule sat
+  in the inert `dynamic-redirect` phase. The live API read shows that record is **stale**: ruleset
+  `05d3061297a5476f91ff8f0c91b4c46b` is in phase **`http_ratelimit`**, version 1, and its rule is enabled —
+  `action=block` on `http.request.uri.path eq "/api/contact"`, 5 requests per 10 s per `(ip.src, cf.colo.id)`,
+  `mitigation_timeout: 10`. The `dynamic-redirect` ruleset now holds only the www→apex 301. Genuine residual
+  gaps, which is what keeps this finding alive at Low: the rule is **per-IP**, so a distributed attacker with
+  many source addresses is unconstrained; there is **no global ceiling** on outbound mail; and the rule exists
+  only in the dashboard, so no repository check can regress-test it — it has already drifted once.
 - **Exploit or failure scenario:** An attacker solves one challenge then loops the endpoint. Every pass
   produces (a) a notification to `contact@vgr.cat` (inbox flood / notification fatigue) and (b) an outbound
   message **to an arbitrary address of the attacker's choosing** via the deliberately unrestricted `REPLY`
@@ -286,12 +342,15 @@ git push / PR
   domain's reputation at stake and no ceiling on volume.
 - **Impact:** Outbound-mail reputation damage and potential blocklisting of `vgr.cat`; inbox exhaustion;
   unbounded Workers invocations and Email Service usage. Not confidentiality-integrity breaking.
-- **Existing controls:** Turnstile (server-verified, three gates) is the only effective limit; honeypot
-  (`form_guard`, `:142`) and elapsed-time (`MIN_ELAPSED_MS`, `:144`) are advisory. `NOTIFY` is
-  destination-pinned, which bounds the *inbound* target but not volume.
-- **Recommended remediation:** add a genuine rate limit (cloudflare `ratelimit` binding, or a Durable Object /
-  KV counter keyed on `CF-Connecting-IP` with a short window and a global ceiling), and fix or delete the inert
-  zone rule. Consider not auto-replying on every successful submission.
+- **Existing controls:** an **enabled, correctly-phased edge rate limit** (5 req / 10 s per IP+colo, 10 s
+  mitigation — verified 2026-10-19) is the effective volume limit; Turnstile (server-verified, three gates)
+  limits automation; honeypot (`form_guard`, `:142`) and elapsed-time (`MIN_ELAPSED_MS`, `:144`) are advisory.
+  `NOTIFY` is destination-pinned, which bounds the *inbound* target but not volume.
+- **Recommended remediation:** treat the repository-side limiter as **defence in depth, not a missing
+  control** — add a `ratelimits` binding in `wrangler.jsonc` keyed on `CF-Connecting-IP` so the guarantee is
+  version-controlled and survives dashboard drift; consider not auto-replying on every successful submission;
+  and keep the zone rule in the dashboard as the outer layer (do **not** delete it — the earlier advice to
+  "fix or delete the inert rule" is withdrawn because it is no longer inert).
 
 ## [M-2] Third-party Actions are pinned to mutable major tags, including the one that receives the production Cloudflare token
 
@@ -505,6 +564,28 @@ git push / PR
 - **Recommended remediation:** add a rehype sanitisation step (or disable raw HTML) for the content
   collections, so the containment does not depend solely on CSP.
 
+## [L-8] `min_tls_version` is `1.0`, so TLS 1.0 and 1.1 are still accepted at the edge
+
+- **Severity:** Low
+- **Confidence:** High — read directly from the live zone settings (`GET /zones/{zone}/settings` →
+  `min_tls_version: "1.0"`), not inferred from the repository.
+- **Category:** Transport security configuration
+- **CWE:** CWE-326 (Inadequate Encryption Strength), CWE-327 (Use of a Broken or Risky Cryptographic Algorithm)
+- **Affected files:** none in the repository — this is a **zone setting**, so it cannot be fixed or regressed by
+  a commit.
+- **Affected lines or symbols:** Cloudflare zone `vgr.cat` (`cde2a5cda4abb8c41587e343c2c487cc`), setting
+  `min_tls_version`.
+- **Attack preconditions:** a network-positioned attacker able to downgrade a visitor's handshake to TLS 1.0/1.1.
+- **Evidence:** `min_tls_version: "1.0"` while `tls_1_3: "on"` and `ssl: "strict"`. TLS 1.0 and 1.1 were
+  deprecated by RFC 8996 and are barred by PCI-DSS; Cloudflare offers `"1.1"`, `"1.2"` and `"1.3"`.
+- **Exploit or failure scenario:** a visitor on an old client negotiates TLS 1.0/1.1 with the edge; the modern
+  cipher suites still protect the record layer, but the protocol version is out of policy and out of compliance.
+- **Impact:** policy/compliance exposure and a wider protocol surface; no confidentiality break demonstrated.
+- **Existing controls:** `ssl: strict` (origin validation is moot — the apex is Worker-only, `AAAA 100::`),
+  TLS 1.3 enabled, `always_use_https: on`, `automatic_https_rewrites: on`, and HSTS shipped by the app.
+- **Recommended remediation:** set `min_tls_version` to `"1.2"` (or `"1.3"` once legacy clients are not a
+  concern). User action — an agent must not change zone settings.
+
 ## [I-1] The CSP is delivered in a `<meta>` element, so `frame-ancestors`, `report-uri` and `sandbox` are unavailable
 
 - **Severity:** Informational
@@ -609,24 +690,51 @@ git push / PR
   in `deploy.yml` a compromised install script could shape `dist/` before `wrangler deploy` runs.
   `npm audit` reports 0 vulnerabilities.
 
-## [I-11] Cloudflare and GitHub settings that a repository audit cannot verify
+## [I-11] External settings: what is now verified, and what still needs a human
 
 - **Severity:** Informational
-- **Confidence:** Low by definition — these are unverified external settings, not findings.
+- **Confidence:** High for the verified rows (live API read), Low for the remainder.
 - **Category:** Unverified external configuration
-- **Cloudflare dashboard verification required:**
-  - Zone rate-limit ruleset: confirm whether the "Contact Rate Limit" rule exists and in which phase (the
-    project records it as inert in `dynamic-redirect`). See M-1.
-  - `workers_dev` / `preview_urls`: confirm they are disabled, i.e. no `*.workers-dev` preview hostname serves
-    the production Worker.
-  - `compatibility_date` / available flags, cache rules (any "cache everything" rule would matter for L-5),
-    WAF rules, Bot Fight Mode, and the Turnstile widget's allowed-hostname list (must contain `vgr.cat` and no
-    `localhost`).
-  - Workers Logs retention / sampling (L-2), and the API token's scope (should be the narrowest
-    Workers-Scripts + Email permissions for this account).
-- **GitHub settings verification required:**
-  - `production` environment protection rules (required reviewers, deployment branch restriction) — decides
-    H-1 and L-6.
-  - Whether fork-origin workflows run for this repository (decides H-1 preconditions).
-  - Secret scanning / push protection, Dependabot alerts, CodeQL default setup (see I-6).
-  - Whether `main` still requires signed commits (history shows all-`G`, so it holds today).
+- **Verified 2026-10-19 (no longer open questions):**
+  - The `http_ratelimit` ruleset exists, is enabled, and is correctly phased at 5 req / 10 s per
+    `(ip.src, cf.colo.id)` — see the Correction under M-1.
+  - Worker routes contain **only** `vgr.cat`; there is no wildcard `*.vgr.cat/*` route and no wildcard DNS
+    record.
+  - There are **no** cache rules (`http_request_cache_settings` is absent) and no custom WAF rules, so L-5 is
+    defence in depth only and nothing currently caches a non-GET response.
+  - Zone HSTS (`security_header`) is **disabled** — correct, because the app ships
+    `Strict-Transport-Security` itself; enabling both would emit a duplicate header.
+  - Managed rulesets present: Cloudflare Managed Free Ruleset v74, L7 DDoS, request sanitisation.
+  - `observability` is fully on and persisted with `redact_query_string: false` and `head_sampling_rate: 1`
+    (see L-2).
+- **Still requires a human:**
+  - `workers_dev` / `preview_urls`: the script-settings payload omits both keys, which is consistent with
+    "disabled because `routes` is set" but does not assert it. Confirm, and confirm no
+    `vgr-cat.<subdomain>.workers.dev` hostname serves the site (account Workers subdomain: `vgr-spa-domains`).
+  - The Cloudflare API token's scope (the MCP credential cannot read `GET /user/tokens` → `9109`).
+  - `min_tls_version` (see L-8) and the Turnstile widget's `localhost` entries (see I-12).
+  - GitHub: `production` environment protection rules (decides H-1 and L-6), fork-PR workflow policy (H-1
+    precondition), secret scanning / push protection, Dependabot alerts, CodeQL default setup (I-6), and that
+    `main` still requires signed commits (history shows all-`G`, so it holds today).
+
+## [I-12] The production Turnstile widget allows `127.0.0.1` and `localhost`, but the Worker rejects those tokens
+
+- **Severity:** Informational
+- **Confidence:** High — widget metadata read from the live API.
+- **Category:** Anti-bot configuration (compensating control present)
+- **CWE:** CWE-1188 (insecure default) — mitigated to no demonstrated impact
+- **Affected files:** `src/config.ts:8` (the committed production sitekey); zone/account Turnstile configuration
+- **Affected lines or symbols:** widget `0x4AAAAAAFX7NYXtXTGajTgb` (`"vgr.cat (Spin)"`), `domains:
+  ["127.0.0.1", "localhost", "vgr.cat"]`, `mode: managed`, `bot_fight_mode: false`
+- **Attack preconditions:** possession of the public sitekey, which is public by design.
+- **Evidence:** the production widget lists two loopback hostnames. A token minted on `localhost` reports
+  `hostname: "localhost"` from Siteverify, and `src/worker/index.ts` requires
+  `hostnames.has(outcome.hostname)` against `TURNSTILE_HOSTNAMES` = `vgr.cat` — so such a token is rejected
+  server-side. The sitekey is not a secret and the widget can be loaded on `vgr.cat` regardless, so the
+  loopback entries add no new capability an attacker lacks.
+- **Exploit or failure scenario:** a spammer uses the loopback allowance to render the widget off-domain while
+  developing a bot; the minted token then fails the Worker's hostname gate.
+- **Impact:** none demonstrated; the residual value of the entries is developer convenience.
+- **Existing controls:** the Worker's server-side hostname allowlist (the actual boundary).
+- **Recommended remediation:** remove `127.0.0.1` and `localhost` from the production widget and keep a separate
+  widget for local development (the repo already supports `PUBLIC_TURNSTILE_SITE_KEY` overrides). User action.

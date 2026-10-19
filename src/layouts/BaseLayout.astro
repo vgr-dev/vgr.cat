@@ -1,5 +1,9 @@
 ---
 import '../styles/global.css';
+// Resolved by Vite, so the preload carries the same hashed filename the stylesheet references.
+// Only the latin subset is ever fetched for EN/CA/ES content (task 4): the other six `@font-face`
+// blocks declare disjoint `unicode-range`s and cost nothing beyond a few bytes of inlined CSS.
+import latinWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import {
   defaultLocale,
   locales,
@@ -79,6 +83,14 @@ const jsonLd = buildJsonLd({ locale: lang, t });
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    {/* Same-origin font preloads must be CORS-mode, or the browser fetches the file twice. */}
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={latinWoff2}
+      crossorigin
+    />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="vgr.cat" />

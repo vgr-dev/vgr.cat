@@ -1,11 +1,6 @@
 ---
 import Button from './Button.astro';
-import {
-  bookingUrl,
-  contactEmail,
-  turnstileAction,
-  turnstileSiteKey,
-} from '../config';
+import { bookingUrl, contactEmail } from '../config';
 import type { Dictionary } from '../i18n';
 import { EMAIL_MAX_LENGTH, MAX_FIELD_LENGTH } from '../lib/contactForm';
 
@@ -201,15 +196,17 @@ const messages = {
   </div>
 
   {/*
-    `data-size="flexible"` is Cloudflare's documented responsive widget (100% of the container,
-    300 px minimum) — confirmed against the current Turnstile widget-configuration docs.
+    Rendered explicitly, on first interaction with the form or as `#contact` approaches the
+    viewport, so a visitor who never reaches the form never downloads a third-party challenge
+    (UX-018). Deliberately **not** `cf-turnstile`: that class is the hook implicit rendering
+    scans for, and a second widget must be impossible. `size: 'flexible'` is Cloudflare's
+    documented responsive mode (100% width, 300 px minimum); the 320 px exception is recorded in
+    the plan.
   */}
   <div class="turnstile-frame grid min-w-0 gap-1">
     <div
-      class="cf-turnstile"
-      data-sitekey={turnstileSiteKey}
-      data-action={turnstileAction}
-      data-size="flexible"
+      id="contact-turnstile"
+      data-turnstile
       role="group"
       aria-describedby={hintId('turnstile')}
     ></div>
@@ -247,15 +244,13 @@ const messages = {
   </a>
 </p>
 
-<script
-  is:inline
-  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-  async
-  defer
-></script>
-
 <script>
-  import { bookingUrl, contactEmail } from '../config';
+  import {
+    bookingUrl,
+    contactEmail,
+    turnstileAction,
+    turnstileSiteKey,
+  } from '../config';
   import {
     validateContact,
     type ContactFieldName,
@@ -310,6 +305,26 @@ const messages = {
    */
   const SLOW_NOTE_MS = 10_000;
 
+  /** `render=explicit` is what stops the loader from picking up `.cf-turnstile` on its own. */
+  const TURNSTILE_SCRIPT =
+    'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+  /** Long enough for a managed challenge, short enough to keep the submit control honest. */
+  const TOKEN_WAIT_MS = 8_000;
+
+  interface TurnstileApi {
+    render(
+      element: HTMLElement,
+      options: { sitekey: string; action: string; size: 'flexible' },
+    ): string;
+    reset(widgetId?: string): void;
+    getResponse(widgetId?: string): string | undefined;
+  }
+
+  function turnstileApi(): TurnstileApi | undefined {
+    return (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+  }
+
   /**
    * Resolved once, and only when every piece exists, so the handlers below never re-check for
    * null. `HTMLElement` rather than an element-specific type: `worker-configuration.d.ts` merges a
@@ -322,6 +337,7 @@ const messages = {
     list: HTMLElement;
     recovery: HTMLElement;
     submit: HTMLButtonElement;
+    widget: HTMLElement;
     messages: Messages;
   }
 
@@ -337,7 +353,10 @@ const messages = {
     const list = form.querySelector<HTMLElement>('[data-status-list]');
     const recovery = form.querySelector<HTMLElement>('[data-status-recovery]');
     const submit = form.querySelector<HTMLButtonElement>('[data-submit]');
-    if (!status || !title || !list || !recovery || !submit) return null;
+    const widget = document.querySelector<HTMLElement>('[data-turnstile]');
+    if (!status || !title || !list || !recovery || !submit || !widget) {
+      return null;
+    }
 
     return {
       form,
@@ -346,6 +365,7 @@ const messages = {
       list,
       recovery,
       submit,
+      widget,
       messages: JSON.parse(island.textContent) as Messages,
     };
   }
@@ -354,7 +374,8 @@ const messages = {
     const ui = queryElements();
     if (!ui) return;
 
-    const { form, status, title, list, recovery, submit, messages } = ui;
+    const { form, status, title, list, recovery, submit, widget, messages } =
+      ui;
     const elapsedField = form.querySelector<HTMLInputElement>('[data-elapsed]');
     const startedAt = Date.now();
 
@@ -395,12 +416,70 @@ const messages = {
       );
     }
 
+    /** The widget id, or `null` before the first render. One widget, ever. */
+    let widgetId: string | null = null;
+    let scriptRequest: Promise<void> | null = null;
+
+    function loadTurnstile(): Promise<void> {
+      scriptRequest ??= new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = TURNSTILE_SCRIPT;
+        script.async = true;
+        script.addEventListener('load', () => {
+          resolve();
+        });
+        script.addEventListener('error', () => {
+          reject(new Error('turnstile unavailable'));
+        });
+        // `appendChild`, not `append`: `worker-configuration.d.ts` merges an HTMLRewriter
+        // `Element` interface into the DOM lib, which re-points `append` at a BodyInit signature.
+        document.head.appendChild(script);
+      });
+      return scriptRequest;
+    }
+
+    /**
+     * Renders the widget exactly once. Safe to call from every trigger: the second caller loses
+     * the race on `widgetId`, and the script itself is only ever appended once.
+     */
+    async function ensureWidget(): Promise<void> {
+      if (widgetId !== null) return;
+      try {
+        await loadTurnstile();
+      } catch {
+        // A blocked CDN must not hang the form: the request still goes out, the Worker answers
+        // 403 and the summary explains it with a reload instruction.
+        return;
+      }
+      const api = turnstileApi();
+      if (!api || widgetId !== null) return;
+      widgetId = api.render(widget, {
+        sitekey: turnstileSiteKey,
+        action: turnstileAction,
+        size: 'flexible',
+      });
+    }
+
+    /**
+     * A submission can start before the widget has minted a token (autofill plus a click inside
+     * the same gesture). Wait for one rather than posting a request the Worker will reject.
+     */
+    async function awaitToken(): Promise<void> {
+      if (widgetId !== null && turnstileApi()?.getResponse(widgetId)) return;
+      await ensureWidget();
+      const deadline = Date.now() + TOKEN_WAIT_MS;
+      while (Date.now() < deadline) {
+        const api = turnstileApi();
+        if (!widgetId || !api) return;
+        if (api.getResponse(widgetId)) return;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+    }
+
     /** Turnstile tokens are single-use: a retry without a reset fails the second time. */
     function resetTurnstile(): void {
-      const widget = (
-        window as unknown as { turnstile?: { reset: () => void } }
-      ).turnstile;
-      widget?.reset();
+      if (widgetId === null) return;
+      turnstileApi()?.reset(widgetId);
     }
 
     function outcomeFor(responseStatus: number): Outcome {
@@ -589,6 +668,9 @@ const messages = {
       }, SLOW_NOTE_MS);
 
       try {
+        // The widget may still be minting its token if the submission began in the same gesture
+        // that first touched the form; the FormData below has to contain that token.
+        await awaitToken();
         const response = await fetch(form.action, {
           method: 'POST',
           body: new FormData(form),
@@ -643,6 +725,26 @@ const messages = {
           errors.length > 0 ? { kind: 'invalid', errors } : { kind: 'idle' },
         );
       });
+    }
+
+    // Three triggers, all idempotent through `ensureWidget`: the first one to fire wins, and a
+    // visitor who never touches the form never loads the third-party script at all.
+    form.addEventListener('focusin', () => void ensureWidget(), { once: true });
+    form.addEventListener('pointerdown', () => void ensureWidget(), {
+      once: true,
+    });
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          void ensureWidget();
+        },
+        // Starts loading before the form is on screen, so an anchor jump to `#contact` and a
+        // immediate submit still find a token waiting.
+        { rootMargin: '600px 0px' },
+      );
+      observer.observe(widget);
     }
   }
 

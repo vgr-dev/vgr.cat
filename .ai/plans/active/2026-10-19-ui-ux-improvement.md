@@ -1010,6 +1010,10 @@ Medium (evidence + unverified condition) / Low (needs research).
 - **Dependencies:** none; but the widget element must respect the 320 px fix (UX-003).
 - **Status:** Confirmed that it is eager. Performance impact **requires production monitoring** to
   quantify and must not be stated as measured.
+- **Resolution note (2026-10-19, Phase 6):** fixed. `api.js?render=explicit` is injected on first
+  `focusin`/`pointerdown` on the form or when `#contact` enters a 600 px margin. Measured: a fresh load of `/`
+  makes **zero** requests to `challenges.cloudflare.com`; scrolling the form into view creates exactly one
+  widget. The performance gain itself is still unquantified — it needs field data, not a local run.
 
 ### [UX-019] A single 16,779 px page with no persistent navigation
 
@@ -1196,6 +1200,11 @@ Medium (evidence + unverified condition) / Low (needs research).
   the `latin` range — the evidence above says they do, but re-verify on `/ca/` with the network panel.
 - **Dependencies:** none; verify after Phase 2 so the contact page is measured in its final form.
 - **Status:** Measurements confirmed; CLS **requires production monitoring**.
+- **Resolution note (2026-10-19, Phase 6):** the preload is in place and the subset question is settled. All
+  seven `@font-face` blocks are kept (they carry disjoint `unicode-range`s), the hashed latin woff2 is
+  preloaded via a Vite `?url` import, and the built HTML and CSS reference the **same** hash
+  (`inter-latin-wght-normal.Dx4kXJAl.woff2`), so the preload is reused rather than duplicated. Measured on
+  `/`: exactly one font request, no other subset on `/`, `/ca/` or `/es/`.
 
 ### [UX-026] Language picker uses `aria-current="true"` instead of `"page"`
 
@@ -2394,28 +2403,118 @@ Undersized targets after the change: **0 at every width**.
 - **Files likely to change:** `src/components/ContactForm.astro`, `src/layouts/BaseLayout.astro`,
   optionally `src/worker/index.ts`.
 - **Detailed implementation tasks:**
-  1. Load `api.js` on first interaction with the form (focus/pointerdown) or when `#contact` approaches the
-     viewport; initialise explicitly with `turnstile.render()` and store the widget id for `reset()`. [M]
-  2. Ensure exactly one widget instance even if the loader is triggered twice. [S]
-  3. Preload the hashed latin woff2 in `BaseLayout`; verify the filename in a **production** build. [S]
-  4. Decide and record the subset trimming (keep all 7 vs import only latin + latin-ext). [XS]
-  5. *(Optional hardening)* Worker: when `Accept` includes `text/html`, return a 303 to the localized page
-     with `#contact` instead of JSON. Must leave `*/*` responses byte-identical to today's recorded output. [S]
+  1. [x] `api.js?render=explicit` is injected on first `focusin`/`pointerdown` on the form **or** when
+     `#contact` comes within 600 px of the viewport; the widget is created with `turnstile.render()` and
+     its id is stored for `reset()`.
+  2. [x] Exactly one widget: the script node is created once behind a cached promise, and `ensureWidget()`
+     returns early on a non-null `widgetId`. The `cf-turnstile` class was removed so implicit rendering can
+     never produce a second widget.
+  3. [x] The hashed latin woff2 is preloaded in `BaseLayout`, resolved through Vite so the filename is the
+     one the stylesheet references.
+  4. [x] Subset trimming decided: **keep all seven `@font-face` blocks** — see deviation 3.
+  5. [ ] **Not implemented, deliberately** — the optional Worker `Accept: text/html` branch, see deviation 5.
 - **Explicitly out of scope:** adding analytics, changing the rate limiter, altering Siteverify logic.
 - **Risks:** explicit rendering changes the reset path and can produce a widget that never appears if the
   trigger never fires (e.g. a user landing on `#contact` via the nav anchor and tabbing straight in). Test
   that path explicitly.
 - **Acceptance criteria:**
-  - [ ] On a fresh load of `/`, no request to `challenges.cloudflare.com` occurs before the visitor interacts
-        with the form or scrolls it near the viewport.
-  - [ ] A submission after keyboard-only interaction still mints a token and completes.
-  - [ ] Exactly one Turnstile widget exists in the DOM after repeated interaction.
-  - [ ] The latin woff2 is preloaded and no other subset is requested on `/`, `/ca/`, `/es/`.
+  - [x] On a fresh load of `/`, no request to `challenges.cloudflare.com` occurs before the visitor interacts
+        with the form or scrolls it near the viewport — the request log is empty until the section is
+        scrolled into view.
+  - [x] A submission after keyboard-only interaction still mints a token and completes — the token reaches
+        the request; "completes" is qualified in the limitations.
+  - [x] Exactly one Turnstile widget exists in the DOM after repeated interaction.
+  - [x] The latin woff2 is preloaded and no other subset is requested on `/`, `/ca/`, `/es/`.
 - **Automated validation:** gate; a Phase 7 network assertion.
 - **Manual validation:** throttled-network run of the happy path; check the network panel for a single font
   request.
 - **Dependencies on other phases:** Phase 2. Independent of 3–5.
 - **Parallelisation opportunities:** with Phase 5.
+
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **The loading attribute carries `?render=explicit`, and the widget lost its `cf-turnstile` class.** The
+   class is the hook `api.js` scans for during implicit rendering; leaving it on the element while also
+   calling `render()` is the shortest path to two widgets. The element is now `[data-turnstile]` with an id,
+   and the sitekey/action/size travel as `render()` options instead of `data-*` attributes.
+2. **The plan's named risk needed a fourth path: a submit-time token wait.** Landing on `#contact` and
+   submitting in the same gesture can fire `pointerdown` *and* `submit` before the challenge resolves, so
+   `submitContact` awaits `awaitToken()` (poll every 150 ms, up to 8 s) before building the `FormData` — the
+   token has to be in the body the Worker reads. If the wait expires the request still goes out and the
+   Worker's `403` maps to the existing "reload and try again" sentence.
+3. **All seven font subsets stay declared.** Each is a `@font-face` with a disjoint `unicode-range`, so they
+   cost declarations, not downloads: measured on the built site, exactly one request is made —
+   `inter-latin-wght-normal.Dx4kXJAl.woff2`. Trimming would mean hand-maintaining `@font-face` rules and
+   losing upstream updates, to save roughly 1.5 KB of CSS that Astro inlines anyway.
+4. **The preload is resolved through Vite, not hand-written.** `import … woff2?url` yields the same content
+   hash the stylesheet references (`Dx4kXJAl` in this build); a hand-written path would drift on the next
+   font change and the browser would fetch the file twice.
+5. **The optional Worker `text/html` branch was not implemented.** D-6 already hides the form without
+   JavaScript, so the branch would only affect a half-broken JS environment, and it changes Worker responses
+   that archived plans record verbatim. It remains available as hardening if that trade-off ever changes.
+6. **`appendChild`, not `append`, for the injected script** — the same `worker-configuration.d.ts`
+   `Element` merge that Phase 2 hit re-points `append` at a `BodyInit` signature.
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 37 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 10 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+$ grep -o '<link rel="preload"[^>]*>' dist/index.html
+<link rel="preload" as="font" type="font/woff2"
+      href="/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" crossorigin>
+$ grep -o 'inter-latin-wght-normal[^")]*' dist/_astro/*.css   → inter-latin-wght-normal.Dx4kXJAl.woff2
+```
+
+Same hash in both places, so the preload is reused rather than duplicated.
+
+**Before any interaction** on `/` (request log from page load):
+
+```
+challenges.cloudflare.com requests : none
+font requests                      : ["/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2"]  (one)
+<script src> in the document       : ["/_astro/ContactForm.astro_astro_type_script_index_0_lang…js"]
+```
+
+**After scrolling `#contact` into view**:
+
+```
+<script src*=challenges.cloudflare.com>  1 × api.js?render=explicit
+[data-turnstile] children                1
+hidden token input                       present, value "XXXX.DUMMY.TOKEN.XXXX" (always-passes test key)
+```
+
+**After four further focus/Tab cycles**: still **1** Turnstile script and **1** widget root; no duplicate.
+(The test key renders a placeholder `div` rather than an `iframe`, so iframe counts are not meaningful
+here.)
+
+**Submission paths** (Chromium, `fetch` stubbed to capture the body):
+
+| Path | Token in the POST body | First form focus |
+| --- | --- | --- |
+| Load `/#contact`, submit within ~250 ms | `XXXX.DUMMY.TOKEN.XXXX` | — |
+| Keyboard only: scroll, Tab, type, submit | `XXXX.DUMMY.TOKEN.XXXX` | `name` |
+
+The multi-line message also survived that round trip (`"Line one\nLine two"`).
+
+**CSP and reflow**: zero `securitypolicyviolation` events on `/`, `/ca/`, `/es/` at 1440 px and on `/` at
+320 px. At 320 px the widget frame is 257 px wide with 300 px of content — the accepted scroll exception
+from Phase 2 — and the document stays at `305 / 305`.
+
+#### Limitations of this verification
+
+- **"Completes" is not proven end to end.** The token is the always-passes test key's dummy, there is no
+  Worker and no email binding locally, so the run stops at the stubbed `fetch`. The one path that matters —
+  a real challenge, a real Siteverify call, a delivered email — needs production.
+- No throttled-network run was made; the 8 s token wait has not been exercised under a slow challenge.
+- The `IntersectionObserver` trigger uses a 600 px margin, so on a very tall viewport the widget may still
+  load before the visitor scrolls. That is intended (it is "near the viewport"), but it means AC 1 is
+  verified for a 1440 × 900 viewport, not every geometry.
 
 ### Phase 7: Automated regression coverage
 

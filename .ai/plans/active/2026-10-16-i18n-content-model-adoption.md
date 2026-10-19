@@ -638,12 +638,12 @@ and the emails and redirect are correct — with the happy path verified the onl
 
 #### Tasks
 
-- [ ] Task 3.1 `src/components/ContactForm.astro`: add a labelled `organization` input and a labelled
+- [x] Task 3.1 `src/components/ContactForm.astro`: add a labelled `organization` input and a labelled
       service-type `<select>` whose options come from `contact.form.serviceTypes.*`. Extend the `labels`
       prop interface to the `contact.form` shape. **Rename the honeypot field** away from `company` (C9)
       to an unlikely, non-user-facing name, keep it `tabindex="-1"` / `aria-hidden` / visually hidden, and
       record the new name in the same task as the Worker change.
-- [ ] Task 3.2 `src/worker/index.ts`:
+- [x] Task 3.2 `src/worker/index.ts`:
       - add `organization` (required per O6) and `serviceType` to the length + CRLF validation loop —
         both reach the email body and `serviceType` reaches the subject, so CRLF is header-injection.
       - whitelist `serviceType` against the four known values and reject anything else; map the key to the
@@ -652,33 +652,92 @@ and the emails and redirect are correct — with the happy path verified the onl
       - add `Organization:` and `Primary focus:` lines to the `NOTIFY` body; keep the `REPLY` auto-reply
         as-is unless O6 says otherwise.
       - the `THANKS_PATH` 303 redirect is unchanged.
-- [ ] Task 3.3: Decide and implement the states per O8.
+- [x] Task 3.3: Decide and implement the states per O8.
       - *If O8 = native POST only:* `contact.form.submitting` / `successMessage` / `errorMessage` are not
         rendered; record them as retired-from-parked-model with the reason.
       - *If O8 = progressive enhancement:* add an inline `<script>` **inside `ContactForm.astro`** (Astro
         hashes it — no CSP change), disable the submit button and swap in `submitting` on submit, and on a
         failed response show `errorMessage` and call `turnstile.reset()` — **the Turnstile token is
         single-use, so a retry without a reset fails the second time.** Record that gotcha in a comment.
-- [ ] Task 3.4: Verify the rejection paths locally with `wrangler dev` and the documented test keys.
+- [x] Task 3.4: Verify the rejection paths locally with `wrangler dev` and the documented test keys.
 - [ ] Task 3.5: Verify the happy path on production **after deploy**, because `AGENTS.md` documents that
       the Cloudflare test secret reports `hostname: "example.com"` and omits `action` entirely, so a
       test-key run is always stopped by the action gate. Record the production run and the received
-      notification email (including the two new lines).
+      notification email (including the two new lines). → **DEFERRED**: needs a deploy; nothing was
+      deployed by this step.
+
+> **RECORDED 2026-10-19 — Phase 3, Tasks 3.1–3.4 (3.5 is post-deploy).**
+>
+> `ContactForm.astro` now carries a labelled `organization` input and a labelled `serviceType`
+> `<select>` whose options enumerate `contact.form.serviceTypes`, the honeypot renamed `company` →
+> **`form_guard`** (C9), a `role="status"` live region, and progressive enhancement: the inline script
+> sets `elapsed`, prevents the native POST, disables the button with `submitting`, and on a failed
+> `fetch` shows `errorMessage` and calls `turnstile.reset()` (the token is single-use). On success it
+> follows the 303 and navigates to `response.url` — the same thanks page the no-JS path reaches — so
+> `contact.form.successMessage` is **deliberately unrendered**: a second success state would create the
+> divergence O8 warns about.
+>
+> `src/worker/index.ts` gained the `SERVICE_TYPES` whitelist (key → notification label), `organization`
+> and `serviceType` in the length/CRLF loop, `form_guard` as the honeypot read, and `Organization:` /
+> `Primary focus:` in the `NOTIFY` body with the focus in the subject. `REPLY` and the `303` are
+> unchanged.
+>
+> **Rejection paths, `npx wrangler dev --port 8787` + `curl`, recorded verbatim:**
+>
+> ```
+> 1 missing token                 {"error":"Challenge missing"}  [403]
+> 2 honeypot filled               {"error":"Rejected"}           [400]
+> 3 elapsed under minimum         {"error":"Rejected"}           [400]
+> 4 unknown serviceType           {"error":"Invalid field"}      [400]
+> 5 organization 2001 chars       {"error":"Invalid field"}      [400]
+> 6 organization with CRLF        {"error":"Invalid field"}      [400]
+> 7 valid shape + test token      {"error":"Challenge failed"}   [403]
+> ```
+>
+> Recorded honestly: the first pass of case 3 returned `403 Challenge failed` because the harness sent
+> `elapsed` twice (`FormData.get` returns the first value); re-running without the duplicate field gave
+> the `400 Rejected` above. The Worker was not at fault.
+>
+> **One defect found and fixed in this phase.** The first browser run measured `/` at **423 px**
+> `scrollWidth` at 320 px — the long English `serviceTypes` labels widened the `<select>`. Adding
+> `w-full min-w-0` to the control class and `min-w-0` to the two new labels restored the pre-existing
+> 324 px.
+>
+> **Browser run after the fix** (`npm run preview` + Playwright, `securitypolicyviolation` listener
+> installed before navigation):
+>
+> | Path | violations | 320 scroll/client | 375 | 768 |
+> | --- | --- | --- | --- | --- |
+> | `/` | `[]` | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/ca/` | `[]` | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/es/` | `[]` | 324 / 305 | 360 / 360 | 753 / 753 |
+>
+> **Labels:** every visible control reports a programmatic label — `name`, `email`, `organization`,
+> `serviceType`, `message` and the hidden `form_guard` all sit inside a `<label>`; the select exposes
+> exactly 5 options (`""`, `regtech`, `entityResolution`, `infrastructure`, `advisory`).
+>
+> **CSP:** the directive list is unchanged; only the Astro-owned hash for the form script moved
+> (`sha256-vtFofo…` → `sha256-X7449F…`), which the criterion permits. `git diff --stat
+> wrangler.jsonc` is empty.
+>
+> **Still deferred:** Task 3.5 needs a deploy, and the local run cannot reach the happy path —
+> `.dev.vars` holds the real secret, and Cloudflare's test keys omit `action`, so the action gate always
+> rejects.
 
 #### Acceptance Criteria
 
-- [ ] `src/worker/index.ts` rejects every bad input locally, recorded verbatim from `wrangler dev`:
+- [x] `src/worker/index.ts` rejects every bad input locally, recorded verbatim from `wrangler dev`:
       missing token → `403 {"error":"Challenge missing"}`; honeypot filled → `400 {"error":"Rejected"}`;
       `elapsed` under the minimum → `400 {"error":"Rejected"}`; unknown `serviceType` → `400`;
       over-length or CRLF-bearing `organization` → `400 {"error":"Invalid field"}`; valid shape with the
       test token → `403 {"error":"Challenge failed"}`. → `_(recorded output)_`
-- [ ] `npm run check`, `npm run lint`, `npm run build` all pass. → `_(output)_`
-- [ ] The built page's CSP is unchanged and a browser reports zero violations with the form present.
+- [x] `npm run check`, `npm run lint`, `npm run build` all pass. → `_(output)_`
+- [x] The built page's CSP is unchanged and a browser reports zero violations with the form present.
       → `_(output)_`
 - [ ] **Deferred by construction, stated plainly:** the contact happy path is **not** verifiable
       end-to-end locally with Turnstile test keys. Its verification is the production run in Task 3.5.
       → `_(production transcript + the two email bodies)_`
-- [ ] `wrangler.jsonc` is unchanged, or the change is recorded with its reason. → `_(git diff)_`
+- [x] `wrangler.jsonc` is unchanged, or the change is recorded with its reason. → `_(git diff)_`
 
 ---
 

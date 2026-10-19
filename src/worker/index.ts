@@ -13,6 +13,14 @@ const CRLF_RE = /[\r\n]/;
 
 const FROM = { email: 'noreply@vgr.cat', name: 'vgr.cat' };
 
+/** Accepted `serviceType` keys, mapped to the label used in the notification. */
+const SERVICE_TYPES: Record<string, string> = {
+  regtech: 'RegTech / EPREL Integration / ESPR Readiness',
+  entityResolution: 'Market Observability / Entity Resolution',
+  infrastructure: 'Multi-Tenant Architecture / Tooling',
+  advisory: 'Technical Advisory / Speaking / Other',
+};
+
 const THANKS_PATH: Record<string, string> = {
   en: '/contact/thanks',
   ca: '/ca/contact/thanks',
@@ -115,7 +123,7 @@ async function contact(request: Request, env: Env): Promise<Response> {
   }
 
   // Honeypot: hidden from visitors, irresistible to naive bots.
-  if (field(form, 'company') !== '') return problem(400, 'Rejected');
+  if (field(form, 'form_guard') !== '') return problem(400, 'Rejected');
 
   const elapsed = Number(field(form, 'elapsed'));
   if (!Number.isFinite(elapsed) || elapsed < MIN_ELAPSED_MS) {
@@ -124,10 +132,11 @@ async function contact(request: Request, env: Env): Promise<Response> {
 
   const name = field(form, 'name');
   const email = field(form, 'email');
+  const organization = field(form, 'organization');
   const message = field(form, 'message');
 
   // CRLF anywhere near a header is email header injection, not a validation nit.
-  for (const value of [name, email, message]) {
+  for (const value of [name, email, organization, message]) {
     if (
       value.length === 0 ||
       value.length > MAX_FIELD_LENGTH ||
@@ -137,6 +146,10 @@ async function contact(request: Request, env: Env): Promise<Response> {
     }
   }
   if (!EMAIL_RE.test(email)) return problem(400, 'Invalid email');
+
+  const serviceType = field(form, 'serviceType');
+  const serviceLabel = SERVICE_TYPES[serviceType];
+  if (!serviceLabel) return problem(400, 'Invalid field');
 
   const token = field(form, 'cf-turnstile-response');
   if (token === '') return problem(403, 'Challenge missing');
@@ -157,8 +170,8 @@ async function contact(request: Request, env: Env): Promise<Response> {
       to: env.CONTACT_DESTINATION,
       from: FROM,
       replyTo: { email, name },
-      subject: `Contact: ${name}`,
-      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+      subject: `Contact: ${serviceLabel} — ${name}`,
+      text: `Name: ${name}\nEmail: ${email}\nOrganization: ${organization}\nPrimary focus: ${serviceLabel}\n\n${message}`,
     });
     await env.REPLY.send({
       to: { email, name },

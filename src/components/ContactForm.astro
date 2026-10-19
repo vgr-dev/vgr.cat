@@ -10,10 +10,16 @@ interface Props {
 const { lang, labels } = Astro.props;
 
 const inputClass =
-  'rounded border border-border bg-surface px-3 py-2 text-fg focus-visible:outline-2 focus-visible:outline-accent';
+  'w-full min-w-0 rounded border border-border bg-surface px-3 py-2 text-fg focus-visible:outline-2 focus-visible:outline-accent';
 ---
 
-<form method="post" action="/api/contact" class="mt-8 grid max-w-2xl gap-4">
+<form
+  method="post"
+  action="/api/contact"
+  class="mt-8 grid max-w-2xl gap-4"
+  data-submitting={labels.submitting}
+  data-error-message={labels.errorMessage}
+>
   <input type="hidden" name="lang" value={lang} />
   <input type="hidden" name="elapsed" value="" data-elapsed />
 
@@ -40,6 +46,30 @@ const inputClass =
     />
   </label>
 
+  <label class="grid min-w-0 gap-1">
+    <span class="text-sm font-medium">{labels.organizationLabel}</span>
+    <input
+      name="organization"
+      required
+      maxlength="2000"
+      autocomplete="organization"
+      placeholder={labels.organizationPlaceholder}
+      class={inputClass}
+    />
+  </label>
+
+  <label class="grid min-w-0 gap-1">
+    <span class="text-sm font-medium">{labels.serviceTypeLabel}</span>
+    <select name="serviceType" required class={inputClass}>
+      <option value="" disabled selected>
+        {labels.serviceTypeLabel}
+      </option>
+      {Object.entries(labels.serviceTypes).map(([value, label]) => (
+        <option value={value}>{label}</option>
+      ))}
+    </select>
+  </label>
+
   <label class="grid gap-1">
     <span class="text-sm font-medium">{labels.messageLabel}</span>
     <textarea
@@ -53,8 +83,8 @@ const inputClass =
 
   <div class="hidden" aria-hidden="true">
     <label>
-      Company
-      <input name="company" tabindex="-1" autocomplete="off" />
+      Leave this field empty
+      <input name="form_guard" tabindex="-1" autocomplete="off" />
     </label>
   </div>
 
@@ -66,10 +96,12 @@ const inputClass =
 
   <button
     type="submit"
+    data-submit
     class="justify-self-start rounded-md bg-accent px-6 py-3 font-medium text-bg hover:opacity-90"
   >
     {labels.submitButton}
   </button>
+  <p data-form-status role="status" aria-live="polite" class="text-sm"></p>
   <p class="text-sm text-muted">{labels.turnstile}</p>
 </form>
 
@@ -82,9 +114,59 @@ const inputClass =
 
 <script>
   const started = Date.now();
-  const elapsed = document.querySelector<HTMLInputElement>('[data-elapsed]');
-  const form = elapsed?.closest('form');
-  form?.addEventListener('submit', () => {
-    if (elapsed) elapsed.value = String(Date.now() - started);
+  const elapsedField =
+    document.querySelector<HTMLInputElement>('[data-elapsed]');
+  const contactForm = elapsedField?.closest<HTMLFormElement>('form');
+  const statusField =
+    contactForm?.querySelector<HTMLElement>('[data-form-status]');
+  const submitButton =
+    contactForm?.querySelector<HTMLButtonElement>('[data-submit]');
+
+  /** Turnstile tokens are single-use: a retry without a reset fails the second time. */
+  function resetTurnstile() {
+    const widget = (window as unknown as { turnstile?: { reset: () => void } })
+      .turnstile;
+    widget?.reset();
+  }
+
+  contactForm?.addEventListener('submit', async (event) => {
+    if (elapsedField) elapsedField.value = String(Date.now() - started);
+
+    // An invalid form keeps the browser's own validation UI and never reaches the network.
+    if (!contactForm.checkValidity()) return;
+
+    event.preventDefault();
+    const idleLabel = submitButton?.textContent ?? '';
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = contactForm.dataset.submitting ?? idleLabel;
+    }
+    if (statusField) statusField.textContent = '';
+
+    try {
+      const response = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+      });
+      if (response.ok) {
+        // The 303 was followed, so `response.url` is the localised thanks page.
+        window.location.assign(response.url);
+        return;
+      }
+      if (statusField) {
+        statusField.textContent = contactForm.dataset.errorMessage ?? '';
+      }
+      resetTurnstile();
+    } catch {
+      if (statusField) {
+        statusField.textContent = contactForm.dataset.errorMessage ?? '';
+      }
+      resetTurnstile();
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = idleLabel;
+      }
+    }
   });
 </script>

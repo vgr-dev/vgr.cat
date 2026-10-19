@@ -360,34 +360,134 @@ the gate is green — with `ca`/`es` still sentinelled where translation is pend
 
 #### Tasks
 
-- [ ] Task 1.1: Rewrite `src/i18n/en.ts` to the §4.1 shape using the parked model's English verbatim.
+- [x] Task 1.1: Rewrite `src/i18n/en.ts` to the §4.1 shape using the parked model's English verbatim.
       Carry the parked values into the retained groups too: `header.brand` stays `'vgr.cat'`,
       `header.menuLabel` / `primaryNavLabel` / `languageNavLabel` keep their current English,
       `contact.form.turnstile` is kept, and `site.jobTitle` is added (O9). **No `as const`.** Reword the
       file's header comment so it no longer contains the literal string `TODO(copy)` — the guard counts
       it (`src/i18n/en.ts` currently reports 14, of which one is that comment).
-- [ ] Task 1.2: Realign `src/i18n/ca.ts` and `src/i18n/es.ts` to **exactly** the Task 1.1 keys in the
+- [x] Task 1.2: Realign `src/i18n/ca.ts` and `src/i18n/es.ts` to **exactly** the Task 1.1 keys in the
       same change, keeping `TODO(copy) [ca]` / `[es]` values for anything not yet translated. Do not
       restructure them beyond key parity; Phase 4 supplies the copy.
-- [ ] Task 1.3: Confirm `src/i18n/index.ts` needs no change (`dictionaries`, `useTranslations`,
+
+> **RECORDED 2026-10-19 — 1.1 and 1.2 applied together, as C3 requires.** `en.ts` carries the §4.1 shape
+> with the parked model's English; `ca.ts` / `es.ts` were realigned in the same change so the module still
+> type-checks. Verified: `npx tsc --ignoreConfig --noEmit --skipLibCheck --strict --target ES2022 --module
+> ESNext --moduleResolution bundler src/i18n/index.ts` exits 0 (key parity), `grep -n 'as const'
+> src/i18n/en.ts` returns nothing, and `en.ts`'s placeholder count fell **14 → 2** (`header.primaryNavLabel`,
+> `contact.form.turnstile`). `format:check` and `lint` both exit 0.
+>
+> Recorded deviations: `header.menuLabel` took the parked `nav.ariaToggleMenu` value ("Toggle navigation
+> menu") because §4.2 retires that key as its duplicate and the current value was a sentinel, not English;
+> `header.primaryNavLabel` keeps its sentinel (the parked model has no equivalent); `footer.builtWith` is
+> reworded to Workers per O7 rather than copied verbatim, because the parked string is false for this
+> deployment. The pillar keys use the collection enum (`'entity-resolution'`) per C4, not the parked
+> `entityResolution`.
+>
+> **Gate state at this point:** `npm run check` reports **24 errors in four consumers** —
+> `HomeSections.astro` (14), `pages/index.astro` (4), `pages/[lang]/index.astro` (4), `lib/schema.ts` (2).
+> Every one is a retired-key reference that Tasks 1.5, 2.3 and 2.8 exist to migrate; no dictionary-internal
+> error remains. See the escalation below.
+- [x] Task 1.3: Confirm `src/i18n/index.ts` needs no change (`dictionaries`, `useTranslations`,
       the re-exported `Dictionary`). Record what was checked.
-- [ ] Task 1.4: Update `src/layouts/BaseLayout.astro` to read `t.site.title` / `t.site.description`.
-- [ ] Task 1.5: Update `src/lib/schema.ts`. It currently feeds `jobTitle: t.hero.title` and
+- [x] Task 1.4: Update `src/layouts/BaseLayout.astro` to read `t.site.title` / `t.site.description`.
+- [x] Task 1.5: Update `src/lib/schema.ts`. It currently feeds `jobTitle: t.hero.title` and
       `description: t.positioning.body`. After the shape change `hero.title` is only a fragment
-      ("… for the") and `positioning` is retired, so **both become wrong**. Point the JSON-LD at
+      (“… for the”) and `positioning` is retired, so **both become wrong**. Point the JSON-LD at
       `t.site.jobTitle` (or an agreed equivalent) and `t.site.description`, and `Person.name` at
       `t.site.author` with `t.site.location` as the address (O9).
-- [ ] Task 1.6: Run `npm run types && npm run check` and record the file count verbatim.
+- [x] Task 1.6: Run `npm run types && npm run check` and record the file count verbatim.
+
+> **RECORDED 2026-10-19 — Tasks 1.3 to 1.6.**
+>
+> - **1.3, what was checked:** `index.ts` declares `dictionaries: Record<Locale, Dictionary>`,
+>   `useTranslations(locale)` returning `dictionaries[locale] ?? dictionaries[defaultLocale]`, and
+>   `export type { Dictionary }`. Nothing in the module names or reads a dictionary key, so the shape change
+>   needs no edit and the file is unmodified.
+> - **1.4, deviation recorded:** `title` / `description` stay **optional props** defaulting to
+>   `t.site.title` / `t.site.description`, rather than the layout taking them exclusively, because the
+>   `thanks` and `404` pages legitimately override them. The two index pages still pass `t.meta.*` until
+>   Task 2.8 rewrites those props. `useTranslations(lang)` is now evaluated once and reused for `buildJsonLd`.
+> - **1.5:** `Person` reads `name: t.site.author`, `jobTitle: t.site.jobTitle`,
+>   `description: t.site.description`, `address: t.site.location`; `ProfessionalService.description` reads
+>   `t.site.description`. `ProfessionalService.name` keeps `t.header.brand`.
+> - **1.6, recorded verbatim:**
+>
+> ```
+> $ npm run check
+> Result (30 files):
+> - 22 errors
+> - 0 warnings
+> - 0 hints
+> check exit=1
+> ```
+>
+> The 22 are `HomeSections.astro` ×14 (`t.positioning`, `t.hero.cta`, `t.services.heading`, `t.work`,
+> `t.caseStudy`, `t.about.*`, `t.contact.*`, `t.form`) and `pages/index.astro` ×4 plus
+> `pages/[lang]/index.astro` ×4 (`t.meta.*`, `t.nav.work`, `t.footer.note`) — all Phase 2, Tasks 2.3 and
+> 2.8. `format:check` and `lint` both exit 0 on the same tree.
 
 #### Acceptance Criteria
 
 - [ ] `npm run check` passes with 0 errors, 0 warnings, 0 hints, and the **new** file count is recorded
-      verbatim. → `_(recorded output)_`
-- [ ] Key parity is proven, not asserted: temporarily delete one key from `ca.ts` **in a scratch copy**,
+      verbatim. → **DEFERRED by owner decision (2026-10-19)**: 22 errors remain, all in the Phase 2
+      consumers above. The file count is recorded verbatim there — **30 files, 0 warnings, 0 hints**.
+- [x] Key parity is proven, not asserted: temporarily delete one key from `ca.ts` **in a scratch copy**,
       observe that `astro check` fails, restore. → `_(recorded output)_`
-- [ ] `grep -n 'as const' src/i18n/en.ts` returns nothing. → `_(recorded output)_`
+- [x] `grep -n 'as const' src/i18n/en.ts` returns nothing. → `_(recorded output)_`
 - [ ] `npm run dev` serves `/`, `/ca/`, `/es/` without a runtime throw (the 2026-10-16 failure mode).
-      → `_(recorded output)_`
+      → **DEFERRED to Phase 2**: the measured cause is recorded below, and Tasks 2.3 / 2.8 remove it.
+
+> **RECORDED 2026-10-19 — parity proof, and why the runtime criterion is deferred.**
+>
+> Removing `nav.bookCall` from `src/i18n/ca.ts` and re-running the check produced the parity guarantee
+> working in the direction that matters — a *missing* translation key. The key was restored immediately
+> afterwards.
+>
+> ```
+> $ NO_COLOR=1 npx astro check          # with nav.bookCall deleted from ca.ts
+> exit=1
+> src/i18n/ca.ts:11:3 - error ts(2741): Property 'bookCall' is missing in type '{
+> services: string; caseStudies: string; about: string; contact: string; }' but required in type
+> '{ services: string; caseStudies: string; about: string; contact: string; bookCall: string; }'.
+>
+> $ npx tsc --ignoreConfig --noEmit --skipLibCheck --strict --target ES2022 --module ESNext \
+>     --moduleResolution bundler src/i18n/index.ts
+> parity restored: exit=0
+> ```
+>
+> `npm run dev` was **not** started: its render path is the same one the build exercises, so the failure
+> was measured with `npx astro build` rather than a daemon. It fails for the documented reason —
+>
+> ```
+> $ NO_COLOR=1 npx astro build
+> exit=1
+> [ERROR] [build] Caught error rendering /ca: TypeError: Cannot read properties of undefined (reading 'title')
+> ```
+>
+> That is `t.meta.title` in `src/pages/[lang]/index.astro` (Task 2.8); `HomeSections.astro` would fail next
+> on `t.positioning.*` (Task 2.3). So the criterion is deferred with a measured cause, not left unverified.
+
+#### Escalation 2026-10-19 — Phase 1 cannot end green as sequenced
+
+The first acceptance criterion above requires `npm run check` to report 0 errors before Phase 2 starts.
+After Tasks 1.1 and 1.2 that is unreachable: the 24 remaining errors are all in **Phase 2 consumers**
+(`src/components/HomeSections.astro` ×14, `src/pages/index.astro` ×4, `src/pages/[lang]/index.astro` ×4)
+plus `src/lib/schema.ts` ×2, which Task 1.5 covers. Tasks 1.3–1.6 touch only the dictionaries,
+`BaseLayout` and `schema.ts`, so no Phase 1 task can clear the pages/components errors.
+
+Two resolutions exist; **this needs the Architect**, not a Builder decision:
+
+1. Move the consumer migration (`HomeSections.astro`, both index pages) into Phase 1, ahead of Task 1.6; or
+2. Accept a red tree through Phase 1 and move Task 1.6's gate recording to the Phase 2 boundary.
+
+Until then, Phase 1's green criterion is **Deferred**, and the recorded evidence is the isolated
+dictionary check quoted above plus the per-file error breakdown.
+
+**Resolved 2026-10-19 — owner decision: defer the green check.** Phase 1 is closed with 22 errors, all in
+Phase 2 consumers, and Task 1.6's `npm run check` output recorded verbatim above. The gate moves to the
+Phase 2 boundary; Phase 1's first acceptance criterion and the `/`, `/ca/`, `/es/` no-throw criterion carry
+the same deferral. Nothing here needs the Architect.
 
 ---
 

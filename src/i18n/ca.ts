@@ -1,15 +1,19 @@
 import type { Dictionary } from './en';
 
 export const ca: Dictionary = {
-  meta: {
+  site: {
     title: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet',
     description: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur',
+    author: 'VGR',
+    location: 'TODO(copy) [ca] — Sant Cugat del Vallès',
+    jobTitle: 'TODO(copy) [ca] — Lorem ipsum',
   },
   nav: {
     services: 'TODO(copy) [ca] — Servei',
-    work: 'TODO(copy) [ca] — Treball',
+    caseStudies: 'TODO(copy) [ca] — Treball',
     about: 'TODO(copy) [ca] — Quant a',
     contact: 'TODO(copy) [ca] — Contacte',
+    bookCall: 'TODO(copy) [ca] — Lorem ipsum',
   },
   header: {
     brand: 'vgr.cat',
@@ -18,37 +22,101 @@ export const ca: Dictionary = {
     languageNavLabel: 'TODO(copy) [ca] — Idioma',
   },
   hero: {
+    badge: 'TODO(copy) [ca] — Lorem ipsum',
     title: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur',
+    titleHighlight: 'TODO(copy) [ca] — Lorem ipsum',
     subtitle:
       'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.',
-    cta: 'TODO(copy) [ca] — Lorem ipsum',
+    ctaPrimary: 'TODO(copy) [ca] — Lorem ipsum',
+    ctaSecondary: 'TODO(copy) [ca] — Lorem ipsum',
+    metrics: [
+      {
+        value: 'TODO(copy) [ca] — Lorem',
+        label: 'TODO(copy) [ca] — Lorem ipsum',
+      },
+      {
+        value: 'TODO(copy) [ca] — Lorem',
+        label: 'TODO(copy) [ca] — Lorem ipsum',
+      },
+      {
+        value: 'TODO(copy) [ca] — Lorem',
+        label: 'TODO(copy) [ca] — Lorem ipsum',
+      },
+    ],
   },
-  positioning: {
-    heading: 'TODO(copy) [ca] — Lorem ipsum dolor',
-    body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+  services: {
+    eyebrow: 'TODO(copy) [ca] — Lorem ipsum',
+    title: 'TODO(copy) [ca] — Lorem ipsum',
+    subtitle: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    ctaLearnMore: 'TODO(copy) [ca] — Lorem ipsum',
+    pillars: {
+      regtech: { tag: 'TODO(copy) [ca] — RegTech' },
+      'entity-resolution': { tag: 'TODO(copy) [ca] — Dades' },
+      infrastructure: { tag: 'TODO(copy) [ca] — Núvol' },
+    },
   },
-  services: { heading: 'TODO(copy) [ca] — Lorem ipsum' },
-  work: { heading: 'TODO(copy) [ca] — Lorem ipsum dolor' },
-  caseStudy: {
-    problem: 'TODO(copy) [ca] — Lorem',
-    approach: 'TODO(copy) [ca] — Ipsum',
-    outcome: 'TODO(copy) [ca] — Dolor',
+  caseStudies: {
+    eyebrow: 'TODO(copy) [ca] — Lorem ipsum',
+    title: 'TODO(copy) [ca] — Lorem ipsum dolor',
+    subtitle: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    labels: {
+      problem: 'TODO(copy) [ca] — Lorem',
+      approach: 'TODO(copy) [ca] — Ipsum',
+      outcome: 'TODO(copy) [ca] — Dolor',
+    },
   },
   about: {
-    heading: 'TODO(copy) [ca] — Lorem ipsum',
-    body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    eyebrow: 'TODO(copy) [ca] — Lorem ipsum',
+    title: 'TODO(copy) [ca] — Lorem ipsum',
+    paragraphs: [
+      'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    ],
+    techStackTitle: 'TODO(copy) [ca] — Lorem ipsum',
+    competencies: [
+      'TODO(copy) [ca] — Lorem ipsum',
+      'TODO(copy) [ca] — Lorem ipsum',
+      'TODO(copy) [ca] — Lorem ipsum',
+      'TODO(copy) [ca] — Lorem ipsum',
+      'TODO(copy) [ca] — Lorem ipsum',
+      'TODO(copy) [ca] — Lorem ipsum',
+    ],
   },
   contact: {
-    heading: 'TODO(copy) [ca] — Lorem ipsum',
-    body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
-    bookingLabel: 'TODO(copy) [ca] — Lorem ipsum',
-  },
-  form: {
-    name: 'TODO(copy) [ca] — Lorem',
-    email: 'TODO(copy) [ca] — Lorem',
-    message: 'TODO(copy) [ca] — Lorem ipsum',
-    submit: 'TODO(copy) [ca] — Lorem',
-    turnstile: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    eyebrow: 'TODO(copy) [ca] — Lorem ipsum',
+    title: 'TODO(copy) [ca] — Lorem ipsum',
+    subtitle: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    form: {
+      nameLabel: 'TODO(copy) [ca] — Lorem',
+      namePlaceholder: 'TODO(copy) [ca] — Lorem',
+      emailLabel: 'TODO(copy) [ca] — Lorem',
+      emailPlaceholder: 'TODO(copy) [ca] — Lorem',
+      organizationLabel: 'TODO(copy) [ca] — Lorem',
+      organizationPlaceholder: 'TODO(copy) [ca] — Lorem',
+      serviceTypeLabel: 'TODO(copy) [ca] — Lorem',
+      serviceTypes: {
+        regtech: 'TODO(copy) [ca] — Lorem',
+        entityResolution: 'TODO(copy) [ca] — Lorem',
+        infrastructure: 'TODO(copy) [ca] — Lorem',
+        advisory: 'TODO(copy) [ca] — Lorem',
+      },
+      messageLabel: 'TODO(copy) [ca] — Lorem ipsum',
+      messagePlaceholder: 'TODO(copy) [ca] — Lorem ipsum',
+      submitButton: 'TODO(copy) [ca] — Lorem',
+      submitting: 'TODO(copy) [ca] — Lorem ipsum',
+      successMessage: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+      errorMessage: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+      turnstile: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet.',
+    },
+    directContact: {
+      orDivider: 'TODO(copy) [ca] — Lorem ipsum',
+      calendarButton: 'TODO(copy) [ca] — Lorem ipsum',
+      emailDirect: 'TODO(copy) [ca] — Correu directe',
+      locationLabel: 'TODO(copy) [ca] — Seu',
+      locationValue: 'TODO(copy) [ca] — Sant Cugat del Vallès, Barcelona',
+      timezone: 'TODO(copy) [ca] — CET/CEST',
+    },
   },
   thanks: {
     title: 'TODO(copy) [ca] — Lorem ipsum | vgr.cat',
@@ -62,5 +130,8 @@ export const ca: Dictionary = {
     body: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet, consectetur.',
     back: 'TODO(copy) [ca] — Lorem ipsum',
   },
-  footer: { note: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet' },
+  footer: {
+    tagline: 'TODO(copy) [ca] — Lorem ipsum dolor sit amet',
+    builtWith: 'TODO(copy) [ca] — Lorem ipsum',
+  },
 };

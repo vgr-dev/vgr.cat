@@ -2,75 +2,139 @@
  * English UI dictionary. This module is the contract: `Dictionary` is derived from it, and `ca`/`es`
  * must match its shape exactly.
  *
- * 2026-10-16 — the user's richer content model was parked rather than adopted here, because the
- * components do not render it yet and it omitted keys this shape requires. Where the parked model had a
- * faithful equivalent, that English copy is used below; the slots it did not cover keep the sentinel so
- * the D9 guard still accounts for them — except `thanks` and `notFound`, whose English copy was written
- * on request the same day. See `.ai/plans/active/2026-10-16-en-content-model-input.md` for the parked
- * model, the gaps, and the adoption work.
+ * The shape and English values come from the adopted content model in
+ * `.ai/plans/active/2026-10-16-en-content-model-input.md`; the keys the model omitted but consumers
+ * still read (`header`, `thanks`, `notFound`, `contact.form.turnstile`) are retained here.
  *
- * Do not add `as const`: it would make every value a literal type, and no `ca`/`es` translation could
- * ever satisfy `Dictionary`.
+ * Do not freeze this object's literals: it would make every value a literal type, and no `ca`/`es`
+ * translation could ever satisfy `Dictionary`.
  */
 export const en = {
-  meta: {
+  site: {
     title: 'VGR | Principal Software Engineer & RegTech Consultant',
     description:
       'Software architecture, market surveillance automation, EPREL integrations, and high-scale data pipelines for the European energy transition.',
+    author: 'VGR',
+    location: 'Sant Cugat del Vallès, Catalonia',
+    jobTitle: 'Principal Software Engineer',
   },
   nav: {
     services: 'Services',
-    // Named "Case Studies" in the parked model; the anchor the pages link to is still `#work`.
-    work: 'Case Studies',
+    caseStudies: 'Case Studies',
     about: 'About',
     contact: 'Contact',
+    bookCall: 'Schedule Call',
   },
   header: {
     brand: 'vgr.cat',
-    menuLabel: 'TODO(copy) — Menu',
+    menuLabel: 'Toggle navigation menu',
     primaryNavLabel: 'TODO(copy) — Primary',
     languageNavLabel: 'Select language',
   },
   hero: {
-    // The parked model splits this across `title` + `titleHighlight` for a styled span; joined here
-    // for the single-string slot the current component takes.
-    title:
-      'Software Architecture & Data Observability for the Energy Transition',
+    badge: 'Available for European & Catalan Technical Advisory',
+    title: 'Software Architecture & Data Observability for the',
+    titleHighlight: 'Energy Transition',
     subtitle:
       'Principal Software Engineer specializing in European regulatory compliance systems (RegTech/GovTech), automated EPREL data pipelines, market surveillance observability, and resilient multi-tenant cloud platforms.',
-    cta: 'Book Technical Consultation',
-  },
-  positioning: {
-    heading: 'TODO(copy) — Positioning heading',
-    body: 'TODO(copy) — who this is for and the problem domain.',
+    ctaPrimary: 'Book Technical Consultation',
+    ctaSecondary: 'Explore Case Studies',
+    metrics: [
+      {
+        value: '10+',
+        label: 'Years building pan-European energy data platforms',
+      },
+      {
+        value: 'EPREL & ESPR',
+        label: 'Direct regulatory framework implementation',
+      },
+      {
+        value: '100k+',
+        label: 'Product identities resolved and audited',
+      },
+    ],
   },
   services: {
-    heading: 'Engineering solutions for complex regulatory & data landscapes',
+    eyebrow: 'Specialized Capabilities',
+    title: 'Engineering solutions for complex regulatory & data landscapes',
+    subtitle:
+      'Bridging technical directives, automated testing algorithms, and scalable infrastructure to eliminate manual bottlenecks.',
+    ctaLearnMore: 'View related case study',
+    // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
+    pillars: {
+      regtech: { tag: 'RegTech & Compliance' },
+      'entity-resolution': { tag: 'Data Intelligence' },
+      infrastructure: { tag: 'Cloud & Systems' },
+    },
   },
-  work: { heading: 'Featured Technical Deployments' },
-  caseStudy: {
-    problem: 'The Challenge',
-    approach: 'The Architecture',
-    outcome: 'Measurable Impact',
+  caseStudies: {
+    eyebrow: 'Proven Deliverables',
+    title: 'Featured Technical Deployments',
+    subtitle:
+      'Real-world systems delivering automated verification, high uptime, and operational efficiency across European institutions and public platforms.',
+    labels: {
+      problem: 'The Challenge',
+      approach: 'The Architecture',
+      outcome: 'Measurable Impact',
+    },
   },
   about: {
-    heading:
+    eyebrow: 'Background & Track Record',
+    title:
       'Hands-on architectural leadership at the intersection of energy policy and software',
-    // First of three paragraphs in the parked model; the other two need the richer component.
-    body: 'I am a Principal Software Engineer based in Sant Cugat del Vallès (Barcelona), driving infrastructure, data engineering, and bespoke software tooling for major European energy efficiency initiatives, including Topten.eu and Topten.ch.',
+    paragraphs: [
+      'I am a Principal Software Engineer based in Sant Cugat del Vallès (Barcelona), driving infrastructure, data engineering, and bespoke software tooling for major European energy efficiency initiatives, including Topten.eu and Topten.ch.',
+      'My technical focus centers on closing the gap between complex EU regulations (Ecodesign, Energy Labelling, ESPR) and real-world market surveillance. I engineer high-throughput pipelines that cross-examine static certification registries against fragmented retail channels through algorithmic entity resolution and GTIN mapping.',
+      'Whether advising public agencies on surveillance infrastructure, preparing manufacturers for Digital Product Passports, or building internal tools that empower domain analysts, I prioritize robust, zero-bloat systems with high operational ROI.',
+    ],
+    techStackTitle: 'Core Technical Stack & Competencies',
+    competencies: [
+      'Regulatory Formula Codification (EPREL, Ecodesign)',
+      'Entity Resolution & String Disambiguation (GTIN/EAN)',
+      'Multi-Tenant Platform Architecture',
+      'API Design & Automated Ingest Pipelines',
+      'Serverless & Edge Infrastructure (Cloudflare Pages/Workers)',
+      'Bespoke Internal Tooling & Analyst UX',
+    ],
   },
   contact: {
-    heading:
-      'Let us discuss your technical roadmap or compliance infrastructure',
-    body: 'Available for architectural advisory, technical auditing, speaking engagements, and specialized engineering contracts across Catalonia, Spain, and the European Union.',
-    bookingLabel: 'Book a 30-min Technical Discovery Call',
-  },
-  form: {
-    name: 'Your Name',
-    email: 'Professional Email',
-    message: 'Project Overview & Objectives',
-    submit: 'Send Inquiry',
-    turnstile: 'TODO(copy) — Protected by Cloudflare Turnstile.',
+    eyebrow: 'Work Together',
+    title: 'Let us discuss your technical roadmap or compliance infrastructure',
+    subtitle:
+      'Available for architectural advisory, technical auditing, speaking engagements, and specialized engineering contracts across Catalonia, Spain, and the European Union.',
+    form: {
+      nameLabel: 'Your Name',
+      namePlaceholder: 'e.g. Maria Puig',
+      emailLabel: 'Professional Email',
+      emailPlaceholder: 'name@organization.com',
+      organizationLabel: 'Organization / Institution',
+      organizationPlaceholder: 'Company, Agency, or NGO',
+      serviceTypeLabel: 'Primary Focus',
+      serviceTypes: {
+        regtech: 'RegTech / EPREL Integration / ESPR Readiness',
+        entityResolution: 'Market Observability / Entity Resolution',
+        infrastructure: 'Multi-Tenant Architecture / Tooling',
+        advisory: 'Technical Advisory / Speaking / Other',
+      },
+      messageLabel: 'Project Overview & Objectives',
+      messagePlaceholder:
+        'Describe your requirements, system constraints, or timelines...',
+      submitButton: 'Send Inquiry',
+      submitting: 'Submitting...',
+      successMessage:
+        'Thank you. Your message has been received. I will respond within 1–2 business days.',
+      errorMessage:
+        'Something went wrong while sending your message. Please reach out directly via email.',
+      turnstile: 'TODO(copy) — Protected by Cloudflare Turnstile.',
+    },
+    directContact: {
+      orDivider: 'or schedule directly',
+      calendarButton: 'Book a 30-min Technical Discovery Call',
+      emailDirect: 'Direct Email',
+      locationLabel: 'Headquarters',
+      locationValue: 'Sant Cugat del Vallès, Barcelona, Catalonia',
+      timezone: 'Central European Time (CET/CEST)',
+    },
   },
   thanks: {
     title: 'Message sent | vgr.cat',
@@ -87,7 +151,10 @@ export const en = {
     back: 'Return to the home page',
   },
   footer: {
-    note: 'Architecting data-driven systems for the European energy transition.',
+    tagline:
+      'Architecting data-driven systems for the European energy transition.',
+    builtWith:
+      'Engineered with Astro & Tailwind. Hosted on Cloudflare Workers.',
   },
 };
 

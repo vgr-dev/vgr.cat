@@ -27,6 +27,9 @@ export function buildJsonLd({ locale, t, email, sameAs }: JsonLdInput) {
     description: t.site.description,
     address: t.site.location,
     url: home,
+    // Read from the About section so the structured data cannot drift from the visible copy (Q-7 keeps
+    // `areaServed` at ES/EU; client geography is not published).
+    knowsAbout: t.about.competencies,
     ...(email ? { email } : {}),
     ...(sameAs ? { sameAs } : {}),
   };

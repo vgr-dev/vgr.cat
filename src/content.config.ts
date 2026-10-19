@@ -3,7 +3,12 @@ import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
-const pillar = z.enum(['regtech', 'entity-resolution', 'infrastructure']);
+const pillar = z.enum([
+  'regtech',
+  'entity-resolution',
+  'infrastructure',
+  'iot',
+]);
 const locale = z.enum(['en', 'ca', 'es']);
 
 /** Shared shape so a `ca`/`es` entry cannot silently drop a field. */

@@ -50,6 +50,7 @@ const SERVICE_TYPES: Record<string, string> = {
   regtech: 'RegTech / EPREL Integration / ESPR Readiness',
   entityResolution: 'Market Observability / Entity Resolution',
   infrastructure: 'Multi-Tenant Architecture / Tooling',
+  iot: 'IoT Monitoring / Field Instrumentation',
   advisory: 'Technical Advisory / Speaking / Other',
 };
 

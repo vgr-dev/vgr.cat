@@ -2,12 +2,12 @@ import type { Dictionary } from './en';
 
 export const ca: Dictionary = {
   site: {
-    title: 'VGR | Enginyer Principal de Programari i Consultor RegTech',
+    title: 'VGR | Enginyer Principal de Programari i Consultor',
     description:
-      'Arquitectura de programari, automatització de la supervisió de mercat, integracions amb EPREL i canonades de dades d’alta escala per a la transició energètica europea.',
+      'Enginyeria full-stack per a plataformes d’eficiència energètica: dades normatives europees, supervisió de mercat i monitoratge IoT. Més de 12 anys.',
     author: 'VGR',
     location: 'Sant Cugat del Vallès, Catalunya',
-    jobTitle: 'Enginyer Principal de Programari',
+    jobTitle: 'Enginyer Principal de Programari i Consultor',
   },
   nav: {
     services: 'Serveis',
@@ -23,47 +23,50 @@ export const ca: Dictionary = {
     languageNavLabel: 'Seleccioneu l’idioma',
   },
   hero: {
-    badge: 'Disponible per a assessorament tècnic a Europa i a Catalunya',
-    title: 'Arquitectura de programari i observabilitat de dades per a la',
-    titleHighlight: 'transició energètica',
+    badge:
+      'Disponible per a enginyeria de programari i assessorament a Europa i Catalunya',
+    title: 'Enginyeria de les plataformes que fan possible la',
+    titleHighlight: 'transició energètica europea',
     subtitle:
-      'Enginyer principal de programari especialitzat en sistemes europeus de compliment normatiu (RegTech/GovTech), canonades automatitzades de dades EPREL, observabilitat de la supervisió de mercat i plataformes multilloguer d’alta resiliència.',
+      'Més de 12 anys de lliurament d’extrem a extrem en eficiència energètica: motors de compliment normatiu europeu (EPREL, Ecodesign, ESPR), eines de supervisió de mercat, flotes IoT a escala nacional i les plataformes multi-tenant que les operen.',
     ctaPrimary: 'Concertar una consulta tècnica',
     ctaSecondary: 'Explorar els casos pràctics',
     metrics: [
       {
-        value: '10+',
-        label: 'Anys construint plataformes paneuropees de dades energètiques',
+        value: '12+',
+        label: 'Anys construint programari per a l’eficiència energètica',
       },
       {
-        value: 'EPREL i ESPR',
-        label: 'Implementació directa de marcs normatius',
+        value: '1,5 M+',
+        label:
+          'Visitants mensuals als 17 llocs multi-tenant en producció que opero',
       },
       {
-        value: '100k+',
-        label: 'Identitats de producte resoltes i auditades',
+        value: '200+',
+        label: 'Oficines bancàries instrumentades amb monitoratge IoT',
       },
     ],
   },
   services: {
     eyebrow: 'Capacitats especialitzades',
     title:
-      'Solucions d’enginyeria per a entorns normatius i de dades complexos',
+      'Enginyeria full-stack de dades energètiques: dels sensors de camp als registres europeus',
     subtitle:
-      'Connectem directrius tècniques, algorismes de verificació automatitzada i infraestructura escalable per eliminar colls d’ampolla manuals.',
+      'Motors normatius, observabilitat de mercat, monitoratge IoT i les plataformes que els fan funcionar. Una sola persona per a tot l’stack: ingesta, model, validació, desplegament i operació.',
     ctaLearnMore: 'Veure el cas pràctic relacionat',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
       regtech: { tag: 'RegTech i compliment normatiu' },
       'entity-resolution': { tag: 'Intel·ligència de dades' },
       infrastructure: { tag: 'Núvol i sistemes' },
+      iot: { tag: 'IoT i dades de camp' },
     },
   },
   caseStudies: {
     eyebrow: 'Projectes executats',
-    title: 'Desplegaments tècnics destacats',
+    title: 'Plataformes i desplegaments seleccionats',
     subtitle:
-      'Sistemes reals que aporten verificació automatitzada, alta disponibilitat i eficiència operativa a institucions europees i plataformes públiques.',
+      'Sistemes en producció: verificació normativa per a autoritats europees, una plataforma de producte paneuropea, observabilitat de mercat i una flota IoT a escala nacional.',
     labels: {
       problem: 'El repte',
       approach: 'L’arquitectura',
@@ -73,28 +76,57 @@ export const ca: Dictionary = {
   about: {
     eyebrow: 'Trajectòria i experiència',
     title:
-      'Lideratge arquitectònic pràctic a la cruïlla entre la política energètica i el programari',
+      'Enginyeria full-stack per a l’eficiència energètica, dels sensors de camp als registres europeus',
     paragraphs: [
-      'Soc enginyer principal de programari, amb seu a Sant Cugat del Vallès (Barcelona), i m’ocupo d’infraestructura, enginyeria de dades i eines de programari a mida per a grans iniciatives europees d’eficiència energètica, com Topten.eu i Topten.ch.',
-      'La meva tasca tècnica se centra a reduir la distància entre la normativa europea complexa (Ecodesign, etiquetatge energètic, ESPR) i la supervisió real del mercat. Construeixo canonades d’alt rendiment que contrasten els registres de certificació estàtics amb els canals minoristes fragmentats mitjançant la resolució d’entitats per algorisme i el mapatge de GTIN.',
-      'Tant si aconsello administracions públiques sobre infraestructura de supervisió, com si preparo fabricants per als passaports digitals de producte o construeixo eines internes que donen autonomia als analistes, prioritzo sistemes robustos i sense excés de complexitat, amb un retorn operatiu elevat.',
+      'Soc enginyer principal de programari i consultor, amb seu a Sant Cugat del Vallès (Barcelona). Fa més de 12 anys que construeixo i opero programari per a l’eficiència energètica i la sostenibilitat: primer com a enginyer en una fundació nacional d’innovació, després com a fundador de la meva pròpia consultora i ara com a enginyer principal d’una flota de 17 llocs multi-tenant en producció que sostenen un 99,99 % de disponibilitat anual a Suïssa, Xile i la UE.',
+      'La meva feina se situa als dos extrems de l’stack. Al camp, he instrumentat centenars d’oficines bancàries amb flotes de monitoratge energètic IoT, connectant maquinari, gateways i protocols amb quadres de comandament que els equips de manteniment fan servir cada dia. En dades normatives, converteixo les obligacions d’Ecodesign, etiquetatge energètic i ESPR en programari verificable: integracions amb EPREL, fórmules de tolerància en codi i eines de supervisió de mercat que produeixen evidència auditable.',
+      'Soc enginyer full-stack per temperament: PHP, Python, TypeScript i Go al servidor; Vue, React i Next.js al frontal; Docker, Kubernetes, CI/CD, Grafana i Prometheus a sota. Prefereixo ser responsable de tot el camí que no pas passar la feina en una interfície.',
+      'També he portat la part de negoci. Vaig fundar i fer créixer una consultora fins als 20.000 USD al mes amb un equip de tres o quatre enginyers i cinc clients de llarg termini, vaig mantenir una aliança estratègica amb una empresa suïssa d’eficiència energètica i vaig acompanyar la plataforma Topten fins a la seva adquisició per una empresa suïssa més gran del mateix sector. Per això em sento còmode amb les parts interessades, els pressupostos i els terminis, no només amb el codi.',
+    ],
+    experienceTitle: 'On he treballat',
+    experience: [
+      {
+        period: '2025 — actualitat',
+        role: 'Enginyer Principal de Programari i Consultor',
+        org: 'Operador suís de plataformes d’eficiència energètica · consultora xilena d’eficiència energètica',
+        detail:
+          '17 llocs multi-tenant en producció, 1,5 M+ visitants mensuals, 99,99 % de disponibilitat.',
+      },
+      {
+        period: '2017 — 2025',
+        role: 'Fundador i cap d’equip',
+        org: 'VGR SpA (CL)',
+        detail:
+          'Consultora escalada a un equip de 3–4 persones i 5+ clients de llarg termini.',
+      },
+      {
+        period: '2014 — 2017',
+        role: 'Enginyer de programari',
+        org: 'Fundació nacional d’innovació',
+        detail:
+          'Plataformes IoT i d’eficiència energètica per a clients públics i privats.',
+      },
     ],
     techStackTitle: 'Competències i stack tècnic principal',
     competencies: [
-      'Codificació de fórmules normatives (EPREL, Ecodesign)',
-      'Resolució d’entitats i desambiguació de cadenes (GTIN/EAN)',
-      'Arquitectura de plataformes multilloguer',
-      'Disseny d’APIs i canonades d’ingestió automatitzada',
-      'Infraestructura sense servidor i a la vora (Cloudflare Workers)',
-      'Eines internes a mida i experiència d’usuari per a analistes',
+      'Codificació normativa (EPREL, Ecodesign, ESPR)',
+      'Resolució d’entitats i desambiguació de GTIN/EAN',
+      'Arquitectura de plataformes multi-tenant',
+      'Flotes IoT: gateways, MQTT, Express, ingesta de sèries temporals',
+      'Disseny d’APIs i canonades d’ingesta automatitzada',
+      'Docker, Kubernetes, CI/CD, Grafana, Prometheus',
+      'PHP · Python · TypeScript · Go',
+      'Vue · React · Next.js · Tailwind',
     ],
+    credentials:
+      'Diploma en direcció de projectes TI (PMBOK v6) i membre de PMI; coautor d’un manual universitari sobre lliurament àgil i predictiu (2021).',
   },
   contact: {
     eyebrow: 'Treballem plegats',
     title:
       'Parlem del vostre full de ruta tècnic o de la vostra infraestructura de compliment normatiu',
     subtitle:
-      'Disponible per a assessorament arquitectònic, auditories tècniques, ponències i contractes d’enginyeria especialitzada a Catalunya, Espanya i la Unió Europea.',
+      'Disponible per a enginyeria de programari, revisió arquitectònica, auditories tècniques, ponències i contractes especialitzats a Catalunya, Espanya i la Unió Europea.',
     form: {
       nameLabel: 'Nom',
       namePlaceholder: 'p. ex. Maria Puig',
@@ -106,7 +138,8 @@ export const ca: Dictionary = {
       serviceTypes: {
         regtech: 'RegTech / integració EPREL / preparació per a ESPR',
         entityResolution: 'Observabilitat de mercat / resolució d’entitats',
-        infrastructure: 'Arquitectura multilloguer / eines internes',
+        infrastructure: 'Arquitectura multi-tenant / eines internes',
+        iot: 'Monitoratge IoT / instrumentació de camp',
         advisory: 'Assessorament tècnic / ponències / altres',
       },
       messageLabel: 'Resum del projecte i objectius',
@@ -143,7 +176,7 @@ export const ca: Dictionary = {
   },
   footer: {
     tagline:
-      'Arquitectura de sistemes basats en dades per a la transició energètica europea.',
+      'Enginyeria full-stack per a l’eficiència energètica: dels sensors de camp als registres europeus.',
     builtWith:
       'Desenvolupat amb Astro i Tailwind. Allotjat a Cloudflare Workers.',
   },

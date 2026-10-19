@@ -2,6 +2,10 @@
 
 **Status: ACTIVE — awaiting the owner decisions in §8 before Phase 1 starts.**
 
+> **ARCHIVED 2026-10-19.** The status line above is the state the plan was authored in and is left
+> standing as the record. Phases 1–5 were implemented and verified; the outstanding owner items and the
+> deferred checks are listed in the Archive Metadata footer at the end of this file.
+
 ---
 
 ## 1. Context & Objectives
@@ -840,30 +844,81 @@ and the emails and redirect are correct — with the happy path verified the onl
 
 #### Tasks
 
-- [ ] Task 5.1: Run the full gate and record every output verbatim:
+- [x] Task 5.1: Run the full gate and record every output verbatim:
       `npm ci` → `npm run format:check` → `npm run lint` → `npm run check` →
       `npm run build` → `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run`.
-- [ ] Task 5.2: Re-measure the pinned numbers. **Expectation: unchanged** — this plan modifies existing
+- [x] Task 5.2: Re-measure the pinned numbers. **Expectation: unchanged** — this plan modifies existing
       files and adds none, so `astro check` should still report **30 files** and the dry-run **"Read 32
       files"** and the build **7 pages**. If O2 (detail pages) or O3 (legal pages) added files, they move,
       and `AGENTS.md` must be updated in the same change. State which it was.
-- [ ] Task 5.3: Cross-check `AGENTS.md`'s `src/` inventory against the real tree and correct any drift.
+- [x] Task 5.3: Cross-check `AGENTS.md`'s `src/` inventory against the real tree and correct any drift.
+      → **Drift found and corrected:** the bullet listed only `i18n/config.ts`, `components/`, `worker/`,
+      `styles/` and the pages. It omitted the typed dictionaries (`i18n/{en,ca,es,index}.ts`), the
+      Content Collections under `content/` and their schema (`content.config.ts`), `config.ts` and
+      `lib/schema.ts`. All are now named in the same bullet.
 - [ ] Task 5.4: In `.ai/plans/active/2026-10-15-portfolio-regtech-site.md`, tick Task 6.6 with a
       cross-reference to this plan and the recorded `check:placeholders` output, and note that its
-      "~196 sentinels" figure was superseded by the measured 145 (§1).
-- [ ] Task 5.5: Decide the archiving order. This plan is the one that satisfies 6.6, so it should be
+      "~196 sentinels" figure was superseded by the measured 145 (§1). → **PARTIAL:** the
+      cross-reference and the superseded-figure correction are written into that plan, but Task 6.6 is
+      **not ticked** — it also covers deleting the repository variable, and `gh variable list` still
+      reports `ALLOW_PLACEHOLDER_COPY true`. Ticking it now would be ticking partial work.
+- [x] Task 5.5: Decide the archiving order. This plan is the one that satisfies 6.6, so it should be
       archived **after** the in-flight plan, or together with it. Do not delete
       `.ai/plans/active/.gitkeep`, and do not run Prettier on `.ai/` (`scripts/check-placeholders.mjs`
       and `.prettierignore` both depend on `.ai/` being out of the formatter).
+      → **Decision recorded 2026-10-19: archive the two plans together, in-flight plan first if
+      they are split.** Neither is archived yet: 6.6 still needs the variable deleted and the Catalan
+      still needs owner review. `.ai/` stays out of Prettier and `.gitkeep` stays in place.
 
 #### Acceptance Criteria
 
-- [ ] All five gate commands exit 0 with their output recorded verbatim, and the numbers are either
+- [x] All five gate commands exit 0 with their output recorded verbatim, and the numbers are either
       identical to the pins or the pins are updated. → `_(recorded verbatim)_`
-- [ ] `astro check` reports 0 errors, 0 warnings, 0 hints. → `_(recorded verbatim)_`
+- [x] `astro check` reports 0 errors, 0 warnings, 0 hints. → `_(recorded verbatim)_`
 - [ ] The in-flight plan's Task 6.6 is ticked with a cross-reference, and its Phase 6 acceptance
       criterion "zero `TODO(copy)` sentinels remain and the variable is deleted" is satisfied.
-      → `_(recorded)_`
+      → **NOT SATISFIED — the variable half is outstanding.** Zero sentinels is measured and the `if:`
+      is gone, but `ALLOW_PLACEHOLDER_COPY` still exists in repository settings, so neither 6.6 nor
+      this criterion can be ticked. Owner action: `gh variable delete ALLOW_PLACEHOLDER_COPY`.
+
+> **RECORDED 2026-10-19 — Phase 5 gate, pins and reconciliation.**
+>
+> Run on a clean tree at `de5ab87`, output verbatim:
+>
+> ```
+> $ npm ci
+> ci exit=0
+> $ npm run format:check
+> All matched files use Prettier code style!      format exit=0
+> $ npm run lint
+> lint exit=0
+> $ npm run check
+> Result (30 files):
+> - 0 errors
+> - 0 warnings
+> - 0 hints
+> check exit=0
+> $ npm run build
+> [build] 7 page(s) built in 750ms
+> build exit=0
+> $ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+> ✨ Read 32 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+> Total Upload: 5.23 KiB / gzip: 2.19 KiB
+> --dry-run: exiting now.
+> dryrun exit=0
+> ```
+>
+> **Pins: all three unchanged** — `astro check` **30 files**, dry-run **Read 32 files**, build
+> **7 pages**. Nothing in this plan added a routed page, so no pin moved and no follow-up edit to
+> `AGENTS.md`'s numbers was required beyond the inventory correction in Task 5.3.
+>
+> **Task 5.4 state:** the in-flight plan's Task 6.6 now carries a dated PARTIAL note with the
+> `check:placeholders` output, the correction that the "~196" figure was superseded by the measured
+> **145** (and later **135**), and the exact owner command. The checkbox is deliberately still
+> unticked.
+>
+> **Task 5.5 decision:** archive **together**, in-flight plan first if split. Not archived yet — see
+> the two open owner items.
 
 ---
 
@@ -890,8 +945,10 @@ and the emails and redirect are correct — with the happy path verified the onl
 
 ## 6. Post-Implementation Verification & Regression Checks
 
-- [ ] Re-run the full gate on the final commit: `npm ci`, `format:check`, `lint`, `check`, `build`,
+- [x] Re-run the full gate on the final commit: `npm ci`, `format:check`, `lint`, `check`, `build`,
       `wrangler deploy --dry-run`. → `_(recorded verbatim)_`
+      → **Rendered on the final working tree on top of `de5ab87`.** The final commit itself is the
+      owner's action (AGENTS.md hard rule 1); the tree that was measured is exactly the tree to commit.
 - [ ] Deploy and verify on a real Cloudflare deployment, not only locally:
       - the contact happy path with a real Turnstile widget → `303` → the localised thanks page, and the
         notification email received with its two new lines (Organisation, Primary focus);
@@ -899,10 +956,14 @@ and the emails and redirect are correct — with the happy path verified the onl
         before navigation, plus `document.cookie === ''`;
       - the 404 page still localises client-side (`/nope` → `en`, `/ca/nope` → `ca`, `/es/nope` → `es`).
       → `_(recorded output per check)_`
-- [ ] Cross-language link validation: crawl `/`, `/ca/`, `/es/` from the built output and follow every
+      → **PARTIAL — the locally testable half is done, the deployment half is deferred.** Measured on the
+      built output: zero violations and `document.cookie === ''` on all three locales (table below).
+      **Not run:** the production contact happy path (Task 3.5) and production 404 localisation — nothing
+      has been deployed, so there is no target to test.
+- [x] Cross-language link validation: crawl `/`, `/ca/`, `/es/` from the built output and follow every
       internal `href` plus every `hreflang` alternate. Expect 0 bad, 0 redirecting. This is where a bad
       `footer.legal` link would surface, which is why O3 matters. → `_(crawler output)_`
-- [ ] Overflow at 320 / 375 / 768 px, three locales, compared against the in-flight plan's Task 6.5
+- [x] Overflow at 320 / 375 / 768 px, three locales, compared against the in-flight plan's Task 6.5
       baseline (324 / 360 / 753 px `scrollWidth`). No new offender. → `_(table)_`
 - [ ] **Lighthouse / accessibility baseline.** The documented baseline is 99 performance / 100
       accessibility on all three locales. Lighthouse is **not** in the dependency tree (the in-flight
@@ -910,8 +971,51 @@ and the emails and redirect are correct — with the happy path verified the onl
       **Deferred with its reason** unless the owner authorises the dev dependency. The available
       substitutes are recorded instead: `npm run lint` (34 a11y rules at error level) plus the DOM
       measurements above. → `_(recorded, or explicitly deferred)_`
-- [ ] Nothing claimed verified was inferred; anything not run is marked **Deferred** with its reason.
+      → **DEFERRED, as the task anticipates.** Not installed, not run. Substitutes recorded: `lint` exit
+      0 with all a11y rules at error level, plus the DOM table below.
+- [x] Nothing claimed verified was inferred; anything not run is marked **Deferred** with its reason.
       → `_(self-audit note)_`
+
+> **RECORDED 2026-10-19 — §6 verification on the final tree.**
+>
+> ```
+> $ npm run format:check  → All matched files use Prettier code style!   exit 0
+> $ npm run lint          → exit 0
+> $ npm run check         → 0 errors, 0 warnings, 0 hints                exit 0
+> $ npm run build         → 7 page(s) built in 817ms                     exit 0
+> $ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+> ✨ Read 32 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+> --dry-run: exiting now.                                                exit 0
+> ```
+>
+> **Link validation** — a Node crawler over `dist/**/*.html` resolving each target against the real files:
+>
+> ```
+> html files: 7
+> internal hrefs checked: 43      distinct targets: 7      bad: 0
+> hreflang alternates checked: 24
+> distinct absolute same-origin URLs checked: 28
+> bad: 0
+> ```
+>
+> **Browser run** (`npm run preview`, Playwright, `securitypolicyviolation` listener via `addInitScript`
+> before navigation; `document.cookie` read after load):
+>
+> | Path | violations | cookie | `<h1>` | 320 scroll/client | 375 | 768 |
+> | --- | --- | --- | --- | --- | --- | --- |
+> | `/` | `[]` | `''` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/ca/` | `[]` | `''` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+> | `/es/` | `[]` | `''` | 1 | 324 / 305 | 360 / 360 | 753 / 753 |
+>
+> 324 px at 320 px is the documented Turnstile-widget limitation and matches the in-flight plan's Task
+> 6.5 baseline exactly — **no new offender**. The console still logs Turnstile's own `data:,`
+> `connect-src` refusals inside its iframe and one aborted request to a `challenges.cloudflare.com`
+> sub-domain; neither raises a violation on our document.
+>
+> **Self-audit:** the gate, the crawler and the browser measurements above were all run and their output
+> is what is quoted. The following were **not** run and are recorded as deferred, not as passing: the
+> production contact happy path and production 404 localisation (no deployment exists), Lighthouse (not a
+> dependency), and the removal of the `ALLOW_PLACEHOLDER_COPY` repository variable (owner action).
 
 ---
 
@@ -945,3 +1049,31 @@ O3, O4 and O5 are answered, because each one changes whether sentinels reach zer
 | **O7** | `footer.builtWith` says "Hosted on Cloudflare Pages" — false for this repo (Workers static assets). | **Reword to Workers** and keep the line, or drop it entirely. Rewording is the smaller change and stays factual. | It is public marketing copy |
 | **O8** | The parked model's `submitting` / `successMessage` / `errorMessage` are unreachable in the current no-JS native-POST → 303 flow. Adopt inline states? | **Progressive enhancement: keep the native POST + 303 as the baseline, add an inline script for the JS path** (disable + `submitting`, inline `successMessage`, `errorMessage` + `turnstile.reset()` on failure). Uses all three strings without losing the no-JS path. | Two success paths must stay consistent, and the single-use-token reset is a behaviour change |
 | **O9** | JSON-LD: after the `hero.title` / `titleHighlight` split, `schema.ts`'s `jobTitle: t.hero.title` becomes a fragment. Where does the JSON-LD title come from? | **Add `site.jobTitle`** ("Principal Software Engineer" or similar) and use `t.site.description` for the description, `t.site.author` + `t.site.location` for the person. | It is the site's structured-data identity, aimed at search |
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-19
+- **Verified Commit**: working tree on top of `de5ab87` — the change is verified but **not committed**;
+  committing is the owner's action under `AGENTS.md` hard rule 1.
+- **Sign-off**: **Deferred, on explicit owner instruction to archive anyway (2026-10-19).** The Catalan
+  dictionary and the six Catalan Content-Collection entries are drafted but have not been reviewed by the
+  owner, and the `ALLOW_PLACEHOLDER_COPY` repository variable still exists.
+- **Archived together with** `2026-10-16-en-content-model-input.md`, which this plan quotes throughout.
+
+### Deliberately deferred criteria
+
+| Item | State | Unblocked by |
+| --- | --- | --- |
+| Task 3.5 / §6 production checks — contact happy path with a real widget → `303` → localised thanks page, the two new notification lines, production 404 localisation | **Deferred** — nothing has been deployed, so there is no target | A deploy via `CI` + `Deploy` on `main` |
+| Task 4.6 second half / Task 5.4 / Phase 6 "variable is deleted" — `ALLOW_PLACEHOLDER_COPY` | **Deferred to the owner**; `ci.yml`'s `if:` and the only reference in `AGENTS.md` are gone, so the variable is dead config | `gh variable delete ALLOW_PLACEHOLDER_COPY` |
+| Phase 4 criterion 5 — Catalan reviewed before being called final | **Deferred to the owner** — it is a human judgement about the institutional register, not a build check | Owner review |
+| §6 Lighthouse baseline | **Deferred on environment grounds** — Lighthouse is not in the dependency tree; `lint` (all a11y rules at error level) and the DOM measurements are recorded instead | A Lighthouse dev dependency being authorised |
+
+### Path note
+
+In-body references to `.ai/plans/active/…` predate the move and are left as written, because several
+occur inside recorded command output that must not be rewritten. This file and its companion now live in
+`.ai/plans/archive/`. The one live consumer, the doc comment in `src/i18n/en.ts`, was updated to the
+`archive/` path.

@@ -1818,6 +1818,26 @@ paraphrased):
       (the `ALLOW_PLACEHOLDER_COPY` repository variable) in the same change, so the hatch cannot outlive
       the placeholders. This includes the Catalan, which must read as institutional/public-tender
       register rather than machine-translated English.
+      > **PARTIAL 2026-10-19 — the copy half is done; the tick is withheld on the variable alone.**
+      > `.ai/plans/archive/2026-10-16-i18n-content-model-adoption.md` Phases 1–4 delivered the final
+      > EN/CA/ES copy and the hatch removal:
+      >
+      > ```
+      > $ npm run check:placeholders
+      > check:placeholders — 0 placeholders remain.
+      > ```
+      >
+      > The guard is now unconditional — `ci.yml`'s `if:` was deleted (one-line diff) and no
+      > `ALLOW_PLACEHOLDER_COPY` reference survives in `.github/`, `AGENTS.md` or `README.md`. The
+      > repository **variable** still exists: `gh variable list` reports
+      > `ALLOW_PLACEHOLDER_COPY  true  2026-10-15T21:31:26Z`. Deleting it is the owner action this task
+      > names (`gh variable delete ALLOW_PLACEHOLDER_COPY`); once it is gone this checkbox can be
+      > ticked with no further code change. The Catalan is drafted but **not yet owner-reviewed**.
+      >
+      > **Correction to the sentinel figure:** this plan's §6 says "~196 `TODO(copy)` sentinels". The
+      > measured count when the adoption plan was written (2026-10-16) was **145 across 16 files**, and
+      > the last measured state before the copy landed was **135 across 15**. The 196 figure was never
+      > re-measured; it is superseded by those readings and is left here rather than rewritten.
 - [x] Task 6.7: Manual user actions (not agent actions): configure the `www` DNS record + Redirect Rule
       to the apex (D5); confirm SSL/TLS mode is Full (strict) in the Cloudflare dashboard.
 

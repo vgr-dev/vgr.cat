@@ -3,7 +3,7 @@
  * must match its shape exactly.
  *
  * The shape and English values come from the adopted content model in
- * `.ai/plans/active/2026-10-16-en-content-model-input.md`; the keys the model omitted but consumers
+ * `.ai/plans/archive/2026-10-16-en-content-model-input.md`; the keys the model omitted but consumers
  * still read (`header`, `thanks`, `notFound`, `contact.form.turnstile`) are retained here.
  *
  * Do not freeze this object's literals: it would make every value a literal type, and no `ca`/`es`

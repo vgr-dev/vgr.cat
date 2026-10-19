@@ -106,8 +106,11 @@ wrong, raise it with the user rather than silently reverting it.
   `npm ci` with `ERESOLVE`. Same rule as the TypeScript cap above: align the version, never
   `--legacy-peer-deps`. Astro's a11y rules appear under the `astro/jsx-a11y/*` namespace, several at
   error level.
-- **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), `i18n/config.ts`, the
-  component set under `components/`, the `src/worker` endpoint, the styles under `styles/`, and the pages
+- **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
+  under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
+  `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the
+  component set under `components/`, the build-time constants in `config.ts`, the JSON-LD builder in
+  `lib/schema.ts`, the `worker/` endpoint, the styles under `styles/`, and the pages
   (`index.astro`, `404.astro`, `[lang]/index.astro`, `contact/thanks.astro`, `[lang]/contact/thanks.astro`).
   The build emits 7 pages (`index.html`, `404.html`, `ca/`, `es/`, plus the three `contact/thanks`)
   alongside `robots.txt`, `favicon.*`, `og/og-default.png`, `sitemap-*.xml`, `_headers` and the hashed

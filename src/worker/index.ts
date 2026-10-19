@@ -8,8 +8,40 @@ const VERIFY_TIMEOUT_MS = 10_000;
 
 const MAX_FIELD_LENGTH = 2000;
 const MIN_ELAPSED_MS = 3000;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CRLF_RE = /[\r\n]/;
+
+/**
+ * Pragmatic RFC 5322 dot-atom form. It rejects quotes, angle brackets, commas, parentheses and
+ * control characters in the local part, because the address is handed to the mail provider as a
+ * structured recipient and must never be able to widen into a list. Accepted trade-off: punycode
+ * TLDs are rejected.
+ */
+const EMAIL_LOCAL =
+  /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
+const EMAIL_DOMAIN =
+  /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+const EMAIL_MAX_LENGTH = 254;
+const EMAIL_LOCAL_MAX_LENGTH = 64;
+
+/** Rejected before `formData()` so an oversized body is never parsed. */
+const MAX_BODY_BYTES = 16 * 1024;
+const ALLOWED_CONTENT_TYPES = [
+  'multipart/form-data',
+  'application/x-www-form-urlencoded',
+] as const;
+
+/** Exactly the fields `ContactForm.astro` submits; anything else is pollution. */
+const ALLOWED_FIELDS = new Set([
+  'lang',
+  'elapsed',
+  'name',
+  'email',
+  'organization',
+  'serviceType',
+  'message',
+  'form_guard',
+  'cf-turnstile-response',
+]);
 
 const FROM = { email: 'noreply@vgr.cat', name: 'vgr.cat' };
 
@@ -48,18 +80,48 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
+  // A submission outcome is never cacheable; no zone rule caches POST today, so this is
+  // defence in depth against a future cache rule rather than a live fix.
+  'Cache-Control': 'no-store',
 };
 
-function problem(status: number, error: string): Response {
+function problem(
+  status: number,
+  error: string,
+  headers: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify({ error }), {
     status,
-    headers: { ...SECURITY_HEADERS, 'content-type': 'application/json' },
+    headers: {
+      ...SECURITY_HEADERS,
+      'content-type': 'application/json',
+      ...headers,
+    },
   });
 }
 
 function field(form: FormData, name: string): string {
   const value = form.get(name);
   return typeof value === 'string' ? value.trim() : '';
+}
+
+/** Length caps plus a dot-atom local part and a label-validated domain. */
+function isValidEmail(value: string): boolean {
+  if (value.length === 0 || value.length > EMAIL_MAX_LENGTH) return false;
+  const at = value.lastIndexOf('@');
+  if (at <= 0 || at === value.length - 1) return false;
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  return (
+    local.length <= EMAIL_LOCAL_MAX_LENGTH &&
+    EMAIL_LOCAL.test(local) &&
+    EMAIL_DOMAIN.test(domain)
+  );
+}
+
+/** Provider errors can embed the recipient, so only the error's type is ever logged. */
+function errorName(error: unknown): string {
+  return error instanceof Error ? error.name : typeof error;
 }
 
 interface VerifyOutcome {
@@ -128,14 +190,59 @@ async function challengePasses(
   return !rejected;
 }
 
+/**
+ * Defence in depth in front of the zone's own rate-limit rule. Fails OPEN: a broken limiter
+ * binding must not take the contact form down, and Turnstile plus the edge rule still gate every
+ * submission. The log line carries no key, so no visitor IP is written to Workers Logs.
+ */
+async function withinRateLimit(request: Request, env: Env): Promise<boolean> {
+  const key = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+  try {
+    const { success } = await env.CONTACT_RATE_LIMITER.limit({ key });
+    return success;
+  } catch (error) {
+    console.warn('rate limiter unavailable', { name: errorName(error) });
+    return true;
+  }
+}
+
 async function contact(request: Request, env: Env): Promise<Response> {
-  if (request.method !== 'POST') return problem(405, 'Method not allowed');
+  // Cheapest gates first: nothing is parsed until every rejection that needs no parsing has run.
+  if (request.method !== 'POST') {
+    return problem(405, 'Method not allowed', { Allow: 'POST' });
+  }
+
+  if (!(await withinRateLimit(request, env))) {
+    return problem(429, 'Too many requests');
+  }
+
+  const contentType = (request.headers.get('content-type') ?? '').toLowerCase();
+  if (!ALLOWED_CONTENT_TYPES.some((type) => contentType.startsWith(type))) {
+    return problem(415, 'Unsupported media type');
+  }
+
+  // `content-length` is advisory (and absent on chunked bodies), but rejecting it early keeps
+  // the common oversize case from ever reaching the parser.
+  const declaredLength = Number(request.headers.get('content-length') ?? '');
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    return problem(413, 'Payload too large');
+  }
 
   let form: FormData;
   try {
     form = await request.formData();
   } catch {
     return problem(400, 'Malformed submission');
+  }
+
+  // An unlisted field is parameter pollution; a repeated one lets `get()` and a downstream
+  // reader disagree about the value.
+  const keys = [...form.keys()];
+  if (
+    keys.some((key) => !ALLOWED_FIELDS.has(key)) ||
+    new Set(keys).size !== keys.length
+  ) {
+    return problem(400, 'Unexpected field');
   }
 
   // Honeypot: hidden from visitors, irresistible to naive bots.
@@ -161,7 +268,7 @@ async function contact(request: Request, env: Env): Promise<Response> {
       return problem(400, 'Invalid field');
     }
   }
-  if (!EMAIL_RE.test(email)) return problem(400, 'Invalid email');
+  if (!isValidEmail(email)) return problem(400, 'Invalid email');
 
   const serviceType = field(form, 'serviceType');
   const serviceLabel = SERVICE_TYPES[serviceType];
@@ -191,6 +298,15 @@ async function contact(request: Request, env: Env): Promise<Response> {
       subject: `Contact: ${serviceLabel} — ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nOrganization: ${organization}\nPrimary focus: ${serviceLabel}\n\n${message}`,
     });
+  } catch (error) {
+    console.error('contact delivery failed', {
+      binding: 'NOTIFY',
+      name: errorName(error),
+    });
+    return problem(502, 'Delivery failed');
+  }
+
+  try {
     await env.REPLY.send({
       to: { email, name },
       from: FROM,
@@ -198,7 +314,10 @@ async function contact(request: Request, env: Env): Promise<Response> {
       text: reply.text,
     });
   } catch (error) {
-    console.error('contact delivery failed', error);
+    console.error('contact delivery failed', {
+      binding: 'REPLY',
+      name: errorName(error),
+    });
     return problem(502, 'Delivery failed');
   }
 

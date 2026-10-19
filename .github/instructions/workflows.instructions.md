@@ -5,12 +5,24 @@ applyTo: '.github/workflows/**'
 
 # GitHub Actions workflows
 
-## Pin third-party Actions to majors, never `@main`
+## Pin third-party Actions to immutable commit SHAs, never `@main` or a major tag
 
-`actions/checkout@v7`, `actions/setup-node@v7`, `actions/upload-artifact@v7`,
-`cloudflare/wrangler-action@v4`.
+Every `uses:` is `owner/repo@<40-char-sha> # vX.Y.Z`. A major tag like `@v7` is mutable in the action's own
+repository, and the deploy job hands `cloudflare/wrangler-action` the production Cloudflare token — a retagged
+major would execute arbitrary code with it (audit M-2, 2026-10-19).
 
-**`wrangler-action` must be v4.** v3 defaults to bundling Wrangler v3, which Astro 7 is incompatible with.
+| Action                       | Pin                                                     |
+| ---------------------------- | ------------------------------------------------------- |
+| `actions/checkout`           | `3d3c42e5aac5ba805825da76410c181273ba90b1` (`# v7.0.1`) |
+| `actions/setup-node`         | `949feb2413d6458794dcd2491c4babbbce0c15c1` (`# v7.1.0`) |
+| `actions/upload-artifact`    | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` (`# v7.0.2`) |
+| `cloudflare/wrangler-action` | `953926a2e2182532811c01a25e53647d93bf07c0` (`# v4.1.3`) |
+
+- **Keep the `# vX.Y.Z` comment.** Dependabot only bumps a SHA pin when the version is identifiable from it.
+- Resolve a new pin with
+  `gh api repos/<owner>/<repo>/git/ref/tags/<tag> --jq '.object.type + " " + .object.sha'`; if `type` is `tag`
+  (annotated), dereference with `gh api repos/<owner>/<repo>/git/tags/<sha> --jq '.object.sha'`.
+- **`wrangler-action` must stay v4.** v3 defaults to bundling Wrangler v3, which Astro 7 is incompatible with.
 
 ## Every workflow declares `permissions:` and `concurrency:`
 
@@ -31,8 +43,8 @@ applyTo: '.github/workflows/**'
 
 ## The CI contract
 
-`CI` runs, in order: `npm ci` (never `install`) → `npm run format:check` → `npm run check` →
-`npm run build`.
+`CI` runs, in order: `npm ci` (never `install`) → `npm audit --audit-level=high` → `npm run format:check` →
+`npm run check` → `npm run lint` → `npm run check:placeholders` → `npm run build`.
 
 - `.github/workflows/*.yml` **is** covered by `npm run format:check`. Format before committing.
 - **Branch protection was removed from `main` on 2026-10-16** (working solo), so direct pushes are no

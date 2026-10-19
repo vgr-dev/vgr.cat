@@ -1,7 +1,12 @@
+# Cross-Origin-Resource-Policy deliberately blocks third-party embedding of the assets in a browser
+# context; link-preview crawlers fetch /og/og-default.png server-side and are unaffected.
+# Cross-Origin-Embedder-Policy is intentionally NOT set: it would break Turnstile's iframe.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 

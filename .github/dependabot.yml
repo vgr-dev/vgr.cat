@@ -5,7 +5,16 @@ updates:
     schedule:
       interval: weekly
     groups:
-      npm-minor-patch:
+      # Split by dependency type, and restrict the groups to *version* updates, so a security advisory
+      # always arrives as its own reviewable PR instead of being buried in a catch-all bump (audit I-5).
+      npm-runtime-patch-minor:
+        applies-to: version-updates
+        dependency-type: production
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+      npm-tooling-patch-minor:
+        applies-to: version-updates
+        dependency-type: development
         patterns: ['*']
         update-types: ['minor', 'patch']
 

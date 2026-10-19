@@ -133,7 +133,16 @@ wrong, raise it with the user rather than silently reverting it.
   `1x00000000000000000000AA` for automated runs). The secret lives only in
   `wrangler secret put TURNSTILE_SECRET_KEY` (production) and `.dev.vars` (local test secret
   `1x0000000000000000000000000000000AA`). `deploy.yml` runs `npm run check:production-env`, which
-  **refuses to deploy with a test sitekey**, since a test key silently disables bot protection.
+  **refuses to deploy with a test sitekey** — it validates both the `PUBLIC_TURNSTILE_SITE_KEY` override
+  **and** the committed `PRODUCTION_SITE_KEY` in `src/config.ts` (and fails if that literal cannot be found),
+  since a test key silently disables bot protection.
+- **The contact endpoint has two rate-limit layers, and only one of them is in git.** The zone carries an
+  `http_ratelimit` rule (5 requests / 10 s per `ip.src` + colo, 10 s mitigation). That layer is
+  dashboard-only, so it cannot be regression-tested — and it _has_ drifted: it sat in the inert
+  `dynamic-redirect` phase until 2026-10-19 and returned a Worker `4xx` rather than a Cloudflare `403`.
+  `wrangler.jsonc` therefore also declares `CONTACT_RATE_LIMITER` (5 / 60 s, keyed on `CF-Connecting-IP`),
+  deliberately looser than the edge rule, and it **fails open** on a binding error so a limiter outage cannot
+  take the contact form down.
 - **Siteverify checks `action` and `hostname`, and Cloudflare's test keys cannot satisfy them.** The
   Worker requires `success === true` **plus** `action === 'contact'` **plus** a hostname in
   `TURNSTILE_HOSTNAMES` (production: `vgr.cat`; never add `localhost` to a production value). The test

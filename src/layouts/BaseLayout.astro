@@ -89,7 +89,15 @@ const jsonLd = buildJsonLd({ locale: lang, t });
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {/*
+      `JSON.stringify` does not escape `<`, so a value containing `</script>` would close this data
+      block early. Escaping `<` as \u003c keeps the JSON valid (it is a legal JSON escape) and the block
+      inert. CSP hashes are the second line of defence, not the first.
+    */}
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}
+    />
     {/*
       Cloudflare Web Analytics is NOT emitted here. It is injected at the edge by the zone's
       Web Analytics auto-install, so it must be allowed by origin in `security.csp`

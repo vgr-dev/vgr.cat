@@ -738,3 +738,69 @@ git push / PR
 - **Existing controls:** the Worker's server-side hostname allowlist (the actual boundary).
 - **Recommended remediation:** remove `127.0.0.1` and `localhost` from the production widget and keep a separate
   widget for local development (the repo already supports `PUBLIC_TURNSTILE_SITE_KEY` overrides). User action.
+
+---
+
+# Remediation Status (addendum, 2026-10-19)
+
+This section is **appended**. Nothing above was edited, reordered or rewritten — the recorded command output in
+the audit stands as captured. Implementation lives in
+`.ai/plans/active/2026-10-19-security-audit-remediation.md` (Phases 0–5 complete for everything an agent can
+change).
+
+## Fixed in the repository
+
+| ID | Status | Where |
+| --- | --- | --- |
+| H-1 | **Fixed** | `deploy.yml` job `if:` now asserts `workflow_run.event == 'push'`, `head_branch == 'main'` and `head_repository == github.repository` |
+| M-1 | **Fixed in-repo** (edge rule kept as the outer layer) | `wrangler.jsonc` `ratelimits` → `CONTACT_RATE_LIMITER`, 5 / 60 s, fails open |
+| M-2 | **Fixed** | all six `uses:` pinned to full SHAs with `# vX.Y.Z` comments; policy updated in `.github/instructions/workflows.instructions.md` |
+| M-3 | **Fixed** | rate limit → content-type allowlist → 16 KiB `content-length` cap → parse → field allowlist, in that order |
+| L-1 | **Fixed** | `EMAIL_LOCAL` / `EMAIL_DOMAIN` dot-atom rule + 254/64 length caps |
+| L-2 | **Fixed in code** | delivery failures log `{ binding, name }` only; visitor addresses no longer serialised |
+| L-3 | **Fixed** | JSON-LD sink escapes `<` as `\u003c` (no-op on current content, proven separately) |
+| L-4 | **Fixed** | `check-production-env.mjs` also rejects a test key committed as `PRODUCTION_SITE_KEY`, and fails if the literal is not found |
+| L-5 | **Fixed** | `Cache-Control: no-store` on every Worker response; `Allow: POST` on the 405 |
+| L-6 | **Fixed** | `workflow_dispatch` deploys are restricted to `refs/heads/main` |
+| I-2 | **Fixed** | `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy` added; COEP deliberately omitted |
+| I-4 | **Fixed** | `.nvmrc` pinned to `24.22.0` (inside `eslint-plugin-astro`'s `^24.16.0`) |
+| I-5 | **Fixed** | npm Dependabot groups split by dependency type and limited to version updates |
+| I-6 | **Partially fixed** | `npm audit --audit-level=high` added to CI; CodeQL remains a repository setting |
+
+## Deferred (recorded with a revisit trigger)
+
+| ID | Why deferred | Revisit when |
+| --- | --- | --- |
+| L-7 | Content markdown still renders raw HTML, but the hash-based CSP has no `'unsafe-inline'`, and adding `rehype-sanitize` adds a dependency that can silently strip legitimate markup | content is accepted from a non-maintainer, or the CSP is relaxed |
+| M-1 (global ceiling) | A cross-location ceiling needs a Durable Object (new class, new binding, new failure mode); the per-IP pair is deliberately permissive and eventually consistent | distributed abuse bypasses both per-IP layers |
+
+## Requires a human (no agent may change these)
+
+| ID | Action |
+| --- | --- |
+| L-8 | Raise the zone's `min_tls_version` from `1.0` to at least `1.2` |
+| I-12 | Remove `127.0.0.1` and `localhost` from Turnstile widget `0x4AAAAAAFX7NYXtXTGajTgb` |
+| I-11 | Confirm `workers_dev` / `preview_urls` are off; confirm the API token's scope |
+| L-2 (dashboard half) | Decide whether `observability.redact_query_string` should be enabled |
+| H-1 (defence in depth) | Add required reviewers and a `main`-only deployment branch rule to the `production` environment |
+| I-6 (dashboard half) | Enable CodeQL default setup, secret scanning + push protection, and Dependabot alerts |
+
+## Accepted as-is (no action, with the reason on record)
+
+| ID | Reason |
+| --- | --- |
+| I-1 | Meta-delivered CSP is a documented trade-off: per-build hashes cannot be hand-maintained in a header. `frame-ancestors` is unavailable in `<meta>`, so `X-Frame-Options: DENY` covers clickjacking |
+| I-3 | Positive verification — no `unsafe-inline`, no `unsafe-eval`, no wildcards |
+| I-7 | `.vscode/mcp.json` holds only a URL; auth is interactive OAuth |
+| I-8 | `connect-src` omits `challenges.cloudflare.com`; production evidence shows the widget works from inside its iframe |
+| I-9 | `includeSubDomains; preload` is coherent with the deliberate absence of a wildcard route |
+| I-10 | Three install-script packages; every tarball resolves to `registry.npmjs.org`; `npm audit` reports 0 |
+
+## Not verified by execution
+
+- The edge rate limit's **behaviour** (only its configuration was read; probing it would mean attacking
+  production).
+- The `workflow_run` `if:` expression was reviewed against both payload shapes, not triggered — a real trigger
+  needs a push to `main`.
+- The e-mail **happy path** remains unverifiable with test keys (Siteverify's `action` gate), so only rejection
+  paths were exercised.

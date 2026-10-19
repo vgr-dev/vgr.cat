@@ -28,7 +28,7 @@ export const en = {
   header: {
     brand: 'vgr.cat',
     menuLabel: 'Toggle navigation menu',
-    primaryNavLabel: 'TODO(copy) — Primary',
+    primaryNavLabel: 'Primary navigation',
     languageNavLabel: 'Select language',
   },
   hero: {
@@ -125,7 +125,7 @@ export const en = {
         'Thank you. Your message has been received. I will respond within 1–2 business days.',
       errorMessage:
         'Something went wrong while sending your message. Please reach out directly via email.',
-      turnstile: 'TODO(copy) — Protected by Cloudflare Turnstile.',
+      turnstile: 'Protected by Cloudflare Turnstile.',
     },
     directContact: {
       orDivider: 'or schedule directly',

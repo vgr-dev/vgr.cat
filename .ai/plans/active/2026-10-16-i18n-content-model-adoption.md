@@ -747,15 +747,15 @@ and the emails and redirect are correct — with the happy path verified the onl
 
 #### Tasks
 
-- [ ] Task 4.1: Produce `ca` and `es` for every dictionary key, following the IA companion's tone
+- [x] Task 4.1: Produce `ca` and `es` for every dictionary key, following the IA companion's tone
       guidelines (`2026-10-15-portfolio-regtech-site-ia.md`, "Tone guidelines for the copy phase"):
       institutional / public-tender register — "administració", "compliment normatiu", "supervisió de
       mercat" — written, not machine-glosed. Where a phrase only works in English, rewrite it per locale.
       Approach per O4.
-- [ ] Task 4.2: Fill the six CA and six ES Content-Collection entries
+- [x] Task 4.2: Fill the six CA and six ES Content-Collection entries
       (`src/content/services/*.{ca,es}.md`, `src/content/caseStudies/*.{ca,es}.md`) — 54 sentinels —
       from the English copy the working tree already carries, keeping the `translationKey`-linked parity.
-- [ ] Task 4.3: Close `thanks.*` and `notFound.*` in `en`, `ca` and `es` per O3 (8 keys × 3 locales).
+- [x] Task 4.3: Close `thanks.*` and `notFound.*` in `en`, `ca` and `es` per O3 (8 keys × 3 locales).
       These are read by `src/pages/contact/thanks.astro`, `src/pages/[lang]/contact/thanks.astro` and —
       via a direct `dictionaries[locale].notFound` access, not `useTranslations` — `src/pages/404.astro`.
       > **PARTIAL — the `en` half is DONE 2026-10-16** (state update in §1): eight final English strings,
@@ -767,25 +767,70 @@ and the emails and redirect are correct — with the happy path verified the onl
       > **DONE 2026-10-16, deviating from the letter of the task on purpose** — the URL went into
       > `src/config.ts` as `bookingUrl` so the Phase 2 CTAs can share one constant. Evidence, and the
       > re-measured guard count, in the §1 state update.
-- [ ] Task 4.5: Re-run `npm run check:placeholders` and confirm it exits 0.
+- [x] Task 4.5: Re-run `npm run check:placeholders` and confirm it exits 0.
 - [ ] Task 4.6: Remove the `if: vars.ALLOW_PLACEHOLDER_COPY != 'true'` conditional from
       `.github/workflows/ci.yml` so the guard runs unconditionally — and **delete the repository variable**
       in the same change (owner action: Settings → Actions → Variables, or `gh variable delete`). The
       scoped workflows instructions apply: `permissions:` and `concurrency:` stay as they are, and the
       `CI` workflow name and `validate` job name must not change, because `deploy.yml` matches `CI` by name.
-- [ ] Task 4.7: Update `AGENTS.md`: record the hatch retirement and the new dictionary contract, and
+      > **PARTIAL 2026-10-19:** the `if:` is removed from `ci.yml` (diff below), but the repository
+      > variable **still exists** — `gh variable list` reports `ALLOW_PLACEHOLDER_COPY true`
+      > (created 2026-10-15). Deleting it is the owner action named in this task; the Builder did not
+      > run `gh variable delete`.
+- [x] Task 4.7: Update `AGENTS.md`: record the hatch retirement and the new dictionary contract, and
       re-state the pinned numbers if Phase 5 moves them.
 
 #### Acceptance Criteria
 
-- [ ] `npm run check:placeholders` → `check:placeholders — 0 placeholders remain.` exit 0.
+- [x] `npm run check:placeholders` → `check:placeholders — 0 placeholders remain.` exit 0.
       → `_(recorded verbatim)_`
-- [ ] `grep -rn 'ALLOW_PLACEHOLDER_COPY' .github/ AGENTS.md README.md` returns nothing.
+- [x] `grep -rn 'ALLOW_PLACEHOLDER_COPY' .github/ AGENTS.md README.md` returns nothing.
       → `_(recorded output)_`
-- [ ] `git diff .github/workflows/ci.yml` shows **only** the removed conditional.
+- [x] `git diff .github/workflows/ci.yml` shows **only** the removed conditional.
       → `_(recorded diff)_`
-- [ ] `npm run format:check` passes, including the workflow YAML. → `_(output)_`
+- [x] `npm run format:check` passes, including the workflow YAML. → `_(output)_`
 - [ ] The Catalan is reviewed by the owner before being recorded as final. → `_(review note, dated)_`
+      → **PENDING OWNER REVIEW (2026-10-19):** the `ca` dictionary and the six Catalan Content-Collection
+      entries are drafted, not approved. Nothing here is recorded as final Catalan.
+
+> **RECORDED 2026-10-19 — Phase 4 accepted evidence.**
+>
+> ```
+> $ npm run check:placeholders
+> check:placeholders — 0 placeholders remain.
+> placeholders exit=0
+>
+> $ npm run check
+> Result (30 files): 0 errors, 0 warnings, 0 hints
+>
+> $ npm run lint          → exit 0
+> $ npm run format:check  → All matched files use Prettier code style! (exit 0)
+> $ npm run build         → 7 page(s) built (exit 0)
+> ```
+>
+> ```
+> $ grep -rn 'ALLOW_PLACEHOLDER_COPY' .github/ AGENTS.md README.md
+> (none)
+> ```
+>
+> **`git diff .github/workflows/ci.yml`:**
+>
+> ```
+>       - name: Check for placeholder copy
+> -        if: vars.ALLOW_PLACEHOLDER_COPY != 'true'
+>         run: npm run check:placeholders
+> ```
+>
+> Exactly one removed line. (A first attempt left a stray blank line after the `- name:`; it was
+> removed before this recording, and the diff above is the final state.)
+>
+> **Build content:** `grep -rlE 'TODO\\(copy\\)|REPLACE_ME' dist` → nothing; `dist/ca/index.html`
+> contains `Enginyer Principal` and `Motors de RegTech`, `dist/es/index.html` contains
+> `Ingeniero Principal`. Collection parity: every `translationKey` appears exactly 3 times across
+> `src/content/*/*.md`.
+>
+> **Still open, both owner actions:** delete the `ALLOW_PLACEHOLDER_COPY` repository variable
+> (`gh variable delete ALLOW_PLACEHOLDER_COPY`), and review the Catalan before it is called final.
 
 ---
 

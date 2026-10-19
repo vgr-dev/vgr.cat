@@ -161,6 +161,16 @@ wrong, raise it with the user rather than silently reverting it.
   named **`CI`** and proceeds only when it concluded `success`, because branch protection no longer orders
   the two. Renaming the `CI` workflow silently stops every deploy; `workflow_dispatch` remains the manual
   path. It checks out `github.event.workflow_run.head_sha`, so it ships the commit CI validated.
+- **`src/i18n/en.ts` defines `Dictionary`, and it must never be frozen.** `ca` / `es` are annotated
+  `: Dictionary`, so a missing _or_ extra key fails `astro check` in either direction — that is the
+  cross-locale parity guarantee. Do **not** add a const assertion to `en`: it would give every value a
+  literal type and no translation could satisfy the contract (this broke the dev server on 2026-10-16).
+  Pillar keys mirror the collection `pillar` enum (`'entity-resolution'`), so
+  `t.services.pillars[entry.data.pillar]` indexes directly, with no mapping table.
+- **The `TODO(copy)` guard is unconditional now.** `scripts/check-placeholders.mjs` fails on any
+  `TODO(copy)` or `REPLACE_ME` under `src/`, and `ci.yml` runs it on every push with no escape-hatch
+  condition or repository variable left behind — both were retired on 2026-10-19. The guard scans
+  source text **including comments**, so prose under `src/` must not spell the sentinel.
 - **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
   empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching

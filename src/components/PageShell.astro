@@ -1,17 +1,17 @@
 ---
 /**
- * Site chrome for content pages: skip link, header, main landmark and footer.
+ * Site chrome for every page: skip link, header, main landmark and footer.
  *
- * Owns the navigation data so pages no longer rebuild the same four-item array, and owns the
- * skip link so it cannot be forgotten on a new page. `BaseLayout` stays the document shell
- * (html/head/body); pages that deliberately have no chrome (404, thanks) render their own
- * `<main>` inside `BaseLayout` instead.
+ * Owns the navigation data — `sectionNav` is the single source the header and the footer both
+ * consume — and owns the skip link so it cannot be forgotten on a new page. `BaseLayout` stays
+ * the document shell (html/head/body).
  */
 import SiteHeader from './SiteHeader.astro';
 import SiteFooter from './SiteFooter.astro';
 import { useTranslations } from '../i18n';
 import { bookingUrl } from '../config';
-import type { Locale } from '../i18n/config';
+import { sectionNav } from '../lib/navigation';
+import { localizedPath, type Locale } from '../i18n/config';
 
 interface Props {
   lang: Locale;
@@ -20,12 +20,11 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const nav = [
-  { href: '#services', label: t.nav.services },
-  { href: '#work', label: t.nav.caseStudies },
-  { href: '#about', label: t.nav.about },
-  { href: '#contact', label: t.nav.contact },
-];
+const nav = sectionNav(lang);
+
+// The trailing slash is the canonical form `build.format: 'directory'` emits; without it the edge
+// answers with a redirect hop.
+const legalHref = localizedPath(lang, '/privacy/');
 ---
 
 <a
@@ -37,6 +36,7 @@ const nav = [
 <SiteHeader
   lang={lang}
   brand={t.header.brand}
+  homeHref={localizedPath(lang, '/')}
   nav={nav}
   menuLabel={t.header.menuLabel}
   primaryNavLabel={t.header.primaryNavLabel}
@@ -47,4 +47,16 @@ const nav = [
 <main id="main-content" tabindex="-1">
   <slot />
 </main>
-<SiteFooter tagline={t.footer.tagline} builtWith={t.footer.builtWith} />
+<SiteFooter
+  lang={lang}
+  tagline={t.footer.tagline}
+  builtWith={t.footer.builtWith}
+  nav={nav}
+  sectionsLabel={t.footer.sectionsLabel}
+  contactLabel={t.footer.contactLabel}
+  languageLabel={t.footer.languageLabel}
+  bookingLabel={t.contact.directContact.calendarButton}
+  bookingHref={bookingUrl}
+  legalLabel={t.footer.legalLabel}
+  legalHref={legalHref}
+/>

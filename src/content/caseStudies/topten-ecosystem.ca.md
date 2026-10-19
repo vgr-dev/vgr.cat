@@ -11,7 +11,7 @@ pillar: infrastructure
 
 Topten és una iniciativa de consumidors europea capdavantera que fa seguiment i presenta els productes més eficients del mercat, per orientar consumidors, equips de compra corporativa i responsables polítics.
 
-### El problema
+#### El repte
 
 A mesura que Topten va passar de projectes pilot nacionals a ser una referència europea en diversos àmbits (Topten.eu, Topten.ch i diversos llocs associats), la pila tècnica va patir els problemes del creixement:
 
@@ -19,7 +19,7 @@ A mesura que Topten va passar de projectes pilot nacionals a ser una referència
 - **Colls d’ampolla analítics:** els analistes de recerca dedicaven massa temps a formatar fulls de càlcul manualment i a lluitar amb backends complexos en lloc d’avaluar dades de producte.
 - **Cost d’infraestructura:** mantenir servidors i bases de codi dispars consumia capacitat de desenvolupament i augmentava la vulnerabilitat operativa.
 
-### Enfocament tècnic
+#### L’arquitectura
 
 Com a enginyer principal de programari, vaig redissenyar l’arquitectura de la plataforma des de zero:
 
@@ -28,7 +28,7 @@ Com a enginyer principal de programari, vaig redissenyar l’arquitectura de la 
 - **Ingestió i memòria cau robustes:** disseny de canonades de dades resilients per sincronitzar actualitzacions de catàleg, llindars de referència i fluxos de proveïdors, amb memòria cau agressiva a la vora que ofereix temps de càrrega inferiors a un segon fins i tot en pics de trànsit.
 - **Automatització CI/CD:** estandardització dels fluxos de prova i desplegament amb integració contínua moderna, garantint que els canvis en un portal no afectin les instàncies germanes.
 
-### L’impacte
+#### Impacte mesurable
 
 - **Eficiència operativa:** els investigadors de domini poden actualitzar referències, aprovar propostes de productes i publicar categories noves sense intervenció d’enginyeria.
 - **Alta disponibilitat i velocitat:** la plataforma suporta trànsit intens de consumidors i B2B de manera fiable amb costos d’infraestructura irrellevants.

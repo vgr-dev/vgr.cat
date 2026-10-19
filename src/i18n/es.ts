@@ -30,7 +30,7 @@ export const es: Dictionary = {
     titleHighlight: 'eficiencia energética europea',
     subtitle:
       'Más de 12 años de entrega de extremo a extremo en eficiencia energética: motores de cumplimiento normativo europeo (EPREL, Ecodesign, ESPR), herramientas de supervisión de mercado, flotas IoT a escala nacional y las plataformas multiinquilino que las operan.',
-    ctaPrimary: 'Agendar una consulta técnica',
+    ctaPrimary: 'Agendar una llamada técnica de 30 minutos',
     ctaSecondary: 'Explorar los casos prácticos',
     metrics: [
       {
@@ -54,7 +54,6 @@ export const es: Dictionary = {
       'Ingeniería full-stack de datos energéticos: de los sensores de campo a los registros europeos',
     subtitle:
       'Motores normativos, observabilidad de mercado, monitorización IoT y las plataformas que los hacen funcionar. Una sola persona para todo el stack: ingesta, modelo, validación, despliegue y operación.',
-    ctaLearnMore: 'Ver el caso práctico relacionado',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
       regtech: { tag: 'RegTech y cumplimiento normativo' },
@@ -130,12 +129,12 @@ export const es: Dictionary = {
       'Disponible para ingeniería de software, revisión arquitectónica, auditorías técnicas, ponencias y contratos especializados en Cataluña, España y la Unión Europea.',
     form: {
       nameLabel: 'Nombre',
-      namePlaceholder: 'p. ej. Maria Puig',
       emailLabel: 'Correo electrónico profesional',
-      emailPlaceholder: 'nombre@organizacion.es',
+      emailHint: 'Respondo a esta dirección.',
       organizationLabel: 'Organización o institución',
       organizationPlaceholder: 'Empresa, agencia o entidad',
       serviceTypeLabel: 'Ámbito principal',
+      serviceTypePlaceholder: 'Seleccione un ámbito',
       serviceTypes: {
         regtech: 'RegTech / integración EPREL / preparación para ESPR',
         entityResolution: 'Observabilidad de mercado / resolución de entidades',
@@ -144,14 +143,40 @@ export const es: Dictionary = {
         advisory: 'Asesoramiento técnico / ponencias / otros',
       },
       messageLabel: 'Resumen del proyecto y objetivos',
-      messagePlaceholder:
-        'Describa los requisitos, las restricciones del sistema o los plazos...',
+      messageHint: 'Hasta 2.000 caracteres.',
       submitButton: 'Enviar consulta',
       submitting: 'Enviando...',
-      successMessage:
-        'Gracias. He recibido su mensaje y le responderé en un plazo de uno a dos días laborables.',
-      errorMessage:
-        'No se ha podido enviar el mensaje. Puede escribir directamente a contact@vgr.cat.',
+      stillSending: 'El envío sigue en curso…',
+      noJsNotice:
+        'Este formulario necesita JavaScript para protegerse del spam. Puede contactarme directamente:',
+      recoveryLabel: 'O contácteme directamente:',
+      privacyNotice:
+        'Utilizo estos datos solo para responder a su consulta. Sin boletín y sin cederlos.',
+      privacyLink: 'Política de privacidad',
+      errorRateLimited:
+        'Demasiados intentos. Vuelva a intentarlo en un minuto.',
+      errorChallenge:
+        'La verificación no ha pasado. Recargue la página y vuelva a intentarlo.',
+      errorRejected:
+        'Se ha rechazado uno de los datos. Revise la dirección de correo y el resto de campos, y vuelva a intentarlo.',
+      errorDelivery: 'No se ha podido entregar el mensaje.',
+      errorUnavailable: 'El formulario no está disponible temporalmente.',
+      errorNetwork:
+        'La conexión se ha interrumpido antes de enviar el mensaje. Vuelva a intentarlo.',
+      errors: {
+        summaryOne: 'Corrija 1 campo.',
+        summaryOther: 'Corrija {count} campos.',
+        nameRequired: 'Escriba su nombre.',
+        emailRequired: 'Escriba su dirección de correo.',
+        emailFormat:
+          'Escriba una dirección válida, p. ej. nombre@organizacion.es.',
+        emailTooLong: 'Esta dirección supera los 254 caracteres.',
+        organizationRequired: 'Escriba su organización.',
+        serviceTypeRequired: 'Seleccione un ámbito.',
+        messageRequired: 'Describa su proyecto o su consulta.',
+        messageTooLong: 'Utilice 2.000 caracteres o menos.',
+        lineBreak: 'Este campo no puede contener saltos de línea.',
+      },
       turnstile: 'Protegido por Cloudflare Turnstile.',
     },
     directContact: {
@@ -175,10 +200,51 @@ export const es: Dictionary = {
     body: 'La página solicitada no existe o se ha trasladado. Compruebe la dirección o vuelva a la página de inicio para encontrar la sección que necesita.',
     back: 'Volver a la página de inicio',
   },
+  privacy: {
+    title: 'Privacidad y datos | vgr.cat',
+    heading: 'Privacidad y sus datos',
+    intro:
+      'Este sitio recopila lo mínimo posible. Esta página explica exactamente qué ocurre con lo que me envía.',
+    updated: 'Última actualización: 19 de octubre de 2026.',
+    sections: [
+      {
+        heading: 'Qué envía el formulario de contacto',
+        body: 'Su nombre, correo profesional, organización, el ámbito que seleccione, el mensaje y el idioma de la página que ha utilizado. El formulario no recopila nada más.',
+      },
+      {
+        heading: 'Para qué lo conservo',
+        body: 'Solo para responder a su consulta y dejar constancia del trabajo comentado. No hay boletín, ni lista de marketing, ni cesión a terceros para sus propios fines.',
+      },
+      {
+        heading: 'Cómo se trata',
+        body: 'El formulario se procesa en un Worker de Cloudflare y se entrega en mi buzón con Cloudflare Email Service. Cloudflare trata la petición en mi nombre para poder entregarla y aplica sus propios controles de seguridad.',
+      },
+      {
+        heading: 'Protección contra bots',
+        body: 'El formulario está protegido por Cloudflare Turnstile, que comprueba que el envío procede de un navegador real. Esa comprobación se hace antes de entregar el mensaje.',
+      },
+      {
+        heading: 'Estadísticas de visitas',
+        body: 'El sitio utiliza Cloudflare Web Analytics, que informa de totales agregados de tráfico.',
+      },
+      {
+        heading: 'Cuánto tiempo se conserva',
+        body: 'Las consultas permanecen en mi buzón el tiempo necesario para atender la petición y dejar un registro profesional razonable de ella.',
+      },
+      {
+        heading: 'Sus opciones',
+        body: 'Puede preguntar qué tengo sobre usted, pedir una corrección o pedir su supresión. Escriba a contact@vgr.cat y lo haré.',
+      },
+    ],
+  },
   footer: {
     tagline:
       'Ingeniería full-stack para la eficiencia energética: de los sensores de campo a los registros europeos.',
     builtWith:
       'Desarrollado con Astro y Tailwind. Alojado en Cloudflare Workers.',
+    sectionsLabel: 'Secciones',
+    contactLabel: 'Contacto',
+    languageLabel: 'Idioma',
+    legalLabel: 'Privacidad',
   },
 };

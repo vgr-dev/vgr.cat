@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageShell from '../../../components/PageShell.astro';
 import Container from '../../../components/Container.astro';
 import {
   defaultLocale,
@@ -20,8 +21,13 @@ const t = useTranslations(lang);
 const homeHref = localizedPath(lang, '/');
 ---
 
-<BaseLayout lang={lang} title={t.thanks.title} description={t.thanks.body}>
-  <main id="main-content">
+<BaseLayout
+  lang={lang}
+  title={t.thanks.title}
+  description={t.thanks.body}
+  noindex
+>
+  <PageShell lang={lang}>
     <Container class="py-24">
       <h1 class="text-3xl font-semibold tracking-tight">{t.thanks.heading}</h1>
       <p class="mt-4 max-w-2xl text-muted">{t.thanks.body}</p>
@@ -31,5 +37,5 @@ const homeHref = localizedPath(lang, '/');
         </a>
       </p>
     </Container>
-  </main>
+  </PageShell>
 </BaseLayout>

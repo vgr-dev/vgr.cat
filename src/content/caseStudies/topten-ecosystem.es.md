@@ -11,7 +11,7 @@ pillar: infrastructure
 
 Topten es una iniciativa de consumidores europea líder que hace seguimiento y presenta los productos más eficientes del mercado, para orientar a consumidores, equipos de compra corporativa y responsables políticos.
 
-### El problema
+#### El reto
 
 A medida que Topten pasó de proyectos piloto nacionales a ser una referencia europea en varios ámbitos (Topten.eu, Topten.ch y varios sitios asociados), la pila técnica sufrió los problemas del crecimiento:
 
@@ -19,7 +19,7 @@ A medida que Topten pasó de proyectos piloto nacionales a ser una referencia eu
 - **Cuellos de botella analíticos:** los analistas de investigación dedicaban demasiado tiempo a formatear hojas de cálculo manualmente y a lidiar con backends complejos en lugar de evaluar datos de producto.
 - **Coste de infraestructura:** mantener servidores y bases de código dispares consumía capacidad de desarrollo y aumentaba la vulnerabilidad operativa.
 
-### Enfoque técnico
+#### La arquitectura
 
 Como ingeniero principal de software, rediseñé la arquitectura de la plataforma desde cero:
 
@@ -28,7 +28,7 @@ Como ingeniero principal de software, rediseñé la arquitectura de la plataform
 - **Ingesta y caché robustas:** diseño de canalizaciones de datos resilientes para sincronizar actualizaciones de catálogo, umbrales de referencia y flujos de proveedores, con caché agresiva en el edge que ofrece tiempos de carga inferiores a un segundo incluso en picos de tráfico.
 - **Automatización CI/CD:** estandarización de los flujos de prueba y despliegue con integración continua moderna, garantizando que los cambios en un portal nunca afecten a las instancias hermanas.
 
-### El impacto
+#### Impacto medible
 
 - **Eficiencia operativa:** los investigadores de dominio pueden actualizar referencias, aprobar propuestas de productos y publicar nuevas categorías sin intervención de ingeniería.
 - **Alta disponibilidad y velocidad:** la plataforma soporta tráfico intenso de consumidores y B2B de forma fiable con costes de infraestructura irrelevantes.

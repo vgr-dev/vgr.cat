@@ -23,7 +23,7 @@ export const en = {
     caseStudies: 'Case Studies',
     about: 'About',
     contact: 'Contact',
-    bookCall: 'Schedule Call',
+    bookCall: 'Book a call',
   },
   header: {
     brand: 'vgr.cat',
@@ -38,7 +38,7 @@ export const en = {
     titleHighlight: 'European energy efficiency',
     subtitle:
       '12+ years of end-to-end delivery in energy efficiency: EU compliance engines (EPREL, Ecodesign, ESPR), market-surveillance tooling, nationwide IoT fleets, and the multi-tenant platforms that operate them.',
-    ctaPrimary: 'Book Technical Consultation',
+    ctaPrimary: 'Book a 30-min technical call',
     ctaSecondary: 'Explore Case Studies',
     metrics: [
       {
@@ -62,7 +62,6 @@ export const en = {
       'Full-stack engineering for energy data: from field sensors to European registries',
     subtitle:
       'Regulatory engines, market observability, IoT monitoring and the platforms that run them. One engineer across the whole stack: ingest, model, validate, ship, operate.',
-    ctaLearnMore: 'View related case study',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
       regtech: { tag: 'RegTech & Compliance' },
@@ -136,12 +135,12 @@ export const en = {
       'Available for software engineering, architectural review, technical auditing, speaking, and specialised contracts across Catalonia, Spain and the European Union.',
     form: {
       nameLabel: 'Your Name',
-      namePlaceholder: 'e.g. Maria Puig',
       emailLabel: 'Professional Email',
-      emailPlaceholder: 'name@organization.com',
+      emailHint: 'We reply to this address.',
       organizationLabel: 'Organization / Institution',
       organizationPlaceholder: 'Company, Agency, or NGO',
       serviceTypeLabel: 'Primary Focus',
+      serviceTypePlaceholder: 'Select a focus area',
       serviceTypes: {
         regtech: 'RegTech / EPREL Integration / ESPR Readiness',
         entityResolution: 'Market Observability / Entity Resolution',
@@ -150,19 +149,44 @@ export const en = {
         advisory: 'Technical Advisory / Speaking / Other',
       },
       messageLabel: 'Project Overview & Objectives',
-      messagePlaceholder:
-        'Describe your requirements, system constraints, or timelines...',
+      messageHint: 'Up to 2,000 characters.',
       submitButton: 'Send Inquiry',
       submitting: 'Submitting...',
-      successMessage:
-        'Thank you. Your message has been received. I will respond within 1–2 business days.',
-      errorMessage:
-        'Something went wrong while sending your message. Please reach out directly via email.',
+      stillSending: 'Still sending…',
+      noJsNotice:
+        'This form needs JavaScript to protect against spam. Please reach me directly instead:',
+      recoveryLabel: 'Or reach me directly:',
+      privacyNotice:
+        'I use these details only to reply to your enquiry. No newsletter, no sharing.',
+      privacyLink: 'Privacy policy',
+      errorRateLimited:
+        'Too many attempts. Please try again in about a minute.',
+      errorChallenge:
+        'The verification check did not pass. Reload the page and try again.',
+      errorRejected:
+        'One of the details was rejected. Check the email address and the other fields, then try again.',
+      errorDelivery: 'The message could not be delivered.',
+      errorUnavailable: 'The form is temporarily unavailable.',
+      errorNetwork:
+        'Your connection dropped before the message was sent. Please try again.',
+      errors: {
+        summaryOne: 'Please fix 1 field.',
+        summaryOther: 'Please fix {count} fields.',
+        nameRequired: 'Enter your name.',
+        emailRequired: 'Enter your email address.',
+        emailFormat: 'Enter a valid address, e.g. name@organization.com.',
+        emailTooLong: 'This address is longer than 254 characters.',
+        organizationRequired: 'Enter your organization.',
+        serviceTypeRequired: 'Select a focus area.',
+        messageRequired: 'Describe your project or question.',
+        messageTooLong: 'Use 2,000 characters or fewer.',
+        lineBreak: 'This field cannot contain line breaks.',
+      },
       turnstile: 'Protected by Cloudflare Turnstile.',
     },
     directContact: {
       orDivider: 'or schedule directly',
-      calendarButton: 'Book a 30-min Technical Discovery Call',
+      calendarButton: 'Book a 30-min technical call',
       emailDirect: 'Direct Email',
       locationLabel: 'Headquarters',
       locationValue: 'Sant Cugat del Vallès, Barcelona, Catalonia',
@@ -183,11 +207,53 @@ export const en = {
     body: 'The page you requested does not exist or has moved. Check the address, or return to the home page to find the section you need.',
     back: 'Return to the home page',
   },
+  privacy: {
+    title: 'Privacy and data | vgr.cat',
+    heading: 'Privacy and your data',
+    // Only describes what this site actually does; no legal claims, no invented retention periods.
+    intro:
+      'This site collects as little as it can. This page describes exactly what happens to anything you send me.',
+    updated: 'Last updated 19 October 2026.',
+    sections: [
+      {
+        heading: 'What the contact form sends',
+        body: 'Your name, work email, organisation, the focus area you select, your message, and the language of the page you used. The form collects nothing else.',
+      },
+      {
+        heading: 'Why I keep it',
+        body: 'Only to reply to your enquiry and to keep a record of the work discussed. There is no newsletter, no marketing list, and no sharing with third parties for their own purposes.',
+      },
+      {
+        heading: 'How it is handled',
+        body: 'The form is processed by a Cloudflare Worker and delivered to my mailbox by Cloudflare Email Service. Cloudflare processes the request on my behalf in order to deliver it, and applies its own security checks at the edge.',
+      },
+      {
+        heading: 'Bot protection',
+        body: 'The form is protected by Cloudflare Turnstile, which checks that the submission comes from a real browser. That check runs before the message is delivered.',
+      },
+      {
+        heading: 'Visitor statistics',
+        body: 'The site uses Cloudflare Web Analytics, which reports aggregate traffic totals.',
+      },
+      {
+        heading: 'How long it is kept',
+        body: 'Enquiries stay in my mailbox for as long as it takes to handle the request and to keep a reasonable business record of it.',
+      },
+      {
+        heading: 'Your choices',
+        body: 'You can ask what I hold about you, ask for a correction, or ask for it to be deleted. Write to contact@vgr.cat and I will act on it.',
+      },
+    ],
+  },
   footer: {
     tagline:
       'Full-stack engineering for energy efficiency: from field sensors to European registries.',
     builtWith:
       'Engineered with Astro & Tailwind. Hosted on Cloudflare Workers.',
+    sectionsLabel: 'Sections',
+    contactLabel: 'Contact',
+    languageLabel: 'Language',
+    legalLabel: 'Privacy',
   },
 };
 

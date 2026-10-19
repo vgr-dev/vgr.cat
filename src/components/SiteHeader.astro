@@ -1,8 +1,16 @@
 ---
+/**
+ * Site header: brand, primary navigation, language picker and the booking CTA.
+ *
+ * The mobile panel's visibility is driven by `data-open` rather than by adding and removing a
+ * utility class: with `hidden` the opened panel rendered as `display: block` (the flex utilities
+ * had no base counterpart) and collapsed into a narrow column beside the brand (UX-004). Display
+ * is explicit for both states, and the header row wraps so the panel takes the full width.
+ */
 import Container from './Container.astro';
 import Button from './Button.astro';
 import LanguagePicker from './LanguagePicker.astro';
-import { defaultLocale, type Locale } from '../i18n/config';
+import type { Locale } from '../i18n/config';
 
 interface NavItem {
   href: string;
@@ -10,8 +18,10 @@ interface NavItem {
 }
 
 interface Props {
-  lang?: Locale;
+  lang: Locale;
   brand: string;
+  /** The brand goes home, not to an in-page anchor (UX-015). */
+  homeHref: string;
   nav: NavItem[];
   menuLabel: string;
   primaryNavLabel: string;
@@ -21,8 +31,9 @@ interface Props {
 }
 
 const {
-  lang = defaultLocale,
+  lang,
   brand,
+  homeHref,
   nav,
   menuLabel,
   primaryNavLabel,
@@ -33,8 +44,8 @@ const {
 ---
 
 <header class="border-b border-border">
-  <Container class="flex items-center justify-between gap-4 py-4">
-    <a href="#main-content" class="font-semibold tracking-tight">
+  <Container class="flex flex-wrap items-center justify-between gap-4 py-4">
+    <a href={homeHref} class="font-semibold tracking-tight">
       {brand}
     </a>
 
@@ -43,7 +54,7 @@ const {
       id="nav-toggle"
       aria-expanded="false"
       aria-controls="site-nav"
-      class="inline-flex items-center rounded border border-control-border p-2 sm:hidden"
+      class="inline-flex size-11 items-center justify-center rounded border border-control-border sm:hidden"
     >
       <span class="sr-only">{menuLabel}</span>
       <svg
@@ -59,15 +70,26 @@ const {
       </svg>
     </button>
 
+    {/*
+      `max-sm:hidden` + `data-[open=true]:flex` are a specificity-based pair, not an order
+      dependency: the data variant is `[data-open=true]` on this element, so it wins outright.
+      `w-full` is what pushes the panel onto its own row — the header row wraps.
+    */}
     <div
       id="site-nav"
-      class="hidden w-full flex-col gap-4 sm:flex sm:w-auto sm:flex-row sm:items-center"
+      data-nav-panel
+      data-open="false"
+      class="flex w-full flex-col gap-2 max-sm:hidden data-[open=true]:flex sm:w-auto sm:flex-row sm:items-center sm:gap-4"
     >
       <nav aria-label={primaryNavLabel}>
-        <ul class="flex flex-col gap-3 sm:flex-row sm:gap-6">
+        <ul class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
           {nav.map((item) => (
             <li>
-              <a href={item.href} class="text-sm hover:text-accent">
+              <a
+                href={item.href}
+                data-section-link={item.href.slice(1)}
+                class="flex min-h-11 items-center text-sm hover:text-accent aria-[current]:font-semibold aria-[current]:text-accent sm:min-h-0"
+              >
                 {item.label}
               </a>
             </li>
@@ -86,10 +108,75 @@ const {
 
 <script>
   const toggle = document.getElementById('nav-toggle');
-  const nav = document.getElementById('site-nav');
+  const panel = document.getElementById('site-nav');
+  const desktop = window.matchMedia('(min-width: 640px)');
+
+  function setOpen(open: boolean, returnFocus = false): void {
+    panel?.setAttribute('data-open', String(open));
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (returnFocus) toggle?.focus();
+  }
+
+  function isOpen(): boolean {
+    return toggle?.getAttribute('aria-expanded') === 'true';
+  }
+
   toggle?.addEventListener('click', () => {
-    const open = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!open));
-    nav?.classList.toggle('hidden');
+    setOpen(!isOpen());
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isOpen()) setOpen(false, true);
+  });
+
+  // At this width the panel is displayed by CSS regardless of state; clearing it keeps the
+  // toggle honest if the viewport shrinks again.
+  desktop.addEventListener('change', (event) => {
+    if (event.matches) setOpen(false);
+  });
+
+  /**
+   * Scroll-spy: marks the section crossing the middle of the viewport with `aria-current`, so the
+   * active link is not signalled by colour alone. Without `IntersectionObserver` — or on pages
+   * with no sections — this does nothing.
+   */
+  const links = [
+    ...document.querySelectorAll<HTMLAnchorElement>('[data-section-link]'),
+  ];
+  const targets: HTMLElement[] = [];
+  for (const link of links) {
+    const id = link.getAttribute('data-section-link');
+    const target = id === null ? null : document.getElementById(id);
+    if (target) targets.push(target);
+  }
+
+  if (
+    links.length > 0 &&
+    targets.length > 0 &&
+    'IntersectionObserver' in window
+  ) {
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target);
+          else visible.delete(entry.target);
+        }
+        const current = targets.find((target) => visible.has(target));
+        for (const link of links) {
+          if (
+            current &&
+            link.getAttribute('data-section-link') === current.id
+          ) {
+            link.setAttribute('aria-current', 'location');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        }
+      },
+      // Only the band around the viewport's middle counts, so one section is current at a time.
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    for (const target of targets) observer.observe(target);
+  }
 </script>

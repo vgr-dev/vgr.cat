@@ -518,6 +518,11 @@ Medium (evidence + unverified condition) / Low (needs research).
   is a worse outcome and should be raised before implementation.
 - **Dependencies:** none (but touches the same file as Phase 2 — implement together)
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 2):** partially fixed. The grid track is now 257 px instead of
+  300 px (`grid-cols-1` + `min-w-0`), the widget requests `data-size="flexible"`, and the document no longer
+  scrolls horizontally at 320 px. Cloudflare documents `flexible` as 100% width **with a 300 px minimum**,
+  which is still wider than the 257 px content box, so the widget itself scrolls inside a
+  `.turnstile-frame` region at the narrowest viewports. See Phase 2's deviation 2 for the options.
 
 ### [UX-004] Opened mobile navigation renders as a narrow column inside the header row
 
@@ -548,6 +553,9 @@ Medium (evidence + unverified condition) / Low (needs research).
   This is the only interactive component besides the form; keep it framework-free.
 - **Dependencies:** interacts with UX-015 (current-section indication) — both edit `SiteHeader.astro`.
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 3):** fixed. The panel is attribute-driven (`data-open`), the
+  header row wraps and the panel is `w-full`; measured 312/312 px wide and 76 px top vs a 51 px brand-row
+  bottom at 375 px, with 44 px rows. Escape closes it and returns focus to the toggle.
 
 ### [UX-005] The pending state destroys focus, exposes no busy state, and has no in-flight guard
 
@@ -658,6 +666,11 @@ Medium (evidence + unverified condition) / Low (needs research).
 > (4 titles + 9 sibling prose), and the 4th article (`banco-estado-iot`) has **no** body headings, so the four
 > articles no longer match each other. See **UX-029** in the Re-evaluation section. The recommended fix is
 > unchanged; the cost of deferring it is now visible on the page.
+>
+> **Partially resolved 2026-10-19 (D-5b):** the outline defect is gone — each of the three long articles is
+> now `H3` title + three `H4` sections, measured with no level skip, and the prose headings use the same
+> three terms as the `<dl>`. The **duplication remains by decision**: the owner chose to keep both blocks now
+> and delete the prose later, so UX-007 stays open until D-5 (A) is applied.
 
 ### [UX-008] The 404 and thanks pages are chrome-less dead ends; the 404 ships three `h1` elements
 
@@ -693,6 +706,9 @@ Medium (evidence + unverified condition) / Low (needs research).
   is configured at the integration level, not per page.
 - **Dependencies:** UX-001 (the shell is where the skip link lives) and UX-016 (footer navigation).
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 3):** fixed. 404 and thanks render `PageShell` (skip link, header,
+  main, footer) and the 404 now has **one** `h1` — the three per-locale `<section>`s were replaced by one
+  content block plus a JSON island the script reads to localize it.
 
 ### [UX-009] No persistent, programmatically associated validation feedback
 
@@ -788,6 +804,10 @@ Medium (evidence + unverified condition) / Low (needs research).
   authored or approved by the site owner** — an implementer must not invent legal text.
 - **Dependencies:** UX-008 (shell), UX-016 (footer). Blocks nothing technically.
 - **Status:** Absence confirmed. **Requires product/legal input before implementation.**
+- **Resolution note (2026-10-19):** the owner asked for the notice and a policy page to be authored by the
+  implementer. `/privacy`, `/ca/privacy` and `/es/privacy` render with the shell, the footer carries a legal
+  link, and the form shows a purpose/retention sentence above the submit control. The copy describes the
+  real data flow and makes no legal claims, but it has **not** had a legal review.
 
 ### [UX-012] Three-column prose grids start at 640 px, yielding 176 px columns
 
@@ -897,6 +917,10 @@ Medium (evidence + unverified condition) / Low (needs research).
   localised home leaves `<main id="top">` referenced only by the skip link, which is fine.
 - **Dependencies:** `SiteHeader.astro` is also edited by UX-004 — same phase.
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 3):** fixed. Scroll-spy sets `aria-current="location"` plus a weight
+  and colour change; language links append the fragment at click time (verified `/#work` → `/ca/#work`
+  landing at `#work`); the brand now points at the localized home. The picker's `aria-current="true"`
+  (UX-026) was **not** touched — it belongs to no phase yet.
 
 ### [UX-016] The footer provides no navigation, contact, or language affordance
 
@@ -918,6 +942,9 @@ Medium (evidence + unverified condition) / Low (needs research).
   only once the skip link (UX-001) exists, and the footer nav should carry its own `aria-label`.
 - **Dependencies:** UX-001 (skip link first), UX-008 (shell).
 - **Status:** Confirmed
+- **Resolution note (2026-10-19, Phase 3):** fixed. Three `<nav>` groups (sections, contact, language) plus
+  a legal slot that renders only when a policy page exists; the section links come from
+  `src/lib/navigation.ts`, the same source the header reads.
 
 ### [UX-017] Failure-recovery copy is inconsistent between locales
 
@@ -1096,6 +1123,10 @@ Medium (evidence + unverified condition) / Low (needs research).
   that would silently diverge from the worker's 303. Record whichever choice is made.
 - **Dependencies:** UX-006 (the form's key set changes anyway).
 - **Status:** Confirmed
+- **Resolution note (2026-10-19):** resolved by deletion. `successMessage`, `ctaLearnMore`,
+  `namePlaceholder`, `emailPlaceholder` and `messagePlaceholder` were removed from all three dictionaries
+  (`grep` → 0). The organisation field keeps its example value; the other fields carry visible hints instead
+  of placeholders.
 
 ### [UX-024] No transition or pressed state anywhere; no reduced-motion convention recorded
 
@@ -1168,6 +1199,8 @@ Medium (evidence + unverified condition) / Low (needs research).
 - **Architectural implications:** none.
 - **Dependencies:** UX-015 edits the same file.
 - **Status:** Confirmed
+- **Resolution note (2026-10-19):** fixed. The current locale is `aria-current="page"` and the screen-reader
+text is `EN (English)` — verified on both the header and footer pickers.
 
 ### [UX-027] No imagery, client marks, testimonials or quantified case-study artefacts
 
@@ -1750,23 +1783,25 @@ consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built 
   `src/lib/` (new shared validation module), `src/styles/global.css` (no-JS visibility rules).
 - **Components likely to change:** `ContactForm`, optionally `FormField`.
 - **Detailed implementation tasks:**
-  1. Add the `html.js` marker: an inline script that adds a class to `documentElement` (Astro hashes it), and
-     `global.css` rules that hide `.requires-js` and show `.no-js-fallback` when the class is absent. Provide
-     a static fallback block with the email and booking links. [M]
-  2. Add `novalidate`; keep `required`/`type`/`maxlength`. [XS]
-  3. Implement the state model from §7 as a single `state` variable + `render()`; no direct `textContent`
-     writes scattered in the handler. [M]
-  4. Implement client validation mirroring the Worker rules from one shared module in `src/lib/`; cap email
-     at 254 characters in the markup. [M]
-  5. Render the error summary (heading, count, linked list, `tabindex="-1"`), and wire `aria-invalid` +
-     `aria-describedby` (stable ids derived from field names). [M]
-  6. Replace `disabled` with `aria-disabled` + `aria-busy` + a handler-level re-entry guard; keep focus on the
-     submit control during submission. [S]
-  7. Map `response.status` → localized message (§7 state table); reset Turnstile on every failure; keep values. [M]
-  8. Fix 320 px reflow: `minmax(0, 1fr)` grid columns (or `min-w-0` on all children) **and** Turnstile
-     flexible sizing — confirm the exact attribute against current Cloudflare docs before use. [S]
-  9. Move the Turnstile notice next to the widget and describe the widget with it. [XS]
-  10. Add the select placeholder option and the field hints (C2–C4). [XS]
+  1. [x] `html.js` marker: `BaseLayout` sets the class from an Astro-hashed inline script; `global.css`
+     hides `.requires-js` and shows `.no-js-fallback` without it. The fallback renders the address and the
+     booking link as real links.
+  2. [x] `novalidate` added; `required` / `type="email"` / `maxlength` kept (email capped at 254).
+  3. [x] State model: one `state` variable, one `render()`, one `setState()`; no scattered `textContent`
+     writes in the handler.
+  4. [x] Client validation mirrors the Worker from `src/lib/contactForm.ts`, which the Worker now imports
+     too (`textFieldProblem`, `isValidEmail`); the Worker's bodies are unchanged.
+  5. [x] Error summary (count, linked list, `tabindex="-1"`), `aria-invalid`, and `aria-describedby` with
+     ids derived from field names — hint first, error second.
+  6. [x] `disabled` replaced by `aria-disabled` + `aria-busy` on the control and the form, with an
+     `inFlight` guard; focus stays on the submit control.
+  7. [x] `response.status` → localised sentence, Turnstile reset on every failure, values preserved.
+  8. [x] 320 px: `grid-cols-1` (`minmax(0,1fr)`) + `min-w-0` children + `data-size="flexible"`. **The
+     widget still cannot go below 300 px**, so it also gets a `.turnstile-frame` scroll region — see
+     deviation 2 below.
+  9. [x] Turnstile notice moved under the widget and associated with it (`role="group"` +
+     `aria-describedby`).
+  10. [x] Select placeholder option (no longer repeats the label) and the email/message hints (C2–C4).
 - **Explicitly out of scope:** lazy-loading Turnstile (Phase 6), the privacy policy page (Phase 4), any
   Worker response-shape change.
 - **Risks:**
@@ -1777,22 +1812,188 @@ consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built 
   - The no-JS class technique interacts with the CSP hash list — verify in a **production build**, not
     `astro dev`.
 - **Acceptance criteria:**
-  - [ ] At 320 CSS px the document does not scroll horizontally (`scrollWidth === clientWidth`).
-  - [ ] Submitting an empty form moves focus to the error summary, not to `<body>`; the summary lists all five
-        fields; each summary link moves focus to its field.
-  - [ ] After fixing one field, its message clears and the summary count decreases.
-  - [ ] During submission the submit control exposes a busy state, keeps focus, and a second activation
-        produces no second request.
-  - [ ] A 429 response renders the rate-limit sentence with a retry expectation and a `mailto:` link; 403,
-        and 502 render their own distinct sentences (verified by stubbing the response).
-  - [ ] With JavaScript disabled, the form is not presented as usable and the email/booking fallback is
+  - [x] At 320 CSS px the document does not scroll horizontally (`scrollWidth === clientWidth`) — measured
+        **305 / 305**, including with the widget forced to its documented 300 px minimum. The real widget
+        iframe cannot render in this environment (see limitations), so the worst case was simulated.
+  - [x] Submitting an empty form moves focus to the error summary, not to `<body>`; the summary lists all
+        five fields; each summary link moves focus to its field.
+  - [x] After fixing one field, its message clears and the summary count decreases (5 → 4).
+  - [x] During submission the submit control exposes a busy state, keeps focus, and a second activation
+        produces no second request (1 request after two activations).
+  - [x] A 429 response renders the rate-limit sentence with a retry expectation and a `mailto:` link; 403,
+        502, 500, 400 and a network rejection render their own distinct sentences (verified by stubbing).
+  - [x] With JavaScript disabled, the form is not presented as usable and the email/booking fallback is
         visible.
-  - [ ] Entered values survive every failure state.
+  - [x] Entered values survive every failure state.
 - **Automated validation:** `format:check`, `check`, `lint`, `build`, plus the Phase 7 harness once it exists.
 - **Manual validation:** Tab-only completion of the happy path against `wrangler dev`; NVDA or VoiceOver pass
   over each state; 320 px and 375 px screenshots.
 - **Dependencies on other phases:** Phase 1. **Blocks** Phase 7's form-state tests.
 - **Parallelisation opportunities:** the select/hint copy can be written in parallel with the state machine.
+
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **`script-src` was missing `'self'`, and the form's JavaScript was dead in that state.** Astro inlines a
+   page script only while it stays under its inline threshold; adding imports pushed the contact script into
+   `/_astro/ContactForm.astro_astro_type_script_index_0_lang.*.js`, and the built page then logged
+   `Loading the script '…/_astro/ContactForm…js' violates the following Content Security Policy directive`
+   with `script-src` listing only third-party origins and hashes. `'self'` was added to
+   `scriptDirective.resources` — an origin, not a hash, so no inline protection is weakened. Without this
+   fix none of this phase's behaviour could run at all.
+2. **The plan's primary 320 px remedy is not sufficient, and the documented fallback was used.**
+   Cloudflare's current widget-configuration docs give `flexible` as **100% width with a 300 px minimum**;
+   at a 320 px viewport the form's content box is 257 px, so the widget cannot shrink to fit. The grid fix
+   is in place (`grid-cols-1`, `min-w-0`, verified: the track is 257 px rather than 300), and the wrapper
+   additionally gets `overflow-x: auto` below the widget's minimum. Consequence, recorded as the plan
+   requires: at the narrowest viewports the **widget** scrolls inside its own region while the document does
+   not. **Raise with the Architect** if a nested scroll region is unacceptable — the alternatives are
+   Cloudflare's `compact` size below a breakpoint, which needs explicit rendering (Phase 6's job), or
+   accepting the overflow.
+3. **Failure copy uses a shared recovery footer rather than embedding the address in every sentence.**
+   C5's requirement is that every message "contain `contact@vgr.cat` as a `mailto:` link"; the implementation
+   satisfies it with one localised `recoveryLabel` line — `Or reach me directly: contact@vgr.cat · Book a
+   30-min call` — rendered inside the status region under every failure sentence, instead of interpolating
+   the address into six sentences (which would have made each sentence untranslatable as a unit).
+4. **The client reads its strings from a JSON island, not ~25 `data-` attributes.** `<script
+   type="application/json" data-contact-messages>` is inert, so `script-src` does not apply, and the
+   component stays readable. It is the same technique as the JSON-LD block in `BaseLayout`.
+5. **`ContactForm` takes a `bookingLabel` prop.** The component receives `labels={t.contact.form}`, which
+   does not include `directContact`; passing the one label it needs beat widening the prop to the whole
+   `contact` dictionary.
+6. **Per-field locking during submission is mixed by necessity:** text controls take `readonly`, the
+   `<select>` takes `aria-disabled` (a select has no readonly). Both are advisory; the `inFlight` flag is
+   what actually prevents a second request.
+7. **A 500 keeps the submit control enabled.** §7 allows "hidden or `aria-disabled`"; neither was needed
+   because the message itself says the form is unavailable and offers the address. Retrying a transient 500
+   is harmless.
+8. **`worker-configuration.d.ts` is a landmine for browser code.** Its HTMLRewriter `interface Element`
+   merges into the DOM lib, which makes `Element.append(...)` resolve to the `BodyInit` signature and
+   breaks `querySelector<E extends Element>` for element unions. Workarounds used: `appendChild`, and
+   `querySelector<HTMLElement>` plus `instanceof` narrowing.
+9. **A re-render destroyed the summary link under the pointer.** Clicking summary link *n* blurred the
+   previously focused field, whose `blur` handler re-rendered the summary; the links are rebuilt with
+   `replaceChildren`, so the click target vanished and focus fell to `<body>` (measured: two of five links
+   landed on `BODY`). Fixed twice over: `sameErrors()` skips the re-render when the error set is unchanged,
+   and `render()` restores focus to the status container if it was inside the region and got detached.
+
+#### Discovered defect — needs an owner decision, not fixed here
+
+**A multi-line message can never be submitted.** `textFieldProblem` (formerly the inline loop in the Worker)
+rejects CRLF in `message` along with the single-line fields, so the `<textarea>` accepts line breaks that the
+server always refuses. Measured against `wrangler dev`, same payload, only the message differing:
+
+```
+message="One line only"          → 403 {"error":"Challenge missing"}   (passes field validation)
+message="First line\nSecond line" → 400 {"error":"Invalid field"}      (rejected by the CRLF rule)
+```
+
+The client now mirrors this rule, so the user sees "This field cannot contain line breaks." instead of a
+mysterious generic failure — correct relative to the server, but a poor answer for a "Project Overview"
+field. Changing it is a Worker rule change (the CRLF objection applies to header fields; `message` is only
+ever the email body), so it is **not** done here. Owner/Architect decision required.
+
+> **Resolved 2026-10-19 — the owner asked for the body rule to be fixed.** The shared module now exports
+> `singleLineProblem` (keeps the CRLF rejection) and `messageProblem` (no CRLF); the Worker applies the first
+> to `name`/`email`/`organization` and the second to `message`, and the client mirrors the same split. The
+> `message:lineBreak` copy was removed from the JSON island because that state can no longer occur.
+> Re-measured against `wrangler dev`: a two-line message now answers `403 Challenge missing` (fields valid),
+> while `name` with a line break still answers `400 Invalid field`.
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 34 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 7 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com 'sha256-…' ×7
+```
+
+**No-JS switch** (Chromium, `javaScriptEnabled: false` vs default):
+
+```
+no JS : html class ""    form display none    .no-js-fallback display block
+        "This form needs JavaScript to protect against spam. Please reach me directly instead:
+         contact@vgr.cat · Book a 30-min Technical Discovery Call"
+        links: mailto:contact@vgr.cat , https://calendar.app.google/3dd7SXGnZqUZsWXm6
+JS    : html class "js"  form display grid    .no-js-fallback display none
+```
+
+**Empty submit** (`/`, 1440 px):
+
+```
+status hidden=false  role=alert  aria-live=assertive
+title  "Please fix 5 fields."
+items  Enter your name. / Enter your email address. / Enter your organization. /
+       Select a focus area. / Describe your project or question.
+focus  document.activeElement === the status container (tabindex="-1"), not <body>
+aria-invalid=true on all five controls
+aria-describedby  name → "contact-name-error"
+                  email → "contact-email-hint contact-email-error"
+                  organization → "contact-organization-error"
+                  serviceType → "contact-serviceType-error"
+                  message → "contact-message-hint contact-message-error"
+summary link clicks → INPUT#contact-name, INPUT#contact-email, INPUT#contact-organization,
+                      SELECT#contact-serviceType, TEXTAREA#contact-message
+after fixing the name → title "Please fix 4 fields.", name error "" and aria-invalid removed
+```
+
+**Submitting** (fetch stubbed to hold for 2.5 s, second activation via `requestSubmit()`):
+
+```
+requests 1
+form aria-busy=true   button aria-disabled=true  button.disabled=false  button aria-busy=true
+button text "Submitting..."   focus BUTTON[data-submit]
+text controls readOnly=true   select aria-disabled=true
+after 10 s with no response   status title "Still sending…"   (polite)
+after completion              button "Send Inquiry", form aria-busy=false, readOnly=false
+```
+
+**Status mapping** (stubbed `fetch`; each case reloaded first, so each is a first occurrence):
+
+| Stub | Title rendered | Role / live | Recovery |
+| --- | --- | --- | --- |
+| 429 | "Too many attempts. Please try again in about a minute." | alert / assertive | mailto + booking |
+| 403 | "The verification check did not pass. Reload the page and try again." | alert / assertive | mailto + booking |
+| 502 | "The message could not be delivered." | alert / assertive | mailto + booking |
+| 500 | "The form is temporarily unavailable." | alert / assertive | mailto + booking |
+| 400 | "One of the details was rejected. Check the email address and the other fields, then try again." | alert / assertive | mailto + booking |
+| network | "Your connection dropped before the message was sent. Please try again." | alert / assertive | mailto + booking |
+
+All six kept every entered value and put focus on the summary.
+
+**Reflow** (built site):
+
+| Viewport | `scrollWidth` / `clientWidth` | Widget frame | Widget |
+| --- | --- | --- | --- |
+| 320 (widget forced to 300 px) | **305 / 305** | 257 wide, 300 scroll | 300 |
+| 375 | 360 / 360 | 312 | 312 |
+| 1440 | 1425 / 1425 | 672 | 672 |
+
+**Invalid styling** (light theme, computed): input border `rgb(217,45,32)` (`--color-danger-border`), error
+text `rgb(180,35,24)` (`--color-danger`) at 14 px, status border `rgb(217,45,32)`. `aria-disabled:opacity-60`
+compiles to `[aria-disabled=true]` and applies to the busy submit control.
+
+**Locale parity**: `/ca/` renders `Corregiu 5 camps.`, the five Catalan field messages, placeholder
+`Trieu un àmbit`, hints `Hi responc a aquesta adreça.` / `Fins a 2.000 caràcters.`, `maxlength="254"`,
+`novalidate`.
+
+**Attempt timing**: after a 3.2 s dwell on the page the submitted `elapsed` was `3890`, i.e. recomputed at
+submit time rather than captured at load.
+
+#### Limitations of this verification
+
+- The Turnstile iframe does not render in this sandbox — the challenge request is aborted
+  (`net::ERR_ABORTED` on `challenges.cloudflare.com/…/new/flexible`), which matches the known `110200`
+  sitekey/host limitation recorded in `AGENTS.md`. So the **happy path, a real widget token, and the
+  widget's rendered geometry are not verified**; the 320 px result stands in for the worst case with a
+  300 px widget.
+- No screen-reader pass (NVDA/VoiceOver) and no 400 % zoom check were run.
+- The `wrangler dev` probe covered the Worker's field rules only (no Turnstile secret was configured, so
+  every request stops at `403 Challenge missing`).
 
 ### Phase 3: Navigation, footer and page chrome
 
@@ -1806,34 +2007,38 @@ consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built 
   `src/lib/navigation.ts` (new helper), `src/i18n/{en,ca,es}.ts`, `astro.config.mjs` (sitemap filter).
 - **Components likely to change:** header, footer, language picker, page shell.
 - **Detailed implementation tasks:**
-  1. Extract the nav array into one helper keyed by locale; have header and footer consume it. [S]
-  2. Fix the mobile panel: explicit display for open/closed (not class presence/absence), full-width panel
-     below the brand row, `gap` working, ≥44 px rows; Escape closes and returns focus to the toggle; state
-     resets on resize to ≥640 px. [M]
-  3. Add scroll-spy: `IntersectionObserver` sets `aria-current="location"` + a visual weight change on the
-     active section link; no-op when unsupported. [M]
-  4. Brand href → localized home; keep `<main>`'s id for the skip link. [XS]
-  5. Language links append `location.hash` on click so switching locale preserves the section. [S]
-  6. Footer: three link groups with `aria-label`s (sections, contact, language) plus a legal slot that renders
-     only when a policy page exists. [M]
-  7. Give 404 and thanks the same shell: header, footer, skip link. Reduce the 404 to a single `h1` in the
-     accessibility tree while keeping the locale-switch enhancement. [M]
-  8. Mark thanks pages `noindex`; exclude them from the sitemap via the integration's `filter`. [XS]
+  1. [x] `src/lib/navigation.ts` exports `sectionNav(locale)`; `PageShell` calls it once and hands the
+     same array to the header and the footer.
+  2. [x] Mobile panel: display is explicit for both states via `max-sm:hidden` + `data-[open=true]:flex`
+     (a specificity pair, not an order dependency), the header row wraps and the panel is `w-full`, rows
+     are 44 px, Escape closes and returns focus to the toggle, and a `matchMedia` change resets the state.
+  3. [x] Scroll-spy: `IntersectionObserver` on the four sections with a middle-band `rootMargin`, setting
+     `aria-current="location"` on the matching link; no-op without `IntersectionObserver` or without
+     sections (so the same header works on `/404` and the thanks pages).
+  4. [x] Brand href is the localized home; `<main id="main-content">` still backs the skip link.
+  5. [x] Language links append `location.hash` at click time, on both picker instances.
+  6. [x] Footer: sections, contact (mailto + booking) and language groups, each a `<nav>` with its own
+     accessible name; the legal slot renders only when a policy page exists.
+  7. [x] 404 and thanks pages render `PageShell`, so they carry skip link, header, footer and main; the
+     404 is one content block with a JSON island for the other locales, so there is exactly one `h1`.
+  8. [x] Thanks pages are `noindex` and the sitemap integration filters `/contact/thanks`.
 - **Explicitly out of scope:** any decision to make the header sticky (record it as a separate decision, §13
   D-8), information-architecture changes beyond adding links.
 - **Risks:** a sticky header would require `scroll-margin-top` on every fragment target and interacts with
   the scroll-spy; if introduced here, the phase grows by a step. Sitemap filtering touches `astro.config.mjs`
   — read `.github/instructions/astro-config.instructions.md` first and do not touch the CSP block.
 - **Acceptance criteria:**
-  - [ ] At 375 px the opened menu is a full-width panel below the brand row; measured
-        `#site-nav` `width === container width` and top ≥ brand-row bottom.
-  - [ ] Escape closes the panel and returns focus to the toggle; `aria-expanded` tracks state.
-  - [ ] The nav link for the visible section exposes `aria-current` and is visually distinguishable.
-  - [ ] Switching language from `/#work` lands on `/ca/#work` and remains at that section.
-  - [ ] 404 and thanks pages expose `header`, `nav`, `main`, `footer` landmarks; 404 has exactly one `h1` in
-        the accessibility tree.
-  - [ ] `/contact/thanks/` emits `<meta name="robots" content="noindex">` and is absent from the built
-        sitemap.
+  - [x] At 375 px the opened menu is a full-width panel below the brand row — measured
+        `#site-nav` width **312 px === the container's content width 312 px**, top **76 px** vs brand-row
+        bottom **51 px**; also checked at 320 px (257/257, top 76) and 414 px (351/351, top 76).
+  - [x] Escape closes the panel and returns focus to the toggle; `aria-expanded` tracks state.
+  - [x] The nav link for the visible section exposes `aria-current="location"` and is visually
+        distinguishable (weight 600 vs 400, accent colour); exactly one link is current at a time.
+  - [x] Switching language from `/#work` lands on `/ca/#work` and remains at that section (`#work` top
+        = 0 in the viewport). The footer picker does the same: `/#about` → `/es/#about`.
+  - [x] 404 and thanks pages expose `header`, `nav`, `main`, `footer` landmarks; 404 has exactly one `h1`.
+  - [x] `/contact/thanks/` emits `<meta name="robots" content="noindex">` and is absent from the built
+        sitemap (which now lists only the three home pages).
 - **Automated validation:** gate + the Phase 7 landmark/`h1` assertions.
 - **Manual validation:** mobile panel at 320/375/414 px; Tab order through header and footer; check the
   sitemap file contents.
@@ -1841,6 +2046,114 @@ consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built 
   `SiteHeader`/`ContactForm` — they touch different files, so parallel is safe; coordinate on `i18n` keys.
 - **Parallelisation opportunities:** high with Phases 2 and 4 if the i18n edits are landed as one atomic
   commit.
+
+#### Recorded deviations (2026-10-19, at implementation)
+
+1. **The panel's open/closed display had to be a specificity pair, not a global CSS rule.** §6 forbids new
+   global selectors for components, so the states live in the component's utility list:
+   `max-sm:hidden` (closed below 640) against `data-[open=true]:flex` (`.…[data-open=true]`, specificity
+   0,2,0, so it always wins). The old code toggled the `hidden` class, which is why the opened panel fell
+   back to `display: block` and collapsed into a 191 px column (UX-004).
+2. **`w-full` was missing from the first version of the new panel, and verification caught it.** Without it
+   the panel measured 124 px wide and did not wrap; the fix was one class, and the numbers above are from
+   the corrected build.
+3. **The footer's language group reuses `LanguagePicker`** instead of hand-rolling a second list, so the
+   fragment-preserving script covers both instances with one listener set. Cost: the group's visible label
+   and the picker's `aria-label` are the same word ("Language" / "Idioma"), so the nav is announced once
+   for the group name and once for the region.
+4. **The legal slot is a prop pair that renders nothing today.** No policy page exists (Q-2), and a link to
+   a 404 would be worse than its absence, so no `legalLabel` key was added to the dictionaries — that would
+   be a dead translation (the UX-023 pattern). Phase 4 fills it.
+5. **The 404 keeps its locale enhancement by inlining the copy in a JSON island.** The previous markup
+   rendered one `<section>` per locale (three `h1` elements, two hidden); now there is one `h1` and the
+   script swaps text, `href`, `document.title`, the meta description and `documentElement.lang` from
+   `[data-notfound-copy]`. Verified: `/ca/does-not-exist` → `lang="ca"`, `h1` "No s’ha pogut trobar aquesta
+   pàgina", back link `/ca/`, one `h1`.
+6. **`SiteHeader`'s `lang` prop became required.** It defaulted to `defaultLocale`, which is precisely why
+   the 404 could not be localized per request; every caller passes it.
+7. **`noindex` also drops `rel="canonical"`** on the thanks pages — that is `BaseLayout`'s existing
+   behaviour (a noindex page should not advertise a canonical), recorded here so it is not mistaken for a
+   regression.
+8. **Two related findings were deliberately left untouched:** UX-026 (the language picker uses
+   `aria-current="true"`) and C12 (`EN — English` reads as punctuation). Neither appears in Phase 3's task
+   list, and Phase 4's list does not assign them either, so they are currently unassigned.
+   *Resolved 2026-10-19:* the owner asked for them to be fixed. The current locale is `aria-current="page"`
+   and the screen-reader text is now `EN (English)`; the change landed with Phase 4's i18n batch.
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 35 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 7 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+$ grep -o '<loc>[^<]*' dist/sitemap-0.xml
+<loc>https://vgr.cat/
+<loc>https://vgr.cat/ca/
+<loc>https://vgr.cat/es/
+
+$ grep -o '<meta name="robots"[^>]*>' dist/{,ca/,es/}contact/thanks/index.html
+<meta name="robots" content="noindex">   ×3
+```
+
+**Mobile panel** (real click on `#nav-toggle`, real `Escape`):
+
+| Viewport | Panel width vs container content | Panel top vs brand bottom | Nav rows | Document scroll |
+| --- | --- | --- | --- | --- |
+| 320 | 257 / 257 | 76 / 51 | 44 ×4 | 305 / 305 |
+| 375 | 312 / 312 | 76 / 51 | 44 ×4 | 360 / 360 |
+| 414 | 351 / 351 | 76 / 51 | 44 ×4 | 399 / 399 |
+
+```
+closed : display none, data-open=false, aria-expanded=false
+click  : display flex, data-open=true,  aria-expanded=true, panel 312 × 266 at top 76
+Escape : display none, data-open=false, aria-expanded=false, focus #nav-toggle
+resize → 900 px: data-open=false, aria-expanded=false, display flex (CSS alone)
+```
+
+**Scroll-spy** (1440 px, one link current at a time):
+
+```
+top of page      aria-current: services null, work null, about null, contact null
+at #services     ["services"]  weight 600, colour rgb(122,167,255)
+at #work         ["work"]      weight 600, inactive weight 400
+at #about        ["about"]     weight 600
+at #contact      ["contact"]   weight 600
+```
+
+**Language switching** (`/#work` → `CA`): URL `/ca/#work`, `documentElement.lang="ca"`, `#work` top = 0,
+brand href `/ca/`. Footer picker: `/#about` → `/es/#about`, `#about` top = 0.
+
+**Landmarks** (from the built pages):
+
+```
+/404.html        HEADER, NAV:Primary navigation, NAV:Select language, MAIN, FOOTER,
+                 NAV:Sections, NAV:Contact, NAV:Language
+                 h1 count 1 ("This page could not be found"), skip link present, 9 footer links
+/ca/thanks/      HEADER, NAV:Navegació principal, NAV:Seleccioneu l’idioma, MAIN, FOOTER,
+                 NAV:Seccions, NAV:Contacte, NAV:Idioma
+                 h1 count 1, robots=noindex, canonical absent, skip link "Salta al contingut principal"
+```
+
+**Tab order at 1440 px** (first twelve stops): skip link → brand → Services → Case Studies → About →
+Contact → EN → CA → ES → header CTA → hero CTA → "Explore Case Studies".
+
+**CSP**: zero `securitypolicyviolation` events on `/`, `/ca/`, `/es/`, `/404.html` and
+`/ca/contact/thanks/`. Only one hashed script file is emitted (`ContactForm…js`); the header, picker and
+404 scripts stay under Astro's inline threshold and are hashed instead.
+
+#### Limitations of this verification
+
+- Input events reach the page only when its tab is focused: on the backgrounded tab, `page.click`/`press`
+  timed out or no-oped, so the keyboard checks were re-run on a focused tab. All panel/scroll-spy results
+  above are from real pointer and key events, not dispatched events.
+- No screen-reader pass (NVDA/VoiceOver) was run, and the footer's group announcements therefore rest on
+  markup inspection, not listening.
+- The Turnstile widget still cannot render locally (production sitekey not allowed on `127.0.0.1`), so the
+  `/` measurements above exclude its iframe, as in Phase 2.
 
 ### Phase 4: Document structure, microcopy and privacy
 
@@ -1852,32 +2165,94 @@ consumed, and `@media (prefers-reduced-motion: reduce)` is present in the built 
   new `src/pages/privacy.astro` + `src/pages/[lang]/privacy.astro`.
 - **Components likely to change:** `CaseStudy`, `ServiceCard`, footer, contact section.
 - **Detailed implementation tasks:**
-  1. Apply the chosen dedupe strategy: either demote the three prose headings to `####` inside a single
-     `h3`-scoped article, or delete the duplicated prose and keep the `<dl>`. Update all 9 files in the same
-     commit so locales cannot diverge. [M]
-  2. If fields are removed from frontmatter, update `content.config.ts` and the rendering component in the
-     same commit (`astro check` will fail otherwise). [S]
-  3. Unify booking CTA labels per C10. [XS]
-  4. Add the privacy notice next to the submit control and a policy page rendered with the shell; link it
-     from the footer. [M]
-  5. Delete `successMessage`; resolve `ctaLearnMore` (implement or delete); use or delete the three
-     placeholders. [XS]
+  1. [x] Dedupe strategy **D-5b (owner's choice, 2026-10-19): keep both blocks, demote the three prose
+     headings to `####`, and rename them to the summary's vocabulary (C8)** — "The Challenge / The
+     Architecture / Measurable Impact" and the CA/ES equivalents, across all 9 files. Deleting the prose
+     (D-5/A) is deferred as a second, reversible-to-decide step.
+  2. [x] No frontmatter fields were removed under D-5b, so `content.config.ts` is unchanged.
+  3. [x] One label per destination: hero, contact section, form recovery and footer all say "Book a 30-min
+     technical call"; the header keeps the same noun phrase, shortened to "Book a call".
+  4. [x] Privacy notice above the submit control plus `/privacy`, `/ca/privacy`, `/es/privacy` rendered with
+     the shell, linked from the footer's legal slot and from the notice. **Owner approved authoring the
+     copy** ("feel free to create one"); it describes only what this site does and makes no legal claims.
+  5. [x] `successMessage`, `ctaLearnMore`, `namePlaceholder`, `emailPlaceholder`, `messagePlaceholder`
+     deleted from all three dictionaries (`grep` → 0).
 - **Explicitly out of scope:** adding imagery or testimonials (UX-027), analytics (UX-028).
 - **Risks:** dropping frontmatter fields is destructive to authored copy — requires explicit owner sign-off
   and must be its own commit. Adding a policy page introduces legal content that must not be fabricated.
 - **Acceptance criteria:**
-  - [ ] The heading outline of `/` reads `h1 → h2 → h3 → h4` with no level skip, and no case-study
-        sub-heading is a sibling of its own title.
-  - [ ] No case-study statement is present twice on the page.
-  - [ ] One label per destination across header, hero and contact section.
-  - [ ] The submit area states purpose and retention and links to a reachable policy page in all three
+  - [x] The heading outline of `/` reads `h1 → h2 → h3 → h4` with no level skip, and no case-study
+        sub-heading is a sibling of its own title (measured: `skip: null`, each article is `H3` + three
+        `H4`).
+  - [ ] **Deferred, not met:** no case-study statement is present twice on the page. D-5b deliberately keeps
+        both blocks, so the duplication remains until D-5 (A) is applied.
+  - [x] One label per destination across header, hero and contact section.
+  - [x] The submit area states purpose and retention and links to a reachable policy page in all three
         locales.
-  - [ ] `grep -rn 'successMessage' src/` → `0`.
+  - [x] `grep -rn 'successMessage' src/` → `0` (and `ctaLearnMore`, and the three unused placeholders).
 - **Automated validation:** gate; a Phase 7 assertion on the heading outline.
 - **Manual validation:** read one case study start to finish in each locale; proofread the policy notice.
 - **Dependencies on other phases:** Phase 3 for the shell on the new page. **Blocks** Phase 5 (same
   component).
 - **Parallelisation opportunities:** the privacy page can proceed independently of the heading work.
+
+#### Owner decisions received (2026-10-19)
+
+| Question | Answer |
+| --- | --- |
+| UX-007 / D-5 dedupe | **B now, A later** — keep both blocks and demote prose to `####`; deleting the prose is a separate later step |
+| UX-011 / Q-2 privacy | **Author it** — the implementer writes the notice and the policy page; owner reviews |
+| C10 CTA label | **"Book a 30-min technical call"** |
+| UX-003 320 px widget | **A — keep the documented scrollable-widget exception** (no `compact` switch in Phase 6) |
+| Multi-line message | **Fix the body** — the CRLF rejection now applies to single-line fields only |
+| UX-026 / C12 | Fixed here (unassigned findings, taken on the owner's instruction) |
+
+#### Recorded implementation evidence (2026-10-19)
+
+```console
+$ npm run format:check      → exit 0
+$ npm run lint              → exit 0
+$ npm run check             → 37 files, 0 errors, 0 warnings, 0 hints
+$ npm run build             → 10 page(s) built
+$ npm run check:placeholders → 0 placeholders remain
+$ npx wrangler deploy --dry-run → exit 0
+
+$ grep -rn 'successMessage|ctaLearnMore|namePlaceholder|emailPlaceholder|messagePlaceholder' src/ | wc -l → 0
+$ grep -o '<loc>[^<]*' dist/sitemap-0.xml → /, /ca/, /ca/privacy/, /es/, /es/privacy/, /privacy/
+```
+
+**Heading outline** (`/`, 1440 px): `H1, H2, H3 ×4, H2, H3, H4 ×3, H3…`, first level skip `null`, one `h1`.
+Each of the three long articles is now `H3 title` + `H4 The Challenge` + `H4 The Architecture` +
+`H4 Measurable Impact`.
+
+**One label per destination**: header `Book a call`; hero, contact section, form recovery and footer all
+`Book a 30-min technical call`.
+
+**Privacy**: notice "Privacy policy" sits **before** the submit button and resolves to `/privacy/`,
+`/ca/privacy/`, `/es/privacy/` per locale; the footer legal link uses the same canonical trailing-slash
+form; `/ca/privacy/` returns 200 with `lang="ca"`, `h1` "Privacitat i les vostres dades" and seven `h2`
+sections. Zero CSP violations, no horizontal overflow on any of the three home pages.
+
+**Multi-line message** (`wrangler dev`, same payload, only the message differing):
+
+```
+message="First line\nSecond line"      → 403 {"error":"Challenge missing"}   (was 400 Invalid field)
+name="Ana\nRuiz" (single-line field)   → 400 {"error":"Invalid field"}       (injection guard retained)
+```
+
+Client side (Chromium, `/es/`, stubbed `fetch`): a three-line message produced no `aria-invalid`, no
+summary, and was posted verbatim as `"Primera línea\nSegunda línea\nTercera línea"`.
+
+**Language picker**: accessible name now `EN (English)` with `aria-current="page"` on the current locale
+(and `null` on the other two), on both the header and footer instances.
+
+#### Known gaps after this phase
+
+- `banco-estado-iot` still has no body sections, so it is the one article that does not match the other
+  three. Adding matching prose is authored content, not markup, so it is left to the owner.
+- The privacy copy describes the real data flow (Cloudflare Worker → Email Service, Turnstile check,
+  aggregate Web Analytics) but has not had a legal review; the owner asked to author it and should read
+  the three locales before it ships.
 
 ### Phase 5: Responsive corrections
 
@@ -2093,6 +2468,8 @@ and demote prose to `####`. *Trade-off:* removing prose deletes authored detail 
 "Observability Dashboard") that the `<dl>` does not carry. If the owner prefers to keep prose, the correct
 fallback is D-5b: keep both blocks, demote the three headings to `####`, and reword the `<dl>` labels so they
 summarise rather than duplicate. **Do not implement either until the owner chooses.**
+*Decided 2026-10-19:* the owner chose **D-5b now, D-5 (delete the prose) later**. Implemented in Phase 4:
+prose headings are `####` and use the same three terms as the `<dl>`; deleting the prose stays open.
 
 **D-6 — Hide the form without JavaScript rather than making it work without JavaScript.**
 *Alternatives:* make the no-JS path succeed. *Rejected:* impossible — Turnstile cannot mint a token without

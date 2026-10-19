@@ -37,8 +37,15 @@ export default defineConfig({
       // Turnstile's loader is a third-party script. `static.cloudflareinsights.com` is here for
       // the zone-injected Web Analytics beacon: an injected script is absent from Astro's hash
       // list, so its origin has to be allowed by host. Astro still owns the inline hashes.
+      //
+      // `'self'` is required for the site's *own* bundled scripts. Astro inlines a page script
+      // only while it stays under its inline threshold; the contact form's script crossed it in
+      // Phase 2 of the UI/UX plan and was emitted as `/_astro/*.js`, which `script-src` blocked
+      // outright because it listed only third-party origins — the form silently lost all of its
+      // JavaScript. This is an origin, not a hash: no inline protection is weakened.
       scriptDirective: {
         resources: [
+          "'self'",
           'https://challenges.cloudflare.com',
           'https://static.cloudflareinsights.com',
         ],
@@ -47,6 +54,9 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
+      // A confirmation page is not a search result, and D-7 chose a sitemap `filter` over a
+      // `robots.txt` disallow: blocking the crawl would also block the page's own `noindex`.
+      filter: (page) => !page.includes('/contact/thanks'),
       i18n: {
         defaultLocale,
         locales: Object.fromEntries(locales.map((locale) => [locale, locale])),

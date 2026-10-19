@@ -33,14 +33,33 @@ const name: Record<Locale, string> = {
             href={localizedPath(locale, logicalPath)}
             hreflang={locale}
             lang={locale}
-            aria-current={isCurrent ? 'true' : undefined}
+            data-language-link
+            aria-current={isCurrent ? 'page' : undefined}
             class="rounded px-2 py-1 text-sm aria-[current]:font-semibold aria-[current]:text-accent hover:text-accent"
           >
             {code[locale]}
-            <span class="sr-only"> — {name[locale]}</span>
+            {/* Parenthesised, not em-dashed: an em dash is read as punctuation before the name (C12). */}
+            <span class="sr-only"> ({name[locale]})</span>
           </a>
         </li>
       );
     })}
   </ul>
 </nav>
+
+<script>
+  /**
+   * Build-time HTML cannot know the fragment, so switching language on `/#work` used to land at
+   * the top of a five-figure-pixel page (UX-015). The fragment is appended at click time, on
+   * whichever picker instance was used.
+   */
+  for (const link of document.querySelectorAll<HTMLAnchorElement>(
+    '[data-language-link]',
+  )) {
+    link.addEventListener('click', () => {
+      if (!window.location.hash) return;
+      const base = link.href.split('#')[0] ?? '';
+      link.href = `${base}${window.location.hash}`;
+    });
+  }
+</script>

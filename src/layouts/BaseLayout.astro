@@ -56,6 +56,14 @@ const jsonLd = buildJsonLd({ locale: lang, t });
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      Progressive-enhancement marker. It runs before the body is parsed, so nothing flashes, and
+      Astro hashes it for `script-src` like every other inline script it emits. `global.css` pairs
+      it with the `.requires-js` / `.no-js-fallback` rules the contact form depends on.
+    */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />

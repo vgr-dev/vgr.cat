@@ -11,7 +11,7 @@ pillar: infrastructure
 
 Topten is a leading European consumer initiative that tracks and presents the most energy-efficient products on the market, guiding consumers, corporate procurement teams, and policymakers.
 
-### The Problem
+#### The Challenge
 
 As Topten expanded from national pilots into a recognized European benchmark across multiple domains (Topten.eu, Topten.ch, and several partner sites), the technical stack suffered from growing pains:
 
@@ -19,7 +19,7 @@ As Topten expanded from national pilots into a recognized European benchmark acr
 - **Analyst Bottlenecks:** Research analysts spent excessive time manually formatting spreadsheets and wrestling with complex backends rather than assessing product data.
 - **Infrastructure Overhead:** Maintaining disparate servers and codebases drained development capacity and increased operational vulnerability.
 
-### The Technical Approach
+#### The Architecture
 
 As Principal Software Engineer, I redesigned the platform architecture from the ground up:
 
@@ -28,7 +28,7 @@ As Principal Software Engineer, I redesigned the platform architecture from the 
 - **Robust Ingestion & Caching:** Designed resilient data pipelines to sync catalog updates, benchmark thresholds, and supplier feeds, backed by aggressive edge caching that delivers sub-second load times even during traffic surges.
 - **CI/CD Automation:** Standardized testing and deployment workflows using modern continuous integration, ensuring changes to one portal never disrupt sibling instances.
 
-### The Impact
+#### Measurable Impact
 
 - **Operational Efficiency:** Domain researchers can update benchmarks, approve product submissions, and publish new categories without engineering intervention.
 - **High Availability & Speed:** The platform handles heavy consumer and B2B traffic reliably with negligible infrastructure costs.

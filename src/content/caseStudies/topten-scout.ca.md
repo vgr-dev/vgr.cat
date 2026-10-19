@@ -11,7 +11,7 @@ pillar: entity-resolution
 
 Mentre la Unió Europea manté bases de dades sòlides per a la certificació de productes, la realitat del mercat avança molt més de pressa. El Registre Europeu de Productes per a l’Etiquetatge Energètic (EPREL) conté declaracions certificades dels fabricants, però els consumidors compren productes a partir de noms comercials, SKU de minoristes i promocions.
 
-### El problema
+#### El repte
 
 Connectar les dades normatives amb les dades reals de venda era històricament gairebé impossible:
 
@@ -19,7 +19,7 @@ Connectar les dades normatives amb les dades reals de venda era històricament g
 - **Codis de barres absents:** els llocs minoristes i els rastrejadors sovint no tenen codis GTIN/EAN, cosa que impedeix les unions simples de bases de dades amb les declaracions oficials.
 - **Invisibilitat del mercat:** els reguladors i els programes d’eficiència no podien respondre fàcilment preguntes polítiques fonamentals: _els productes d’alta eficiència certificats a EPREL són realment en estoc a les botigues? les etiquetes energètiques que s’anuncien són exactes?_
 
-### Enfocament tècnic
+#### L’arquitectura
 
 Per resoldre-ho, vaig dissenyar i desenvolupar **Topten Scout**, una plataforma d’observabilitat que mapitza i monitora contínuament el mercat minorista:
 
@@ -28,7 +28,7 @@ Per resoldre-ho, vaig dissenyar i desenvolupar **Topten Scout**, una plataforma 
 - **Motor de discrepàncies:** comparació de l’etiqueta energètica declarada i les mètriques de consum emmagatzemades a EPREL amb les especificacions en directe dels principals portals minoristes, assenyalant discrepàncies automàticament.
 - **Quadre d’observabilitat:** gràfics dinàmics que mostren la quota de mercat de cada classe d’eficiència energètica sobre l’estoc minorista actiu, amb seguiment de l’evolució de preus i de la retirada de models.
 
-### L’impacte
+#### Impacte mesurable
 
 - **Pont construït:** es va tancar la bretxa entre les declaracions teòriques de compliment de la UE i les prestatgeries reals dels principals mercats europeus.
 - **Escala:** es va automatitzar l’aparellament de milers de productes que abans exigien un contrast manual laboriós de catàlegs.

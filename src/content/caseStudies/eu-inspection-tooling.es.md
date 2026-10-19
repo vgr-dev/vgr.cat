@@ -11,7 +11,7 @@ pillar: regtech
 
 La supervisión de mercado es esencial para que las directivas europeas de Ecodesign y etiquetado energético generen reducciones reales de emisiones. Sin embargo, las autoridades nacionales de supervisión de mercado (MSA) de toda Europa suelen operar con recursos limitados frente a un volumen abrumador de aparatos importados y nacionales.
 
-### El problema
+#### El reto
 
 Verificar si un producto del mercado cumple las normas de la UE requería tradicionalmente:
 
@@ -21,7 +21,7 @@ Verificar si un producto del mercado cumple las normas de la UE requería tradic
 
 Este cuello de botella manual hacía que solo una fracción mínima del mercado pudiera auditarse cada año, lo que dejaba espacio para modelos no conformes y etiquetado energético fraudulento.
 
-### Enfoque técnico
+#### La arquitectura
 
 Diseñé e implementé herramientas a medida para evaluadores públicos y expertos en supervisión:
 
@@ -29,7 +29,7 @@ Diseñé e implementé herramientas a medida para evaluadores públicos y expert
 - **Validación cruzada automatizada con registros:** conexión directa con bases de datos oficiales (como EPREL) para señalar de inmediato fichas ausentes, parámetros incorrectos o declaraciones inválidas.
 - **Registros de auditoría defendibles:** implementación de trazas de auditoría inmutables con los datos de entrada, la versión de la fórmula y la derivación matemática de cada anomalía detectada, listas para procedimientos sancionadores.
 
-### El impacto
+#### Impacto medible
 
 Las herramientas transformaron la forma de operar de los equipos de supervisión:
 

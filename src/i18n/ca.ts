@@ -14,7 +14,7 @@ export const ca: Dictionary = {
     caseStudies: 'Casos pràctics',
     about: 'Qui soc',
     contact: 'Contacte',
-    bookCall: 'Concertar una reunió',
+    bookCall: 'Concertar una trucada',
   },
   header: {
     brand: 'vgr.cat',
@@ -30,7 +30,7 @@ export const ca: Dictionary = {
     titleHighlight: 'transició energètica europea',
     subtitle:
       'Més de 12 anys de lliurament d’extrem a extrem en eficiència energètica: motors de compliment normatiu europeu (EPREL, Ecodesign, ESPR), eines de supervisió de mercat, flotes IoT a escala nacional i les plataformes multi-tenant que les operen.',
-    ctaPrimary: 'Concertar una consulta tècnica',
+    ctaPrimary: 'Concertar una trucada tècnica de 30 minuts',
     ctaSecondary: 'Explorar els casos pràctics',
     metrics: [
       {
@@ -54,7 +54,6 @@ export const ca: Dictionary = {
       'Enginyeria full-stack de dades energètiques: dels sensors de camp als registres europeus',
     subtitle:
       'Motors normatius, observabilitat de mercat, monitoratge IoT i les plataformes que els fan funcionar. Una sola persona per a tot l’stack: ingesta, model, validació, desplegament i operació.',
-    ctaLearnMore: 'Veure el cas pràctic relacionat',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
       regtech: { tag: 'RegTech i compliment normatiu' },
@@ -130,12 +129,12 @@ export const ca: Dictionary = {
       'Disponible per a enginyeria de programari, revisió arquitectònica, auditories tècniques, ponències i contractes especialitzats a Catalunya, Espanya i la Unió Europea.',
     form: {
       nameLabel: 'Nom',
-      namePlaceholder: 'p. ex. Maria Puig',
       emailLabel: 'Correu electrònic professional',
-      emailPlaceholder: 'nom@organitzacio.cat',
+      emailHint: 'Hi responc a aquesta adreça.',
       organizationLabel: 'Organització o institució',
       organizationPlaceholder: 'Empresa, agència o entitat',
       serviceTypeLabel: 'Àmbit principal',
+      serviceTypePlaceholder: 'Trieu un àmbit',
       serviceTypes: {
         regtech: 'RegTech / integració EPREL / preparació per a ESPR',
         entityResolution: 'Observabilitat de mercat / resolució d’entitats',
@@ -144,14 +143,38 @@ export const ca: Dictionary = {
         advisory: 'Assessorament tècnic / ponències / altres',
       },
       messageLabel: 'Resum del projecte i objectius',
-      messagePlaceholder:
-        'Descriviu els requisits, les restriccions del sistema o els terminis...',
+      messageHint: 'Fins a 2.000 caràcters.',
       submitButton: 'Enviar la consulta',
       submitting: 'S’està enviant...',
-      successMessage:
-        'Gràcies. He rebut el vostre missatge i us respondré en un termini d’un a dos dies laborables.',
-      errorMessage:
-        'No s’ha pogut enviar el missatge. Podeu escriure directament a contact@vgr.cat.',
+      stillSending: 'L’enviament continua…',
+      noJsNotice:
+        'Aquest formulari necessita JavaScript per protegir-se de l’spam. Podeu contactar-me directament:',
+      recoveryLabel: 'O contacteu-me directament:',
+      privacyNotice:
+        'Faig servir aquestes dades només per respondre a la vostra consulta. Sense butlletí i sense cedir-les.',
+      privacyLink: 'Política de privacitat',
+      errorRateLimited: 'Massa intents. Torneu-ho a provar d’aquí a un minut.',
+      errorChallenge:
+        'La verificació no ha passat. Recarregueu la pàgina i torneu-ho a provar.',
+      errorRejected:
+        'S’ha rebutjat una de les dades. Reviseu l’adreça de correu i la resta de camps i torneu-ho a provar.',
+      errorDelivery: 'No s’ha pogut lliurar el missatge.',
+      errorUnavailable: 'El formulari no està disponible temporalment.',
+      errorNetwork:
+        'La connexió s’ha interromput abans d’enviar el missatge. Torneu-ho a provar.',
+      errors: {
+        summaryOne: 'Corregiu 1 camp.',
+        summaryOther: 'Corregiu {count} camps.',
+        nameRequired: 'Escriviu el vostre nom.',
+        emailRequired: 'Escriviu la vostra adreça de correu.',
+        emailFormat: 'Escriviu una adreça vàlida, p. ex. nom@organitzacio.cat.',
+        emailTooLong: 'Aquesta adreça supera els 254 caràcters.',
+        organizationRequired: 'Escriviu la vostra organització.',
+        serviceTypeRequired: 'Trieu un àmbit.',
+        messageRequired: 'Descriviu el vostre projecte o la vostra consulta.',
+        messageTooLong: 'Feu servir 2.000 caràcters o menys.',
+        lineBreak: 'Aquest camp no pot contenir salts de línia.',
+      },
       turnstile: 'Protegit per Cloudflare Turnstile.',
     },
     directContact: {
@@ -175,10 +198,51 @@ export const ca: Dictionary = {
     body: 'La pàgina sol·licitada no existeix o s’ha traslladat. Comproveu l’adreça o torneu a la pàgina d’inici per trobar la secció que necessiteu.',
     back: 'Tornar a la pàgina d’inici',
   },
+  privacy: {
+    title: 'Privacitat i dades | vgr.cat',
+    heading: 'Privacitat i les vostres dades',
+    intro:
+      'Aquest lloc recull el mínim possible. Aquesta pàgina explica exactament què passa amb el que m’envieu.',
+    updated: 'Darrera actualització: 19 d’octubre de 2026.',
+    sections: [
+      {
+        heading: 'Què envia el formulari de contacte',
+        body: 'El vostre nom, el correu professional, l’organització, l’àmbit que trieu, el missatge i l’idioma de la pàgina que heu fet servir. El formulari no recull res més.',
+      },
+      {
+        heading: 'Per a què el guardo',
+        body: 'Només per respondre la vostra consulta i per deixar constància del treball comentat. No hi ha butlletí, ni llista de màrqueting, ni cessió a tercers per a finalitats pròpies.',
+      },
+      {
+        heading: 'Com es tracta',
+        body: 'El formulari es processa en un Worker de Cloudflare i es lliura a la meva bústia amb Cloudflare Email Service. Cloudflare tracta la petició en nom meu per poder-la lliurar i hi aplica els seus propis controls de seguretat.',
+      },
+      {
+        heading: 'Protecció contra bots',
+        body: 'El formulari està protegit per Cloudflare Turnstile, que comprova que l’enviament prové d’un navegador real. Aquesta comprovació es fa abans que el missatge es lliuri.',
+      },
+      {
+        heading: 'Estadístiques de visites',
+        body: 'El lloc fa servir Cloudflare Web Analytics, que informa de totals agregats de trànsit.',
+      },
+      {
+        heading: 'Quant de temps es guarda',
+        body: 'Les consultes es queden a la meva bústia el temps necessari per atendre la petició i per deixar-ne un registre professional raonable.',
+      },
+      {
+        heading: 'Les vostres opcions',
+        body: 'Podeu demanar què tinc sobre vós, demanar una correcció o demanar-ne la supressió. Escriviu a contact@vgr.cat i ho faré.',
+      },
+    ],
+  },
   footer: {
     tagline:
       'Enginyeria full-stack per a l’eficiència energètica: dels sensors de camp als registres europeus.',
     builtWith:
       'Desenvolupat amb Astro i Tailwind. Allotjat a Cloudflare Workers.',
+    sectionsLabel: 'Seccions',
+    contactLabel: 'Contacte',
+    languageLabel: 'Idioma',
+    legalLabel: 'Privacitat',
   },
 };

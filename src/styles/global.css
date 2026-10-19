@@ -82,3 +82,25 @@ body {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Progressive enhancement, driven by the `js` class the inline script in `BaseLayout` sets on
+   <html> before the body renders. The contact form cannot work without JavaScript — Turnstile
+   mints no token, and `elapsed` is only ever populated by script — so it is hidden rather than
+   left to submit into a raw JSON response, and a static fallback takes its place. */
+html:not(.js) .requires-js {
+  display: none;
+}
+
+html.js .no-js-fallback {
+  display: none;
+}
+
+/* The Turnstile widget cannot render narrower than 300 px: `data-size="flexible"` is 100% of its
+   container with a 300 px minimum (Cloudflare's widget-configuration docs). At a 320 px viewport
+   the form's content box is ~257 px, so the widget gets its own scroll region rather than widening
+   the page — WCAG 1.4.10 forbids the *document* scrolling sideways, and this is the fallback the
+   UI/UX plan documents for exactly this case. Above ~380 px the wrapper never scrolls. */
+.turnstile-frame {
+  min-width: 0;
+  overflow-x: auto;
+}

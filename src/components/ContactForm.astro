@@ -1,86 +1,197 @@
 ---
 import Button from './Button.astro';
-import { turnstileSiteKey, turnstileAction } from '../config';
+import {
+  bookingUrl,
+  contactEmail,
+  turnstileAction,
+  turnstileSiteKey,
+} from '../config';
 import type { Dictionary } from '../i18n';
+import { EMAIL_MAX_LENGTH, MAX_FIELD_LENGTH } from '../lib/contactForm';
 
 interface Props {
   lang: string;
   labels: Dictionary['contact']['form'];
+  /** The booking CTA's label, reused by the no-JS fallback and the failure recovery links. */
+  bookingLabel: string;
+  /** Localized privacy page, so the notice links to the reader's language. */
+  privacyHref: string;
 }
 
-const { lang, labels } = Astro.props;
+const { lang, labels, bookingLabel, privacyHref } = Astro.props;
 
 const inputClass =
-  'w-full min-w-0 rounded border border-control-border bg-control-bg px-3 py-2 text-fg focus-visible:outline-2 focus-visible:outline-accent';
+  'w-full min-w-0 rounded border border-control-border bg-control-bg px-3 py-2 text-fg aria-invalid:border-danger-border focus-visible:outline-2 focus-visible:outline-accent';
+
+const errorClass = 'text-sm text-danger';
+
+/** Stable ids derived from the field name (plan D-12), so the markup is deterministic. */
+const fieldId = (name: string) => `contact-${name}`;
+const hintId = (name: string) => `contact-${name}-hint`;
+const errorId = (name: string) => `contact-${name}-error`;
+
+/**
+ * Every string the client script needs, in one inert block. `data-` attributes would take roughly
+ * twenty-five of them; a JSON island keeps the markup readable. It is never executed, so
+ * `script-src` does not apply to it — the same reason the JSON-LD block in `BaseLayout` is safe.
+ */
+const messages = {
+  submitting: labels.submitting,
+  submitButton: labels.submitButton,
+  stillSending: labels.stillSending,
+  summaryOne: labels.errors.summaryOne,
+  summaryOther: labels.errors.summaryOther,
+  rateLimited: labels.errorRateLimited,
+  challenge: labels.errorChallenge,
+  rejected: labels.errorRejected,
+  delivery: labels.errorDelivery,
+  unavailable: labels.errorUnavailable,
+  network: labels.errorNetwork,
+  recovery: labels.recoveryLabel,
+  booking: bookingLabel,
+  fieldErrors: {
+    'name:required': labels.errors.nameRequired,
+    'name:lineBreak': labels.errors.lineBreak,
+    'email:required': labels.errors.emailRequired,
+    'email:lineBreak': labels.errors.lineBreak,
+    'email:tooLong': labels.errors.emailTooLong,
+    'email:emailFormat': labels.errors.emailFormat,
+    'organization:required': labels.errors.organizationRequired,
+    'organization:lineBreak': labels.errors.lineBreak,
+    'serviceType:required': labels.errors.serviceTypeRequired,
+    'message:required': labels.errors.messageRequired,
+    'message:tooLong': labels.errors.messageTooLong,
+  } satisfies Record<string, string>,
+};
 ---
+
+<script
+  type="application/json"
+  data-contact-messages
+  set:html={JSON.stringify(messages).replace(/</g, '\\u003c')}
+></script>
 
 <form
   method="post"
   action="/api/contact"
-  class="mt-8 grid max-w-2xl gap-4"
-  data-submitting={labels.submitting}
-  data-error-message={labels.errorMessage}
+  class="requires-js mt-8 grid max-w-2xl grid-cols-1 gap-4"
+  novalidate
+  data-contact-form
 >
   <input type="hidden" name="lang" value={lang} />
   <input type="hidden" name="elapsed" value="" data-elapsed />
 
-  <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.nameLabel}</span>
-    <input
-      name="name"
-      required
-      maxlength="2000"
-      autocomplete="name"
-      class={inputClass}
-    />
-  </label>
+  {/*
+    The single status region. It carries at most one message at a time — the invalid summary, the
+    pending note, or one failure sentence plus its recovery links — and the script switches
+    `role`/`aria-live` between assertive (first occurrence) and polite (everything after).
+  */}
+  <div
+    class="rounded border border-danger-border bg-control-bg p-4 text-sm"
+    data-form-status
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    tabindex="-1"
+    hidden
+  >
+    <p class="font-medium" data-status-title></p>
+    <ul class="mt-2 grid list-disc gap-1 pl-5" data-status-list></ul>
+    <p class="mt-2" data-status-recovery hidden></p>
+  </div>
 
-  <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.emailLabel}</span>
-    <input
-      name="email"
-      type="email"
-      required
-      maxlength="2000"
-      autocomplete="email"
-      class={inputClass}
-    />
-  </label>
+  <div class="grid min-w-0 gap-1">
+    <label class="grid gap-1">
+      <span class="text-sm font-medium">{labels.nameLabel}</span>
+      <input
+        id={fieldId('name')}
+        name="name"
+        required
+        maxlength={String(MAX_FIELD_LENGTH)}
+        autocomplete="name"
+        aria-describedby={errorId('name')}
+        class={inputClass}
+      />
+    </label>
+    <p id={errorId('name')} class={errorClass}></p>
+  </div>
 
-  <label class="grid min-w-0 gap-1">
-    <span class="text-sm font-medium">{labels.organizationLabel}</span>
-    <input
-      name="organization"
-      required
-      maxlength="2000"
-      autocomplete="organization"
-      placeholder={labels.organizationPlaceholder}
-      class={inputClass}
-    />
-  </label>
+  <div class="grid min-w-0 gap-1">
+    <label class="grid gap-1">
+      <span class="text-sm font-medium">{labels.emailLabel}</span>
+      <input
+        id={fieldId('email')}
+        name="email"
+        type="email"
+        required
+        maxlength={String(EMAIL_MAX_LENGTH)}
+        autocomplete="email"
+        aria-describedby={`${hintId('email')} ${errorId('email')}`}
+        class={inputClass}
+      />
+    </label>
+    <p id={hintId('email')} class="text-sm text-muted">
+      {labels.emailHint}
+    </p>
+    <p id={errorId('email')} class={errorClass}></p>
+  </div>
 
-  <label class="grid min-w-0 gap-1">
-    <span class="text-sm font-medium">{labels.serviceTypeLabel}</span>
-    <select name="serviceType" required class={inputClass}>
-      <option value="" disabled selected>
-        {labels.serviceTypeLabel}
-      </option>
-      {Object.entries(labels.serviceTypes).map(([value, label]) => (
-        <option value={value}>{label}</option>
-      ))}
-    </select>
-  </label>
+  <div class="grid min-w-0 gap-1">
+    <label class="grid gap-1">
+      <span class="text-sm font-medium">{labels.organizationLabel}</span>
+      <input
+        id={fieldId('organization')}
+        name="organization"
+        required
+        maxlength={String(MAX_FIELD_LENGTH)}
+        autocomplete="organization"
+        placeholder={labels.organizationPlaceholder}
+        aria-describedby={errorId('organization')}
+        class={inputClass}
+      />
+    </label>
+    <p id={errorId('organization')} class={errorClass}></p>
+  </div>
 
-  <label class="grid gap-1">
-    <span class="text-sm font-medium">{labels.messageLabel}</span>
-    <textarea
-      name="message"
-      rows="5"
-      required
-      maxlength="2000"
-      class={inputClass}
-    ></textarea>
-  </label>
+  <div class="grid min-w-0 gap-1">
+    <label class="grid gap-1">
+      <span class="text-sm font-medium">{labels.serviceTypeLabel}</span>
+      <select
+        id={fieldId('serviceType')}
+        name="serviceType"
+        required
+        aria-describedby={errorId('serviceType')}
+        class={inputClass}
+      >
+        <option value="" disabled selected>
+          {labels.serviceTypePlaceholder}
+        </option>
+        {Object.entries(labels.serviceTypes).map(([value, label]) => (
+          <option value={value}>{label}</option>
+        ))}
+      </select>
+    </label>
+    <p id={errorId('serviceType')} class={errorClass}></p>
+  </div>
+
+  <div class="grid min-w-0 gap-1">
+    <label class="grid gap-1">
+      <span class="text-sm font-medium">{labels.messageLabel}</span>
+      <textarea
+        id={fieldId('message')}
+        name="message"
+        rows="5"
+        required
+        maxlength={String(MAX_FIELD_LENGTH)}
+        aria-describedby={`${hintId('message')} ${errorId('message')}`}
+        class={inputClass}
+      ></textarea>
+    </label>
+    <p id={hintId('message')} class="text-sm text-muted">
+      {labels.messageHint}
+    </p>
+    <p id={errorId('message')} class={errorClass}></p>
+  </div>
 
   <div class="hidden" aria-hidden="true">
     <label>
@@ -89,18 +200,49 @@ const inputClass =
     </label>
   </div>
 
-  <div
-    class="cf-turnstile"
-    data-sitekey={turnstileSiteKey}
-    data-action={turnstileAction}
-  ></div>
+  {/*
+    `data-size="flexible"` is Cloudflare's documented responsive widget (100% of the container,
+    300 px minimum) — confirmed against the current Turnstile widget-configuration docs.
+  */}
+  <div class="turnstile-frame grid min-w-0 gap-1">
+    <div
+      class="cf-turnstile"
+      data-sitekey={turnstileSiteKey}
+      data-action={turnstileAction}
+      data-size="flexible"
+      role="group"
+      aria-describedby={hintId('turnstile')}
+    ></div>
+    <p id={hintId('turnstile')} class="text-sm text-muted">
+      {labels.turnstile}
+    </p>
+  </div>
+
+  <p class="text-sm text-muted">
+    {labels.privacyNotice}{' '}
+    <a href={privacyHref} class="font-medium text-accent hover:underline">
+      {labels.privacyLink}
+    </a>
+  </p>
 
   <Button type="submit" data-submit class="justify-self-start">
     {labels.submitButton}
   </Button>
-  <p data-form-status role="status" aria-live="polite" class="text-sm"></p>
-  <p class="text-sm text-muted">{labels.turnstile}</p>
 </form>
+
+<p class="no-js-fallback mt-8 max-w-2xl text-sm">
+  {labels.noJsNotice}{' '}
+  <a
+    href={`mailto:${contactEmail}`}
+    class="font-medium text-accent hover:underline"
+  >
+    {contactEmail}
+  </a>
+  {' · '}
+  <a href={bookingUrl} class="font-medium text-accent hover:underline">
+    {bookingLabel}
+  </a>
+</p>
 
 <script
   is:inline
@@ -110,60 +252,396 @@ const inputClass =
 ></script>
 
 <script>
-  const started = Date.now();
-  const elapsedField =
-    document.querySelector<HTMLInputElement>('[data-elapsed]');
-  const contactForm = elapsedField?.closest<HTMLFormElement>('form');
-  const statusField =
-    contactForm?.querySelector<HTMLElement>('[data-form-status]');
-  const submitButton =
-    contactForm?.querySelector<HTMLButtonElement>('[data-submit]');
+  import { bookingUrl, contactEmail } from '../config';
+  import {
+    validateContact,
+    type ContactFieldName,
+    type ContactValues,
+    type FieldError,
+  } from '../lib/contactForm';
 
-  /** Turnstile tokens are single-use: a retry without a reset fails the second time. */
-  function resetTurnstile() {
-    const widget = (window as unknown as { turnstile?: { reset: () => void } })
-      .turnstile;
-    widget?.reset();
+  /** One member per distinct Worker outcome the client renders differently (plan §7). */
+  type Outcome =
+    | 'rateLimited'
+    | 'challenge'
+    | 'rejected'
+    | 'delivery'
+    | 'unavailable'
+    | 'network';
+
+  type State =
+    | { kind: 'idle' }
+    | { kind: 'invalid'; errors: FieldError[] }
+    | { kind: 'submitting' }
+    | { kind: 'failed'; outcome: Outcome };
+
+  /** Mirrors the JSON island above; every string still originates in the dictionary. */
+  interface Messages {
+    submitting: string;
+    submitButton: string;
+    stillSending: string;
+    summaryOne: string;
+    summaryOther: string;
+    rateLimited: string;
+    challenge: string;
+    rejected: string;
+    delivery: string;
+    unavailable: string;
+    network: string;
+    recovery: string;
+    booking: string;
+    fieldErrors: Record<string, string>;
   }
 
-  contactForm?.addEventListener('submit', async (event) => {
-    if (elapsedField) elapsedField.value = String(Date.now() - started);
+  const FIELDS: ContactFieldName[] = [
+    'name',
+    'email',
+    'organization',
+    'serviceType',
+    'message',
+  ];
 
-    // An invalid form keeps the browser's own validation UI and never reaches the network.
-    if (!contactForm.checkValidity()) return;
+  /**
+   * The Worker's own Siteverify call times out at 10 s and a delivery attempt may still be in
+   * flight, so a slow request is narrated rather than aborted.
+   */
+  const SLOW_NOTE_MS = 10_000;
 
-    event.preventDefault();
-    const idleLabel = submitButton?.textContent ?? '';
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = contactForm.dataset.submitting ?? idleLabel;
+  /**
+   * Resolved once, and only when every piece exists, so the handlers below never re-check for
+   * null. `HTMLElement` rather than an element-specific type: `worker-configuration.d.ts` merges a
+   * second `Element` declaration into the DOM lib, which breaks the `extends Element` constraint.
+   */
+  interface ContactElements {
+    form: HTMLFormElement;
+    status: HTMLElement;
+    title: HTMLElement;
+    list: HTMLElement;
+    recovery: HTMLElement;
+    submit: HTMLButtonElement;
+    messages: Messages;
+  }
+
+  function queryElements(): ContactElements | null {
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    const island = document.querySelector<HTMLScriptElement>(
+      '[data-contact-messages]',
+    );
+    if (!form || !island?.textContent) return null;
+
+    const status = form.querySelector<HTMLElement>('[data-form-status]');
+    const title = form.querySelector<HTMLElement>('[data-status-title]');
+    const list = form.querySelector<HTMLElement>('[data-status-list]');
+    const recovery = form.querySelector<HTMLElement>('[data-status-recovery]');
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]');
+    if (!status || !title || !list || !recovery || !submit) return null;
+
+    return {
+      form,
+      status,
+      title,
+      list,
+      recovery,
+      submit,
+      messages: JSON.parse(island.textContent) as Messages,
+    };
+  }
+
+  function start(): void {
+    const ui = queryElements();
+    if (!ui) return;
+
+    const { form, status, title, list, recovery, submit, messages } = ui;
+    const elapsedField = form.querySelector<HTMLInputElement>('[data-elapsed]');
+    const startedAt = Date.now();
+
+    let state: State = { kind: 'idle' };
+    /** A hard failure is announced assertively once; everything after stays polite. */
+    let announced = false;
+    /** The re-entry guard a native `disabled` button used to provide for free. */
+    let inFlight = false;
+    let leaving = false;
+
+    function control(name: ContactFieldName): HTMLElement | null {
+      return form.querySelector<HTMLElement>(`#contact-${name}`);
     }
-    if (statusField) statusField.textContent = '';
 
-    try {
-      const response = await fetch(contactForm.action, {
-        method: 'POST',
-        body: new FormData(contactForm),
-      });
-      if (response.ok) {
-        // The 303 was followed, so `response.url` is the localised thanks page.
-        window.location.assign(response.url);
+    function trimmedValues(): ContactValues {
+      const data = new FormData(form);
+      const read = (key: string) => String(data.get(key) ?? '');
+      return {
+        name: read('name'),
+        email: read('email'),
+        organization: read('organization'),
+        serviceType: read('serviceType'),
+        message: read('message'),
+      };
+    }
+
+    function messageFor(error: FieldError): string {
+      return messages.fieldErrors[`${error.field}:${error.code}`] ?? '';
+    }
+
+    function sameErrors(a: FieldError[], b: FieldError[]): boolean {
+      return (
+        a.length === b.length &&
+        a.every(
+          (error, index) =>
+            error.field === b[index]?.field && error.code === b[index]?.code,
+        )
+      );
+    }
+
+    /** Turnstile tokens are single-use: a retry without a reset fails the second time. */
+    function resetTurnstile(): void {
+      const widget = (
+        window as unknown as { turnstile?: { reset: () => void } }
+      ).turnstile;
+      widget?.reset();
+    }
+
+    function outcomeFor(responseStatus: number): Outcome {
+      if (responseStatus === 429) return 'rateLimited';
+      if (responseStatus === 403) return 'challenge';
+      if (responseStatus === 500) return 'unavailable';
+      if (responseStatus === 502) return 'delivery';
+      // 400 (honeypot, elapsed, a field the server rejected) and 413/415 land here.
+      return 'rejected';
+    }
+
+    /**
+     * Every failure offers a real way out in place: the address is a `mailto:` link, not a
+     * sentence pointing a thousand pixels down the page (UX-017).
+     */
+    function renderRecovery(): void {
+      const mail = document.createElement('a');
+      mail.href = `mailto:${contactEmail}`;
+      mail.textContent = contactEmail;
+      mail.className = 'font-medium underline';
+
+      const booking = document.createElement('a');
+      booking.href = bookingUrl;
+      booking.textContent = messages.booking;
+      booking.className = 'font-medium underline';
+
+      recovery.replaceChildren(
+        document.createTextNode(`${messages.recovery} `),
+        mail,
+        document.createTextNode(' · '),
+        booking,
+      );
+      recovery.hidden = false;
+    }
+
+    function render(options: { focusSummary?: boolean } = {}): void {
+      // Rebuilding the summary replaces the very link the user just activated, so remember
+      // whether focus was inside it and put it back on the container afterwards (the invariant
+      // is that focus never ends up on <body>).
+      const previouslyFocused = document.activeElement;
+      const hadFocusInside =
+        previouslyFocused instanceof HTMLElement &&
+        status.contains(previouslyFocused);
+
+      const errors = state.kind === 'invalid' ? state.errors : [];
+      const codes = new Map(errors.map((error) => [error.field, error.code]));
+
+      for (const name of FIELDS) {
+        const node = form.querySelector<HTMLElement>(`#contact-${name}-error`);
+        const code = codes.get(name);
+        if (node) {
+          node.textContent = code
+            ? (messages.fieldErrors[`${name}:${code}`] ?? '')
+            : '';
+        }
+        const field = control(name);
+        if (!field) continue;
+        if (code) field.setAttribute('aria-invalid', 'true');
+        else field.removeAttribute('aria-invalid');
+      }
+
+      const busy = state.kind === 'submitting';
+      form.setAttribute('aria-busy', String(busy));
+      submit.setAttribute('aria-disabled', String(busy));
+      submit.setAttribute('aria-busy', String(busy));
+      submit.textContent = busy ? messages.submitting : messages.submitButton;
+
+      // `disabled` would drop the focused button out of the accessibility tree mid-submission,
+      // which is exactly the focus loss UX-005 recorded. Mirror it with advisory attributes and
+      // a real guard in the handler instead.
+      for (const name of FIELDS) {
+        const field = control(name);
+        if (!field) continue;
+        if (field instanceof HTMLSelectElement) {
+          field.setAttribute('aria-disabled', String(busy));
+        } else if (
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLTextAreaElement
+        ) {
+          field.readOnly = busy;
+        }
+      }
+
+      title.textContent = '';
+      list.replaceChildren();
+      recovery.replaceChildren();
+      recovery.hidden = true;
+
+      if (state.kind === 'idle') {
+        status.hidden = true;
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
         return;
       }
-      if (statusField) {
-        statusField.textContent = contactForm.dataset.errorMessage ?? '';
+
+      status.hidden = false;
+
+      if (state.kind === 'submitting') {
+        title.textContent = messages.submitting;
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        return;
       }
-      resetTurnstile();
-    } catch {
-      if (statusField) {
-        statusField.textContent = contactForm.dataset.errorMessage ?? '';
+
+      const assertive = !announced;
+      announced = true;
+      status.setAttribute('role', assertive ? 'alert' : 'status');
+      status.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+
+      if (state.kind === 'invalid') {
+        title.textContent =
+          state.errors.length === 1
+            ? messages.summaryOne
+            : messages.summaryOther.replace(
+                '{count}',
+                String(state.errors.length),
+              );
+        for (const error of state.errors) {
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = `#contact-${error.field}`;
+          link.textContent = messageFor(error);
+          link.className = 'underline';
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            control(error.field)?.focus();
+          });
+          item.appendChild(link);
+          list.appendChild(item);
+        }
+      } else {
+        title.textContent = messages[state.outcome];
+        renderRecovery();
       }
-      resetTurnstile();
-    } finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = idleLabel;
+
+      if (options.focusSummary) {
+        status.focus();
+      } else if (
+        hadFocusInside &&
+        previouslyFocused instanceof HTMLElement &&
+        !previouslyFocused.isConnected
+      ) {
+        status.focus();
       }
     }
-  });
+
+    function setState(
+      next: State,
+      options: { focusSummary?: boolean } = {},
+    ): void {
+      state = next;
+      render(options);
+    }
+
+    /**
+     * Only a field that is already marked invalid is re-checked, so nothing is reported before
+     * the user has finished with a field for the first time.
+     */
+    function revalidate(name: ContactFieldName): void {
+      if (state.kind !== 'invalid') return;
+      if (!state.errors.some((error) => error.field === name)) return;
+      const errors = validateContact(trimmedValues());
+      // Re-rendering with an identical set would destroy the summary link under the pointer.
+      if (sameErrors(state.errors, errors)) return;
+      setState(
+        errors.length > 0 ? { kind: 'invalid', errors } : { kind: 'idle' },
+      );
+    }
+
+    async function submitContact(): Promise<void> {
+      if (inFlight) return;
+
+      const errors = validateContact(trimmedValues());
+      if (errors.length > 0) {
+        setState({ kind: 'invalid', errors }, { focusSummary: true });
+        return;
+      }
+
+      inFlight = true;
+      if (elapsedField) elapsedField.value = String(Date.now() - startedAt);
+      setState({ kind: 'submitting' });
+
+      const slowNote = window.setTimeout(() => {
+        if (state.kind === 'submitting')
+          title.textContent = messages.stillSending;
+      }, SLOW_NOTE_MS);
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+        });
+        if (response.ok) {
+          // The 303 was followed, so `response.url` is the localised thanks page.
+          leaving = true;
+          window.location.assign(response.url);
+          return;
+        }
+        setState(
+          { kind: 'failed', outcome: outcomeFor(response.status) },
+          { focusSummary: true },
+        );
+        resetTurnstile();
+      } catch {
+        setState(
+          { kind: 'failed', outcome: 'network' },
+          { focusSummary: true },
+        );
+        resetTurnstile();
+      } finally {
+        window.clearTimeout(slowNote);
+        if (!leaving) {
+          inFlight = false;
+          if (state.kind === 'submitting') setState({ kind: 'idle' });
+        }
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      // `novalidate` stops the native bubble competing with the summary; the shared module
+      // applies the Worker's rules instead, so nothing is ever posted unvalidated.
+      event.preventDefault();
+      void submitContact();
+    });
+
+    for (const name of FIELDS) {
+      const field = control(name);
+      if (!field) continue;
+      field.addEventListener('blur', () => {
+        revalidate(name);
+      });
+      field.addEventListener('input', () => {
+        // Acknowledge a correction as soon as it is one, but never re-render mid-word: that
+        // would rebuild the summary on every keystroke and re-announce an unchanged message.
+        if (state.kind !== 'invalid') return;
+        if (!state.errors.some((error) => error.field === name)) return;
+        const errors = validateContact(trimmedValues());
+        if (errors.some((error) => error.field === name)) return;
+        setState(
+          errors.length > 0 ? { kind: 'invalid', errors } : { kind: 'idle' },
+        );
+      });
+    }
+  }
+
+  start();
 </script>

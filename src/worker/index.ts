@@ -1,3 +1,11 @@
+// The field and email rules live in `src/lib/contactForm.ts` because the browser script applies the
+// same ones; a second copy here is exactly the drift UX-006 recorded.
+import {
+  isValidEmail,
+  messageProblem,
+  singleLineProblem,
+} from '../lib/contactForm';
+
 const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 /** Must match `turnstileAction` in `src/config.ts`. */
@@ -6,22 +14,7 @@ const TURNSTILE_ACTION = 'contact';
 const TOKEN_MAX_LENGTH = 2048;
 const VERIFY_TIMEOUT_MS = 10_000;
 
-const MAX_FIELD_LENGTH = 2000;
 const MIN_ELAPSED_MS = 3000;
-const CRLF_RE = /[\r\n]/;
-
-/**
- * Pragmatic RFC 5322 dot-atom form. It rejects quotes, angle brackets, commas, parentheses and
- * control characters in the local part, because the address is handed to the mail provider as a
- * structured recipient and must never be able to widen into a list. Accepted trade-off: punycode
- * TLDs are rejected.
- */
-const EMAIL_LOCAL =
-  /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
-const EMAIL_DOMAIN =
-  /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
-const EMAIL_MAX_LENGTH = 254;
-const EMAIL_LOCAL_MAX_LENGTH = 64;
 
 /** Rejected before `formData()` so an oversized body is never parsed. */
 const MAX_BODY_BYTES = 16 * 1024;
@@ -104,20 +97,6 @@ function problem(
 function field(form: FormData, name: string): string {
   const value = form.get(name);
   return typeof value === 'string' ? value.trim() : '';
-}
-
-/** Length caps plus a dot-atom local part and a label-validated domain. */
-function isValidEmail(value: string): boolean {
-  if (value.length === 0 || value.length > EMAIL_MAX_LENGTH) return false;
-  const at = value.lastIndexOf('@');
-  if (at <= 0 || at === value.length - 1) return false;
-  const local = value.slice(0, at);
-  const domain = value.slice(at + 1);
-  return (
-    local.length <= EMAIL_LOCAL_MAX_LENGTH &&
-    EMAIL_LOCAL.test(local) &&
-    EMAIL_DOMAIN.test(domain)
-  );
 }
 
 /** Provider errors can embed the recipient, so only the error's type is ever logged. */
@@ -259,16 +238,12 @@ async function contact(request: Request, env: Env): Promise<Response> {
   const organization = field(form, 'organization');
   const message = field(form, 'message');
 
-  // CRLF anywhere near a header is email header injection, not a validation nit.
-  for (const value of [name, email, organization, message]) {
-    if (
-      value.length === 0 ||
-      value.length > MAX_FIELD_LENGTH ||
-      CRLF_RE.test(value)
-    ) {
-      return problem(400, 'Invalid field');
-    }
+  // CRLF in a single-line field is email header injection, not a validation nit. The message is
+  // only ever the body of the notification, so it keeps its line breaks.
+  for (const value of [name, email, organization]) {
+    if (singleLineProblem(value) !== null) return problem(400, 'Invalid field');
   }
+  if (messageProblem(message) !== null) return problem(400, 'Invalid field');
   if (!isValidEmail(email)) return problem(400, 'Invalid email');
 
   const serviceType = field(form, 'serviceType');

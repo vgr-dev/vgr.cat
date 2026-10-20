@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
+/* Display face: self-hosted and Vite-hashed, so it ships from the same origin and `default-src
+   'self'` already covers it. Only the latin subset is fetched (the other @font-face blocks declare
+   disjoint unicode-ranges). */
+@import '@fontsource-variable/space-grotesk';
 @plugin '@tailwindcss/typography';
 
 @theme static {
@@ -18,6 +22,14 @@
   /* Validation states. Consumed from Phase 2 onward. Measured light: 6.57:1 (text) / 4.83:1 (border). */
   --color-danger: #b42318;
   --color-danger-border: #d92d20;
+  /* Tinted section surface for the alternating band rhythm. Measured light: 1.13:1 vs the page.
+     Decorative separation only — never a control or panel boundary. */
+  --color-band: #eef1f6;
+  /* Accent for *text* on a band. Plain `--color-accent` on `--color-band` measures 4.53:1: a pass
+     with no headroom, which one tweak to the band tint would silently break. This measures 6.79:1. */
+  --color-accent-ink: #0a46c9;
+  /* Text on an accent fill (the CTA band, the primary button). Measured light: 5.13:1 on #0b5fff. */
+  --color-fg-inverse: #ffffff;
   --font-sans:
     'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -28,9 +40,14 @@
 :root {
   color-scheme: light dark;
   --measure: 68ch;
-  --space-section: 3rem;
+  /* Denser on a phone, airier on a wide screen: the hub now has six short sections instead of four
+     long ones, so the rhythm between them has to carry the separation the copy no longer does. */
+  --space-section: clamp(2.5rem, 6vw, 4rem);
   --duration-fast: 150ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Display family for headings and figures. Space Grotesk carries the engineered, slightly quirky
+     voice (the `G`, the `a`, the square terminals) while Inter keeps body copy readable at 16 px. */
+  --font-display: 'Space Grotesk Variable', var(--font-sans);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +58,12 @@
     --color-accent: #7aa7ff;
     --color-border: #262a31;
     --color-surface: #16181d;
+    /* Measured dark: 1.08:1 vs the page. */
+    --color-band: #171a20;
+    /* Measured dark: 9.47:1 on the band (plain accent measures 7.30:1, so this is headroom, not a fix). */
+    --color-accent-ink: #9dc0ff;
+    /* Measured dark: 7.91:1 on the accent fill. */
+    --color-fg-inverse: #101114;
     /* Measured dark: border 3.91:1 vs page and 3.67:1 vs its own fill. */
     --color-control-bg: #16181d;
     --color-control-border: #6b7280;
@@ -49,8 +72,33 @@
   }
 }
 
-/* Nothing in the site animates today; this exists so the transition tokens above cannot make it
-   animate for someone who asked it not to. */
+/* Scroll-driven section reveals: CSS only, no observer and no inline script, so there is no new
+   hash for `script-src` to cover. The whole block is inside `@supports` and `no-preference`, which
+   means an unsupporting browser or a reader who asked for reduced motion gets the static page —
+   the animation is additive, never a precondition for seeing content. */
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-reveal] {
+      animation: section-reveal both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/* The blanket rule below is what makes the reveal above safe for someone who asked not to be
+   animated: it also neutralises the card hover transitions. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -76,6 +124,22 @@ body {
   color: var(--color-fg);
   font-family: var(--font-sans);
   line-height: 1.6;
+}
+
+/* One rule for the display layer: family, tightening and balanced wrapping. Sizes stay in the
+   markup, where each template knows its own scale. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+/* The metric figures are `dt`s, not headings, so they opt in explicitly. */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 :focus-visible {

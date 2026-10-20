@@ -87,3 +87,24 @@ for (const route of HOME_ROUTES) {
     }
   });
 }
+
+/**
+ * The scroll-driven reveal is additive, never a precondition for seeing content. A reader who asked
+ * for reduced motion must get the static page — not sections parked at opacity 0 — so this emulates
+ * the preference and asserts that nothing in `main` is transparent and no animation is running.
+ */
+test('reduced motion leaves the page fully visible', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  const state = await page.evaluate(() => ({
+    transparent: [...document.querySelectorAll('main *')].filter((element) => {
+      const style = getComputedStyle(element);
+      return Number(style.opacity) === 0 && style.display !== 'none';
+    }).length,
+    animations: document.getAnimations().length,
+  }));
+
+  expect(state.transparent, 'no element may be invisible').toBe(0);
+  expect(state.animations, 'no animation may run').toBe(0);
+});

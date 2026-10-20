@@ -2,12 +2,14 @@ import { expect, test } from '@playwright/test';
 
 /**
  * The two network promises behind Phase 6: the third-party challenge is not fetched until it is
- * needed, and exactly one font file is fetched at all.
+ * needed, and exactly one file per family is fetched — the latin subset of Inter for body copy and
+ * the latin subset of Space Grotesk for display type. The other `@font-face` blocks declare disjoint
+ * `unicode-range`s, so they cost nothing beyond a few bytes of CSS.
  *
  * Neither assertion depends on the challenge actually loading — the `<script>` element is counted,
  * not the response — so a CDN outage cannot fail these tests.
  */
-test('a fresh page makes no third-party request and fetches one font', async ({
+test('a fresh page makes no third-party request and fetches two font files', async ({
   page,
 }) => {
   const requested: string[] = [];
@@ -21,10 +23,11 @@ test('a fresh page makes no third-party request and fetches one font', async ({
     'the challenge script must not load before it is needed',
   ).toEqual([]);
 
-  expect(
-    requested.filter((url) => url.endsWith('.woff2')),
-    'only the latin subset is requested',
-  ).toHaveLength(1);
+  const fonts = requested.filter((url) => url.endsWith('.woff2'));
+  expect(fonts, 'one latin subset per font family').toHaveLength(2);
+  expect(fonts.join(' '), 'both families are served').toMatch(
+    /inter-latin.*space-grotesk-latin|space-grotesk-latin.*inter-latin/,
+  );
 });
 
 test('the challenge loads once, when the form approaches the viewport', async ({

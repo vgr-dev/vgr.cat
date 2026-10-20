@@ -1,0 +1,27 @@
+---
+/**
+ * The three proof figures, as a definition list.
+ *
+ * `dt` holds the figure and `dd` the label — the same pairing the Hero used when the metrics ran
+ * along the bottom, so the semantics did not change when the layout did.
+ */
+interface Metric {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  metrics: Metric[];
+}
+
+const { metrics } = Astro.props;
+---
+
+<dl class="grid gap-6 border-t border-border pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+  {metrics.map((metric) => (
+    <div>
+      <dt class="font-display text-4xl font-semibold">{metric.value}</dt>
+      <dd class="mt-1 text-sm text-muted">{metric.label}</dd>
+    </div>
+  ))}
+</dl>

@@ -4,6 +4,8 @@ import '../styles/global.css';
 // Only the latin subset is ever fetched for EN/CA/ES content (task 4): the other six `@font-face`
 // blocks declare disjoint `unicode-range`s and cost nothing beyond a few bytes of inlined CSS.
 import latinWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+// Same treatment for the display face: one latin subset, preloaded because it renders the `h1`.
+import displayWoff2 from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
 import {
   defaultLocale,
   locales,
@@ -98,6 +100,13 @@ const jsonLd = jsonLdOverride ?? buildJsonLd({ locale: lang, t });
       as="font"
       type="font/woff2"
       href={latinWoff2}
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={displayWoff2}
       crossorigin
     />
 

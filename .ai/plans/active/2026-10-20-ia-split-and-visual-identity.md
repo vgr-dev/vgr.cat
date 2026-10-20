@@ -720,51 +720,193 @@ is garnish and additive only.
 
 #### Tasks
 
-- [ ] Task 4.1: Add a self-hosted variable display face via `@fontsource-variable/*` imported in
+- [x] Task 4.1: Add a self-hosted variable display face via `@fontsource-variable/*` imported in
       `src/styles/global.css` (candidate list for owner sign-off: **Sora**, **Space Grotesk**,
       **Instrument Sans**, **Bricolage Grotesque**), expose `--font-display` in `@theme static`, and apply it
       to `h1`/`h2`/metric values only. Inter keeps body copy. No external origin.
-- [ ] Task 4.2: Add the display face's latin preload to `BaseLayout.astro` next to the Inter preload
+- [x] Task 4.2: Add the display face's latin preload to `BaseLayout.astro` next to the Inter preload
       (`crossorigin`, same pattern). Update `tests/network.spec.ts` to expect **two** `.woff2` requests and
       document why the count changed.
-- [ ] Task 4.3: Extend the palette in `src/styles/global.css`: `--color-band` (a tinted section surface),
+- [x] Task 4.3: Extend the palette in `src/styles/global.css`: `--color-band` (a tinted section surface),
       `--color-accent-ink` (accent-on-band text), `--color-fg-inverse` (text on accent). Define light and
       dark values. **Record measured contrast for every new pair** with a WCAG calculation run in the
       terminal, for example:
       `node -e "const L=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=0.03928?v/12.92:((v+0.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]};const r=(a,b)=>{const[x,y]=[L(a),L(b)].sort((p,q)=>q-p);return ((x+.05)/(y+.05)).toFixed(2)};console.log(r('#0b5fff','#ffffff'))"`
       Thresholds: ≥ 4.5:1 for body text, ≥ 3:1 for ≥ 24 px text and for control boundaries.
-- [ ] Task 4.4: Create `src/components/Card.astro` and move both card components onto it: equal-height
+- [x] Task 4.4: Create `src/components/Card.astro` and move both card components onto it: equal-height
       grid, pillar tag pill, title, one-line, optional metric, hover/focus elevation using
       `--duration-fast`/`--ease-standard`. Keep the single-anchor whole-card link from §4.3.
-- [ ] Task 4.5: Rebuild `src/components/Hero.astro` as a two-column layout at `lg` (text + proof panel) and
+- [x] Task 4.5: Rebuild `src/components/Hero.astro` as a two-column layout at `lg` (text + proof panel) and
       create `src/components/HeroProofPanel.astro` for the three metrics; stacked below `lg`, metrics
       remaining `dt`/`dd` semantics.
-- [ ] Task 4.6: Section rhythm: alternate `bg-bg` and `bg-band` full-bleed sections, retune `--space-section`
+- [x] Task 4.6: Section rhythm: alternate `bg-bg` and `bg-band` full-bleed sections, retune `--space-section`
       for the denser hub, and keep `Container`'s measured breakpoint policy intact (no prose cell under
       280 px).
-- [ ] Task 4.7: Motion in `src/styles/global.css` only: a `@supports (animation-timeline: view())` block
+- [x] Task 4.7: Motion in `src/styles/global.css` only: a `@supports (animation-timeline: view())` block
       inside `@media (prefers-reduced-motion: no-preference)` for section reveals, plus card hover
       transitions. Correct the stale comment that reads "Nothing in the site animates today". Content must
       be visible when the `@supports` block does not apply.
-- [ ] Task 4.8: Verify the built CSP is unchanged and that nothing is blocked:
+- [x] Task 4.8: Verify the built CSP is unchanged and that nothing is blocked:
       `grep -o 'content-security-policy[^>]*' dist/index.html` and compare to the pre-phase output; then load
       the built site and confirm the form, the beacon allowance and both fonts in console with no CSP
       violations.
-- [ ] Task 4.9: Re-run the 320 px and 280 px suites (`tests/layout.spec.ts`) and add the new detail routes to
+- [x] Task 4.9: Re-run the 320 px and 280 px suites (`tests/layout.spec.ts`) and add the new detail routes to
       its 320 px list via `ROUTES`.
 
 #### Acceptance Criteria
 
-- [ ] Display face is served from the same origin; `grep -c 'fontsource\|fonts.gstatic\|googleapis' dist/index.html`
+- [x] Display face is served from the same origin; `grep -c 'fontsource\|fonts.gstatic\|googleapis' dist/index.html`
       finds no external font origin in the HTML.
-- [ ] Contrast table for every new token pair is recorded in this plan, each value ≥ its threshold.
-- [ ] `tests/network.spec.ts` passes with the updated expectation (2 woff2, 0 third-party requests on first
+- [x] Contrast table for every new token pair is recorded in this plan, each value ≥ its threshold.
+- [x] `tests/network.spec.ts` passes with the updated expectation (2 woff2, 0 third-party requests on first
       paint).
-- [ ] No CSP violation in the browser console on `/`, `/ca/work/topten-ecosystem/`, `/services/regtech/`
+- [x] No CSP violation in the browser console on `/`, `/ca/work/topten-ecosystem/`, `/services/regtech/`
       against the **built** output.
-- [ ] `tests/layout.spec.ts` passes: no horizontal scroll at 320 px on any route; no prose cell under 280 px
+- [x] `tests/layout.spec.ts` passes: no horizontal scroll at 320 px on any route; no prose cell under 280 px
       at 640 px on every route flagged in `tests/routes.ts`.
-- [ ] With `prefers-reduced-motion: reduce` emulated, no element is opacity 0 and no animation runs.
+- [x] With `prefers-reduced-motion: reduce` emulated, no element is opacity 0 and no animation runs.
+
+#### Recorded evidence (executed 2026-10-20)
+
+**Contrast table.** Measured with the WCAG formula from Task 4.3, in the terminal:
+
+```text
+LIGHT band vs bg                          1.13
+LIGHT accent on band                      4.53   ← the reason --color-accent-ink exists
+LIGHT accent-ink #0a46c9 on band          6.79
+LIGHT muted on band                       5.30
+LIGHT fg on band                         15.37
+LIGHT fg-inverse #fff on accent           5.13
+DARK  band vs bg                          1.08
+DARK  accent on band                      7.30
+DARK  accent-ink #9dc0ff on band          9.47
+DARK  muted on band                       6.84
+DARK  fg on band                         15.70
+DARK  fg-inverse #101114 on accent        7.91
+```
+
+Every text pair is ≥ 4.5:1. `--color-band` vs `--color-bg` is 1.13:1 / 1.08:1 — deliberately below the
+3:1 control-boundary threshold, because a band is a decorative section surface and never a control edge;
+the comment in `global.css` says so.
+
+**Runtime checks against the built output** (`node tests/support/serve.mjs`):
+
+```text
+$ grep -c 'content-security-policy' dist/index.html
+1
+$ grep -o 'content-security-policy[^>]*' dist/index.html
+default-src 'self';img-src 'self' data:;object-src 'none';base-uri 'self';
+form-action 'self';frame-src https://challenges.cloudflare.com;
+connect-src 'self' https://cloudflareinsights.com;
+script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com 'sha256-…'
+
+$ grep -c 'fontsource\|fonts.gstatic\|googleapis' dist/index.html
+0
+
+securitypolicyviolation listener + reload, per route:
+/                          → []
+/ca/work/topten-ecosystem/ → []
+/services/regtech/         → []
+
+band section computed background: rgb(23, 26, 32)  (dark theme)
+```
+
+**Measurements after the visual pass** (1280×900 on `/`, `/ca/`, `/es/`): 4,803 / 5,059 / 5,226 px,
+755 / 942 / 943 words, tallest card **320 px**; `/es/` at 390×844 is 7,779 px. All still inside the Phase 3
+budgets (5,500 px / 1,700 words / 340 px / 12,000 px).
+
+```text
+$ npm run build
+[build] 37 page(s) built in 841ms
+
+$ npx playwright test
+394 passed (10.2s)
+
+$ npm run check
+Result (61 files): 0 errors, 0 warnings, 0 hints
+
+$ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+✨ Read 99 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+Total Upload: 8.71 KiB / gzip: 3.26 KiB
+```
+
+#### Recorded deviations, deferrals and traps
+
+1. **Task 4.1 / 4.2 are deferred: no display face was installed.** Adding `@fontsource-variable/*` needs a
+   dependency install, which the execution environment forbids, and it would change `package-lock.json` —
+   CI runs `npm ci`, so a `package.json`-only edit would break the build. What landed instead is the
+   *typography layer*: `--font-display` exists in `:root` and resolves to the body face, and `h1`/`h2`/`h3`
+   take their family, `-0.025em` tracking and `text-wrap: balance` from one base rule. Adding a real face is
+   then two lines: the `@import` at the top of `global.css` and `--font-display: '<Face> Variable'`. The
+   hero was also raised to `lg:text-6xl` so the display layer has something to carry. **Criterion
+   "display face is served from the same origin" stays unticked for that reason**, even though its
+   measurable half passes (`grep` for an external font origin → 0).
+2. **The stylesheet left the inline budget and became an external asset.** `dist/_astro/PageShell.*.css`
+   is now 40,074 bytes; Astro inlines stylesheets only under 4 KB, so `dist/index.html` contains **0**
+   `<style>` blocks and `style-src` carries only `'self'` plus an empty-string hash
+   (`sha256-47DEQ…`, the SHA-256 of `""`). Two consequences worth knowing: the `/_astro/*` `immutable`
+   cache rule in `public/_headers` — dormant until now — is live, and first paint now waits for one
+   same-origin stylesheet instead of inlining it. No CSP violation; verified above. If the inline
+   behaviour is wanted back, that is `build.inlineStylesheets` in `astro.config.mjs`, which this plan does
+   not touch.
+3. **`Card.astro` has no `metric` prop.** The plan lists one as optional, but no collection carries a
+   per-card figure and inventing one would be fabricated content. The slot is where a real number goes.
+4. **The hero heading lost its space in the first build.** `{title}` on its own line followed by the
+   highlighted `<span>` concatenated to `behindEuropean`. Caught by screenshotting the built page, not by
+   any assertion — `toHaveText` compares the element it is given, and no test asserted the two phrases were
+   separated. Fixed with an explicit `{' '}`.
+5. **`sm:grid-cols-3` on the proof panel failed the 280 px rule at 640 px.** Three columns at 640 px give
+   ~186 px per cell, and the cells contain `dd` label sentences. The panel is now single-column below `lg`,
+   where it sits in the hero's 20 rem column; `layout.spec.ts` caught this because it measures every
+   `main section dl > div`.
+6. **`--space-section` is now `clamp(2.5rem, 6vw, 4rem)`.** Denser on a phone, airier on a wide screen;
+   the hub's six short sections rely on the rhythm for separation now that the copy no longer provides it.
+   The page-weight budgets absorbed the change (5,226 px on `/es/`, still 274 px under the ceiling).
+7. **`data-reveal` is applied to three home sections only**, not globally: the contact form carries the
+   lazily-loaded Turnstile widget and was left static so its visibility never depends on an animation.
+
+#### Follow-up, 2026-10-20: the display face landed
+
+The owner authorised the dependency install, so Task 4.1 and 4.2 were completed after the rest of the
+phase. Deviation 1 above is left exactly as written — it records the state at the time, and this is the
+correction, not a rewrite.
+
+- **`@fontsource-variable/space-grotesk`** was added with `npm install`, so `package.json` **and**
+  `package-lock.json` changed together and CI's `npm ci` stays valid. `npm install` reported
+  **0 vulnerabilities**.
+- `global.css` imports it next to Inter and `--font-display` is now
+  `'Space Grotesk Variable', var(--font-sans)`. The `h1`/`h2`/`h3` base rule already read that token, so
+  no template changed; the proof-panel figures opt in through `.font-display` because they are `dt`s.
+- `BaseLayout.astro` preloads the latin subset alongside Inter's, and `tests/network.spec.ts` now asserts
+  **two** `.woff2` requests and that both families appear (Inter for body, Space Grotesk for display).
+- Verified on the built output:
+
+```text
+$ grep -o 'rel="preload"[^>]*woff2' dist/index.html
+/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2
+/_astro/space-grotesk-latin-wght-normal.BhU9QXUp.woff2
+
+$ find dist -name '*.woff2' | wc -l
+10        (Inter 7 subsets + Space Grotesk 3; only the latin subset of each is ever fetched)
+
+$ grep -c 'fontsource\|fonts.gstatic\|googleapis' dist/index.html
+0         (no font URL in the HTML: both are emitted as hashed same-origin assets)
+
+computed font-family on h1:
+"Space Grotesk Variable", "Inter Variable", system-ui, …
+
+$ npx playwright test
+394 passed (11.4s)
+
+$ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+✨ Read 102 files    (was 99: three more Space Grotesk subsets)
+```
+
+- Page weight did not move: `/` 4,803 px, `/ca/` 5,059, `/es/` 5,226, tallest card 320 px, `/es/` at
+  390×844 7,819 px — all still inside the Phase 3 budgets. Space Grotesk's metrics are close enough to
+  Inter's that no budget needed retuning.
+- There is **no `font-src` directive** in the CSP and none is needed: the fonts are same-origin, so
+  `default-src 'self'` covers them, and the `securitypolicyviolation` listener still reports zero events.
 
 ---
 

@@ -70,6 +70,7 @@ const home = localizedPath(lang, '/');
           outcome={study.data.outcome}
           href={localizedPath(lang, caseStudyPath(study.data.translationKey))}
           ctaLabel={t.caseStudies.readCase}
+          tag={t.services.pillars[study.data.pillar].tag}
         />
       ))}
     </div>

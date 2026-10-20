@@ -1,0 +1,54 @@
+---
+/**
+ * The card primitive: one surface, one focus stop, one action.
+ *
+ * `ServiceCard` and `CaseStudy` both delegate here, so the tag treatment, the hover elevation and
+ * the single-anchor whole-card link (§4.3 of the plan) exist once. Callers put their own body — the
+ * case study's `<dl>`, the teaser's outcome line — in the slot.
+ *
+ * There is deliberately no `metric` prop. The collections carry no per-card figure, and inventing
+ * one would be fabricated content; the slot is where a real number goes if one is ever authored.
+ */
+interface Props {
+  title: string;
+  href: string;
+  ctaLabel: string;
+  /** Pillar tag, rendered as a pill above the title. */
+  tag?: string;
+  /** One line of context. Clamped, so a longer translation cannot grow the card. */
+  summary?: string;
+  class?: string;
+}
+
+const { title, href, ctaLabel, tag, summary, class: className } = Astro.props;
+---
+
+{/*
+  `relative` + the anchor's `after:inset-0` make the whole card clickable from one focus stop.
+  `flex h-full flex-col` with a growing body keeps a row of cards equal-height with the action
+  pinned to the bottom, whatever the translations do to the title.
+*/}
+<article
+  class:list={[
+    'relative flex h-full flex-col rounded-lg border border-border bg-surface p-6',
+    'transition-[transform,box-shadow,border-color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    'hover:-translate-y-0.5 hover:border-control-border hover:shadow-md motion-reduce:hover:translate-y-0',
+    className,
+  ]}
+>
+  {tag && (
+    <p class="text-xs font-medium tracking-[0.08em] text-accent uppercase">
+      {tag}
+    </p>
+  )}
+  <h3 class:list={['text-lg font-semibold', tag && 'mt-2']}>
+    <a href={href} class="hover:text-accent after:absolute after:inset-0">
+      {title}
+    </a>
+  </h3>
+  {summary && <p class="mt-3 line-clamp-2 text-muted">{summary}</p>}
+  <div class="mt-4 flex-1">
+    <slot />
+  </div>
+  <p class="mt-4 text-sm font-medium text-accent">{ctaLabel}</p>
+</article>

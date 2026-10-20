@@ -1,6 +1,7 @@
 ---
 import Container from './Container.astro';
 import Button from './Button.astro';
+import HeroProofPanel from './HeroProofPanel.astro';
 
 interface Metric {
   value: string;
@@ -32,24 +33,22 @@ const {
 } = Astro.props;
 ---
 
-<Container as="section" class="py-20 sm:py-28">
-  <p class="text-sm font-medium text-accent">{badge}</p>
-  <h1 class="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-    {title} <span class="text-accent">{titleHighlight}</span>
-  </h1>
-  <p class="mt-6 max-w-2xl text-lg text-muted sm:text-xl">{subtitle}</p>
-  <div class="mt-10 flex flex-wrap gap-4">
-    <Button href={ctaPrimaryHref}>{ctaPrimary}</Button>
-    <Button href={ctaSecondaryHref} variant="secondary">
-      {ctaSecondary}
-    </Button>
-  </div>
-  <dl class="mt-14 grid gap-6 lg:grid-cols-3">
-    {metrics.map((metric) => (
-      <div>
-        <dt class="text-2xl font-semibold tracking-tight">{metric.value}</dt>
-        <dd class="mt-1 text-sm text-muted">{metric.label}</dd>
+<Container as="section" class="py-16 sm:py-24">
+  <div class="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
+    <div>
+      <p class="text-sm font-medium text-accent">{badge}</p>
+      <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl lg:text-6xl">
+        {title} <span class="text-accent">{titleHighlight}</span>
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg text-muted sm:text-xl">{subtitle}</p>
+      <div class="mt-10 flex flex-wrap gap-4">
+        <Button href={ctaPrimaryHref}>{ctaPrimary}</Button>
+        <Button href={ctaSecondaryHref} variant="secondary">
+          {ctaSecondary}
+        </Button>
       </div>
-    ))}
-  </dl>
+    </div>
+
+    <HeroProofPanel metrics={metrics} />
+  </div>
 </Container>

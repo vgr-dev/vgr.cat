@@ -5,7 +5,13 @@
  * The markdown body is *not* rendered here. It used to be, and it restated the three `<dl>` items
  * in prose — the same three ideas twice per study, six times on the page (UX-007). The body now
  * belongs to `/work/<translationKey>/`; this card never renders it.
+ *
+ * The surface, the anchor and the CTA come from `Card.astro`; this component only decides what the
+ * body is, which differs between the index (`teaser`) and the related-work row on a service page
+ * (`full`).
  */
+import Card from './Card.astro';
+
 interface Props {
   title: string;
   summary: string;
@@ -19,6 +25,8 @@ interface Props {
   href: string;
   /** Visible affordance; the title link carries the accessible name. */
   ctaLabel: string;
+  /** Pillar tag, shown above the title. */
+  tag?: string;
   /**
    * `full` renders the three-part `<dl>`; `teaser` renders only the outcome line. The home page is
    * an index, so it uses `teaser` and the reader opens the page for the challenge and the approach.
@@ -37,32 +45,14 @@ const {
   outcome,
   href,
   ctaLabel,
+  tag,
   variant = 'full',
 } = Astro.props;
 ---
 
-{/* `relative` + the anchor's `after:inset-0` make the whole card clickable from one focus stop. */}
-<article class="relative border-t border-border py-10">
-  <h3
-    class:list={[
-      'text-xl font-semibold tracking-tight',
-      variant === 'teaser' && 'line-clamp-2',
-    ]}
-  >
-    <a href={href} class="hover:text-accent after:absolute after:inset-0">
-      {title}
-    </a>
-  </h3>
-  <p
-    class:list={[
-      'mt-2 max-w-2xl text-muted',
-      variant === 'teaser' && 'line-clamp-2',
-    ]}
-  >
-    {summary}
-  </p>
+<Card title={title} href={href} tag={tag} summary={summary} ctaLabel={ctaLabel}>
   {variant === 'full' ? (
-    <dl class="mt-6 grid gap-6 lg:grid-cols-3">
+    <dl class="grid gap-6 lg:grid-cols-3">
       <div>
         <dt class="text-sm font-medium text-accent">{problemLabel}</dt>
         <dd class="mt-1 max-w-[var(--measure)] text-muted">{problem}</dd>
@@ -77,12 +67,9 @@ const {
       </div>
     </dl>
   ) : (
-    <div class="mt-4">
+    <div>
       <p class="text-sm font-medium text-accent">{outcomeLabel}</p>
-      <p class="mt-1 max-w-[var(--measure)] text-muted line-clamp-2">
-        {outcome}
-      </p>
+      <p class="mt-1 line-clamp-2 text-muted">{outcome}</p>
     </div>
   )}
-  <p class="mt-6 text-sm font-medium text-accent">{ctaLabel}</p>
-</article>
+</Card>

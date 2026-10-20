@@ -9,7 +9,7 @@
 interface Props {
   href?: string;
   type?: 'button' | 'submit';
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'inverse';
   size?: 'md' | 'sm';
   class?: string;
 }
@@ -30,6 +30,8 @@ const variants = {
   primary: 'bg-accent text-bg hover:opacity-90 active:opacity-80',
   secondary:
     'border border-control-border text-fg hover:text-accent active:bg-surface',
+  // For use on the accent band, where the fill and the text roles invert.
+  inverse: 'bg-bg text-accent hover:opacity-90 active:opacity-80',
 };
 
 const sizes = {

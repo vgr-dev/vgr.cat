@@ -1,0 +1,49 @@
+---
+/**
+ * Full-bleed call to action between the work index and the contact form.
+ *
+ * The palette is deliberately the pairing `Button`'s primary variant already uses —
+ * `--color-accent` as the surface, `--color-bg` as the text — so the band introduces no colour that
+ * has not already passed the axe contrast rule on every page. Phase 4 measures it explicitly
+ * (Task 4.3) before the palette is extended.
+ */
+import Button from './Button.astro';
+
+interface Props {
+  title: string;
+  body: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+}
+
+const {
+  title,
+  body,
+  primaryLabel,
+  primaryHref,
+  secondaryLabel,
+  secondaryHref,
+} = Astro.props;
+---
+
+<section class="bg-accent text-bg">
+  <div class="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+    <h2 class="max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
+      {title}
+    </h2>
+    <p class="mt-3 max-w-2xl">{body}</p>
+    <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <Button href={primaryHref} variant="inverse">
+        {primaryLabel}
+      </Button>
+      <a
+        href={secondaryHref}
+        class="py-2 text-sm font-medium underline underline-offset-4 hover:no-underline"
+      >
+        {secondaryLabel}
+      </a>
+    </div>
+  </div>
+</section>

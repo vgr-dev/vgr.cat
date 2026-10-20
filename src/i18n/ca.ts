@@ -131,6 +131,10 @@ export const ca: Dictionary = {
       'PHP · Python · TypeScript · Go',
       'Vue · React · Next.js · Tailwind',
     ],
+    // Home-page teaser; the full history lives on `/about/`.
+    teaser:
+      'Enginyer de programari principal i consultor a Sant Cugat del Vallès. Dotze anys construint i operant les plataformes que hi ha darrere de l’eficiència energètica europea: motors de compliment, observabilitat de mercat i flotes IoT a escala nacional.',
+    readMore: 'Llegeix la trajectòria completa',
     credentials:
       'Diploma en direcció de projectes TI (PMBOK v6) i membre de PMI; coautor d’un manual universitari sobre lliurament àgil i predictiu (2021).',
   },
@@ -247,6 +251,13 @@ export const ca: Dictionary = {
         body: 'Podeu demanar què tinc sobre vós, demanar una correcció o demanar-ne la supressió. Escriviu a contact@vgr.cat i ho faré.',
       },
     ],
+  },
+  ctaBand: {
+    title:
+      'Tens una plataforma, un registre o una flota que necessita enginyeria?',
+    body: 'Dotze anys d’entrega end-to-end en programari europeu d’eficiència energètica: des de motors de compliment EPREL fins a flotes IoT a escala nacional.',
+    primary: 'Concertar una trucada tècnica de 30 min',
+    secondary: 'Veure els casos pràctics',
   },
   footer: {
     tagline:

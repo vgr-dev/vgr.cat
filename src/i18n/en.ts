@@ -138,6 +138,10 @@ export const en = {
       'PHP · Python · TypeScript · Go',
       'Vue · React · Next.js · Tailwind',
     ],
+    // Home-page teaser; the full history lives on `/about/`.
+    teaser:
+      'Principal software engineer and consultant in Sant Cugat del Vallès. Twelve years building and operating the platforms behind European energy efficiency: compliance engines, market observability and nationwide IoT fleets.',
+    readMore: 'Read the full background',
     credentials:
       'IT project management diploma (PMBOK v6) and PMI member; co-author of a university textbook on agile and predictive delivery (2021).',
   },
@@ -257,6 +261,12 @@ export const en = {
         body: 'You can ask what I hold about you, ask for a correction, or ask for it to be deleted. Write to contact@vgr.cat and I will act on it.',
       },
     ],
+  },
+  ctaBand: {
+    title: 'Have a platform, a registry or a fleet that needs engineering?',
+    body: 'Twelve years of end-to-end delivery for European energy-efficiency software — from EPREL compliance engines to nationwide IoT fleets.',
+    primary: 'Book a 30-min technical call',
+    secondary: 'See the case studies',
   },
   footer: {
     tagline:

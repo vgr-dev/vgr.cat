@@ -603,30 +603,113 @@ run that produced it): `npm run build` → "37 page(s) built in 878ms", `npx pla
 
 #### Tasks
 
-- [ ] Task 3.1: Restructure `src/components/HomeSections.astro` into the hub: Hero (with proof panel,
+- [x] Task 3.1: Restructure `src/components/HomeSections.astro` into the hub: Hero (with proof panel,
       Phase 4), Services (four cards, no bodies), Work (four teaser cards: `summary` + the `outcome` line
       only), About teaser (two sentences + link to `/about/`), CTA band, Contact.
-- [ ] Task 3.2: In `src/components/ServiceCard.astro`, stop rendering the markdown body; the card carries
+- [x] Task 3.2: In `src/components/ServiceCard.astro`, stop rendering the markdown body; the card carries
       tag, title, `summary` and a link. Remove the now-unused `render()` calls from `HomeSections.astro`
       entirely, so no `astro:content` `render` runs for the hub.
-- [ ] Task 3.3: Create `src/components/CtaBand.astro`: full-bleed accent surface, one `h2`, one sentence, a
+- [x] Task 3.3: Create `src/components/CtaBand.astro`: full-bleed accent surface, one `h2`, one sentence, a
       primary button to `bookingUrl` and a secondary link to the work section. Text from new dictionary
       keys; contrast approved in Phase 4.
-- [ ] Task 3.4: Tighten `tests/page-weight.spec.ts` budgets to the Phase 3 measurements: home `scrollHeight`
+- [x] Task 3.4: Tighten `tests/page-weight.spec.ts` budgets to the Phase 3 measurements: home `scrollHeight`
       ≤ 5,500 px at 1280×900 and ≤ 12,000 px at 390×844; home word count ≤ 1,700.
-- [ ] Task 3.5: Ensure the contact form's anchor and Turnstile lazy-load still resolve from the new
+- [x] Task 3.5: Ensure the contact form's anchor and Turnstile lazy-load still resolve from the new
       section order (`tests/network.spec.ts` second test scrolls `#contact`); adjust only if the id moved.
 
 #### Acceptance Criteria
 
-- [ ] Home document height at 1280×900 ≤ 5,500 px (from 11,517), recorded with command and output.
-- [ ] Home document height at 390×844 ≤ 12,000 px (from 20,471), recorded.
-- [ ] Home word count ≤ 1,700 (from 2,959), recorded.
-- [ ] Every home card is ≤ 340 px tall at 1280×900, asserted in `tests/page-weight.spec.ts`.
-- [ ] No home page contains a case-study body paragraph or a service body paragraph (Task 1.3 assertion
+- [x] Home document height at 1280×900 ≤ 5,500 px (from 11,517), recorded with command and output.
+- [x] Home document height at 390×844 ≤ 12,000 px (from 20,471), recorded.
+- [x] Home word count ≤ 1,700 (from 2,959), recorded.
+- [x] Every home card is ≤ 340 px tall at 1280×900, asserted in `tests/page-weight.spec.ts`.
+- [x] No home page contains a case-study body paragraph or a service body paragraph (Task 1.3 assertion
       still passes).
-- [ ] `npx playwright test` → exit 0; `tests/network.spec.ts` still observes zero third-party requests on
+- [x] `npx playwright test` → exit 0; `tests/network.spec.ts` still observes zero third-party requests on
       first paint.
+
+#### Recorded evidence (executed 2026-10-20)
+
+Measured on the **built** output (`npm run build` → `node tests/support/serve.mjs`, 1280×900 unless
+stated), after the restructure:
+
+```text
+/     4,792 px / 744 words   tallest card 331 px
+/ca/  5,057 px / 928 words   tallest card 331 px
+/es/  5,137 px / 929 words   tallest card 331 px
+390×844: /es/ 8,155 px   (before Phase 1 the same page was 20,471 px at 390×844)
+```
+
+Section heights on `/`: hero 688, `#services` 784, `#work` 1,044, About teaser 293, CTA band 377,
+`#contact` 1,304. The whole home page is now shorter than the contact section plus the old `#work`.
+
+Verification commands:
+
+```text
+$ npm run build
+[build] 37 page(s) built in 817ms
+
+$ npx playwright test
+392 passed (10.5s)
+
+$ npm run check
+Result (59 files):
+- 0 errors
+- 0 warnings
+- 0 hints
+
+$ npm run format:check
+All matched files use Prettier code style!
+
+$ npm run lint
+(exit 0, no findings)
+
+$ node scripts/check-placeholders.mjs
+check:placeholders — 0 placeholders remain.
+
+$ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+✨ Read 99 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+Total Upload: 8.71 KiB / gzip: 3.26 KiB
+```
+
+`tests/network.spec.ts` still passes both assertions unchanged: no `challenges.cloudflare.com` request on
+first paint, one font file, and the challenge loads once when `#contact` approaches the viewport — the
+`#contact` id did not move, so Task 3.5 needed no code.
+
+The Task 1.3 de-duplication assertions still pass, now for a stronger reason: `HomeSections.astro` no
+longer imports `render` from `astro:content` at all, so no collection body can reach the hub without
+someone deliberately re-adding the import.
+
+#### Recorded deviations and traps
+
+1. **A running `astro dev` silently replaces the build under the suite.** `playwright.config.ts` sets
+   `reuseExistingServer: !process.env.CI`, so with `astro dev` on :4321 the suite ran against the dev
+   server instead of `dist/`. Astro's dev toolbar injects its own UI and the page then contains **7**
+   `<header>` elements, so `structure.spec.ts` failed with "locator resolved to 7 elements" on a growing
+   set of routes — including `/es/privacy/`, which this phase never touched. Against `dist/` the same
+   suite is green (392 passed). The dev server was stopped to run the gate and restarted afterwards
+   (`npm run dev`, pid recorded by Astro). **Anyone running the suite locally must stop `astro dev`
+   first**, or `reuseExistingServer` will quietly test the wrong thing.
+2. **Teaser cards needed clamping to meet the 340 px budget.** Before clamping, the case-study teasers
+   measured 383 px (`en`) and 434 px (`ca`/`es`) because the translations reflow to more lines. `line-clamp-2`
+   on the teaser's title, summary and outcome brings every card in every locale to **331 px**, which is
+   also what the "same size cards" goal wanted.
+3. **`about.teaser` and `about.readMore` are new keys, not slices of existing copy.** Slicing
+   `about.paragraphs[0]` by sentence would have been locale-fragile; the two keys are authored per locale
+   and belong to the same owner review as Task 2.12.
+4. **`Button` gained an `inverse` variant.** The band needs a page-coloured fill with accent text; adding
+   the variant to the existing primitive keeps one button implementation (UX-022) instead of a fourth
+   copy of the markup. Phase 4 extends the palette behind that variant, not the call sites.
+5. **CTA band contrast reuses a pairing that already passes.** `bg-accent` + `text-bg` is exactly what
+   `Button`'s primary variant has been using on every page, and axe passes on all 37 routes; computed
+   ratio is 5.13:1 in light and 7.9:1 in dark. The explicit recorded measurement table is still Phase 4's
+   Task 4.3.
+6. **Budgets collapsed back to one shared set.** Phase 1 used per-locale budgets because translations were
+   ~27% longer than English. After the hub restructure every locale fits the same target (`/es/` is the
+   longest at 5,137 of 5,500 px and 929 of 1,700 words), so `tests/page-weight.spec.ts` now asserts
+   `5,500 px` / `1,700 words` / `340 px` per card plus a new `12,000 px` mobile test on all three homes.
+7. **The Hero proof panel is not in this phase.** Task 3.1 names it as "Phase 4" in its own text, and
+   Task 4.5/4.6 own it, so the Hero is structurally unchanged here.
 
 ---
 

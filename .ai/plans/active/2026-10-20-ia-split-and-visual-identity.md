@@ -917,28 +917,95 @@ from a clean tree.
 
 #### Tasks
 
-- [ ] Task 5.1: Update `AGENTS.md`: page count ("7 pages" → the measured number), `astro check` file count
+- [x] Task 5.1: Update `AGENTS.md`: page count ("7 pages" → the measured number), `astro check` file count
       ("30 files"), dry-run file count ("Read 32 files"), and the `src/` inventory paragraph, which lists
       the pages that no longer exist in that shape.
-- [ ] Task 5.2: Correct `.github/instructions/astro-src.instructions.md`, whose opening line ("The whole site
+- [x] Task 5.2: Correct `.github/instructions/astro-src.instructions.md`, whose opening line ("The whole site
       is 4 files") has been false for several commits. State the current structure and keep the CSP section
       unchanged.
-- [ ] Task 5.3: Decide and record the status of the predecessor plan: this plan applies its UX-007 (D-5),
+- [x] Task 5.3: Decide and record the status of the predecessor plan: this plan applies its UX-007 (D-5),
       UX-019 and UX-027-adjacent work. Do **not** rewrite its recorded text; either archive it with an
       `## Archive Metadata` footer noting this plan as its successor, or leave it in `active/` with a dated
       note. Owner decides; record the choice here.
-- [ ] Task 5.4: Run the full gate from a clean tree and paste the **exact** output of each command into this
+- [x] Task 5.4: Run the full gate from a clean tree and paste the **exact** output of each command into this
       plan: `npm ci`, `npm run format:check`, `npm run lint`, `npm run check`, `npm run build`,
       `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run`, `npx playwright test`.
-- [ ] Task 5.5: Propose the commit message (`feat(ui): split the site into index and detail pages` plus a
+- [x] Task 5.5: Propose the commit message (`feat(ui): split the site into index and detail pages` plus a
       body explaining the de-duplication decision) and **stop**. Do not commit or push.
 
 #### Acceptance Criteria
 
-- [ ] All seven gate commands exit 0.
-- [ ] No `TODO(copy)` or `REPLACE_ME` anywhere under `src/` (`node scripts/check-placeholders.mjs`).
-- [ ] `npm audit` reports 0 vulnerabilities, as before the change.
-- [ ] The plan's "Deviations" section records anything skipped or measured differently, with the reason.
+- [x] All seven gate commands exit 0.
+- [x] No `TODO(copy)` or `REPLACE_ME` anywhere under `src/` (`node scripts/check-placeholders.mjs`).
+- [x] `npm audit` reports 0 vulnerabilities, as before the change.
+- [x] The plan's "Deviations" section records anything skipped or measured differently, with the reason.
+
+#### Recorded evidence (executed 2026-10-20, from the tree at `a6375cf` + this phase's doc edits)
+
+```text
+$ npm ci
+found 0 vulnerabilities
+
+$ npm run format:check
+All matched files use Prettier code style!
+
+$ npm run lint
+(exit 0, no findings)
+
+$ npm run check
+Result (62 files):
+- 0 errors
+- 0 warnings
+- 0 hints
+
+$ npm run build
+[build] 37 page(s) built in 810ms
+
+$ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run
+✨ Read 102 files from the assets directory /home/vagonzal/repos/vgr.cat/dist
+Total Upload: 8.71 KiB / gzip: 3.26 KiB
+
+$ npx playwright test
+398 passed (10.8s)
+
+$ node scripts/check-placeholders.mjs
+check:placeholders — 0 placeholders remain.
+```
+
+Change set for this phase (`git status --porcelain`):
+
+```text
+D  .ai/plans/active/2026-10-19-ui-ux-improvement.md
+ M .github/instructions/astro-config.instructions.md
+ M .github/instructions/astro-src.instructions.md
+ M .github/instructions/cloudflare-config.instructions.md
+ M AGENTS.md
+```
+
+`git diff --stat HEAD -- astro.config.mjs wrangler.jsonc public src/worker src/content.config.ts` → empty.
+
+#### Recorded deviations
+
+1. **Two instruction files beyond Task 5.2 were corrected, because this session falsified them.**
+   `astro-config.instructions.md` ("`global.css` minifies below Astro's inline threshold… leaves `dist/_astro/`
+   empty") and `cloudflare-config.instructions.md` ("`dist/_astro/` is empty by design… the `immutable` rule
+   is dormant") both stopped being true when the stylesheet crossed 4 KB during Phase 4. Leaving them would
+   have re-created exactly the drift this phase exists to remove, so both now describe the external
+   `PageShell.<hash>.css` and the now-live `immutable` rule.
+2. **Task 5.3: the owner had already archived the predecessor plan, and no `## Archive Metadata` footer was
+   added.** `2026-10-19-ui-ux-improvement.md` was moved to `archive/` before this phase ran; the stray
+   byte-identical duplicate that reappeared in `active/` is staged for deletion here. The footer was not
+   added because the archiving procedure's footer asserts `Sign-off: Manual Review Passed` and a verified
+   commit, and that plan's checkboxes are unticked with findings still open (UX-007 is resolved only in the
+   render sense — §4.0). Writing that footer would have recorded a review that did not happen. Its
+   remaining scope is superseded by this plan.
+3. **§6 contact-form happy path is still unverified.** As predicted in §6 and §7, Cloudflare's test secret
+   omits `action`, so Siteverify rejects every test-key submission. Only the rejection paths are locally
+   exercisable; the happy path was verified on production in an earlier session (recorded in repo memory),
+   not here.
+4. **320 px and 640 px are test-verified; 1280 px and both themes are visual.** The 320 px no-scroll and
+   640 px 280-px-column rules run on every route in `layout.spec.ts`; the 1280 px layout and the light/dark
+   palettes were checked by screenshot during Phase 4 rather than re-measured here.
 
 ---
 
@@ -948,18 +1015,27 @@ from a clean tree.
       test keys and reach `/contact/thanks/` — remembering that **the happy path cannot be verified with
       test keys** (Siteverify requires `action === 'contact'`, which Cloudflare's test secret omits). Record
       that limitation rather than claiming success.
-- [ ] Locale round-trip: from `/services/regtech/`, switch to `ca` and land on `/ca/services/regtech/`, not
+      **Deferred — see deviation 3.** Everything up to the submit is reachable and tested; the delivery path
+      is not exercisable without a real secret.
+- [x] Locale round-trip: from `/services/regtech/`, switch to `ca` and land on `/ca/services/regtech/`, not
       on the `ca` home page (the current language picker keeps position via `stripLocale`; verify it still
       does for nested routes).
-- [ ] Keyboard: skip link still the first tab stop on every template; card links produce exactly one focus
+      Verified: the picker's `[data-language-link]` hrefs on `/services/regtech/` are `/services/regtech/`,
+      `/ca/services/regtech/`, `/es/services/regtech/`.
+- [x] Keyboard: skip link still the first tab stop on every template; card links produce exactly one focus
       stop each; the CTA band's buttons are reachable and visible on focus.
-- [ ] 320 px, 640 px and 1280 px checked on one route per template in both themes, with the measured
+      Verified: first Tab lands on `#main-content` ("Skip to main content"); each `main article` contains
+      exactly one `a`/`button`; `structure.spec.ts` asserts the skip link on all 37 routes.
+- [x] 320 px, 640 px and 1280 px checked on one route per template in both themes, with the measured
       numbers recorded.
-- [ ] `astro check`, `eslint`, `prettier --check`, the Playwright suite and the wrangler dry-run all pass
+      Verified with the caveat in deviation 4: 320 px and 640 px are asserted by `layout.spec.ts` on every
+      route (320 px `scrollWidth === clientWidth === 305` on `/`, `/about/`, `/services/regtech/`,
+      `/work/topten-ecosystem/`); 1280 px and both palettes were checked by screenshot in Phase 4.
+- [x] `astro check`, `eslint`, `prettier --check`, the Playwright suite and the wrangler dry-run all pass
       cleanly (no suppressions added anywhere).
-- [ ] `git status --porcelain` contains no file outside §3, and no `.dev.vars`, `.env`, `dist/` or
+- [x] `git status --porcelain` contains no file outside §3, and no `.dev.vars`, `.env`, `dist/` or
       `node_modules` entry.
-- [ ] `git diff --stat` reviewed for accidental changes to `astro.config.mjs`, `wrangler.jsonc`,
+- [x] `git diff --stat` reviewed for accidental changes to `astro.config.mjs`, `wrangler.jsonc`,
       `public/**`, `src/worker/**` and `src/content.config.ts` — all must be empty.
 
 ---
@@ -1012,3 +1088,32 @@ Four commits, one per phase, each independently green:
 4. `feat(ui): add display typography, banded sections and card motion`
 
 The owner authorises each commit; the agent proposes messages and stops.
+
+### What actually landed (recorded 2026-10-20)
+
+The owner committed as they went, so the history is four commits rather than the four above:
+
+```text
+a6375cf feat(theme): add light/dark toggle with persisted preference
+dfba2ba feat(ui): add display face, band palette and card primitive
+b1eef79 feat(home): rebuild hub with teaser cards and cta band
+3440cf4 feat: add detail routes for services, case studies and about
+```
+
+Proposed message for the remaining change (this phase + the staged plan-file deletion):
+
+```text
+docs: sync page and file counts after the index/detail split
+
+The site emits 37 prerendered pages now, not 7, and the stylesheet has
+outgrown Astro's inline threshold, so `dist/_astro/` carries
+`PageShell.<hash>.css` and the `/_astro/*` immutable rule is live.
+
+- AGENTS.md: gate comments (62 files / 37 pages / Read 102 files), the
+  `src/` inventory, and the `dist/_astro/` gotcha
+- astro-src: the "4 files" opening line, stale for several commits
+- astro-config, cloudflare-config: both claimed the stylesheet stays inline
+```
+
+Not committed: two files' worth of `ca`/`es` strings from Tasks 2.12 and 4.x are agent-authored
+drafts, and Task 2.12 stays open until the owner reviews them.

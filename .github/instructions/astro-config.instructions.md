@@ -33,9 +33,12 @@ carrying Astro-generated hashes for the inline styles/scripts Astro emits.
 
 ## Do not set `build.inlineStylesheets: 'never'`
 
-`src/styles/global.css` minifies below Astro's inline threshold, so it ships as an inline `<style>` block.
-That leaves `dist/_astro/` empty — which looks wrong but is by design. The `/_astro/*` `immutable` rule in
-`public/_headers` activates automatically once an asset exceeds the threshold.
+`src/styles/global.css` crossed Astro's inline threshold on 2026-10-20: the built pages now link
+`/_astro/PageShell.<hash>.css` (~40 KB) instead of inlining a `<style>` block, so `dist/_astro/` holds the
+stylesheet as well as the font subsets, and `dist/index.html` contains no `<style>` at all. `style-src`
+therefore carries `'self'` (plus an empty-string hash) rather than a content hash. Nothing needs to change
+for that — `'self'` is already in the policy — but do not "fix" it with `inlineStylesheets: 'never'`, and
+do not assume an inline block when you verify hashes.
 
 ## Verifying a CSP change
 

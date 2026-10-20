@@ -34,6 +34,8 @@ npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Rea
 
 ## Gotchas
 
-- `dist/_astro/` is empty by design at this scale, so the `/_astro/*` `immutable` rule is **dormant, not
-  dead**. It activates on its own once an asset exceeds Astro's inline threshold.
+- `dist/_astro/` now holds the stylesheet (`PageShell.<hash>.css`, ~40 KB) and every font subset, so the
+  `/_astro/*` `immutable` rule is **live**, not dormant. It stopped being dormant on 2026-10-20, when
+  `global.css` crossed Astro's inline threshold; the built pages link that file and carry no inline
+  `<style>`.
 - `/_headers` itself correctly returns `404` in production — it is configuration, not a served asset.

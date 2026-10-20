@@ -5,8 +5,11 @@ applyTo: 'src/**'
 
 # Source (`src/`)
 
-The whole site is 4 files: `layouts/BaseLayout.astro`, `pages/index.astro`, `pages/404.astro`, and
-`styles/global.css`.
+The site is an index-plus-detail set of pages: the layout (`layouts/BaseLayout.astro`), the page-shell
+chrome (`components/PageShell.astro`), the detail templates in `components/pages/`, the shared card
+primitive (`components/Card.astro`) and the styles in `styles/global.css`. `pages/` holds 13 route files —
+seven at the root for the default locale and six under `[lang]/` for `ca`/`es` — because the default
+locale has to live at `/` while the others are prefixed.
 
 ## Astro components only
 

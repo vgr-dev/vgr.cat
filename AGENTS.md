@@ -25,9 +25,9 @@ committed `package-lock.json`.
 npm ci                                        # lockfile is authoritative; CI uses --ci
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
 npm run lint                                  # ESLint 9 + eslint-plugin-astro (34 a11y rules)
-npm run check                                 # wrangler types && astro check → expect "30 files, 0 errors, 0 warnings, 0 hints"
-npm run build                                 # astro check && astro build → 7 pages
-npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 32 files", no warnings
+npm run check                                 # wrangler types && astro check → expect "62 files, 0 errors, 0 warnings, 0 hints"
+npm run build                                 # astro check && astro build → 37 pages
+npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 102 files", no warnings
 ```
 
 `npm run check` alone is not enough — `astro build` transpiles with esbuild and performs **no** type
@@ -111,17 +111,19 @@ wrong, raise it with the user rather than silently reverting it.
   `fast-glob → micromatch → braces` chain (`braces` has no patched release for CVE-2026-93687), so
   `npm audit` is expected to report **0 vulnerabilities** — keep it there. Astro's a11y rules still
   appear under the `astro/jsx-a11y/*` namespace, 34 of them at error level, and `eslint .` does lint
-  `.astro` files (19 files, 15 of them `.astro`).
+  `.astro` files (38 files, 33 of them `.astro`).
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
   under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
   `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the
-  component set under `components/`, the build-time constants in `config.ts`, the JSON-LD builder in
-  `lib/schema.ts`, the `worker/` endpoint, the styles under `styles/`, and the pages
-  (`index.astro`, `404.astro`, `[lang]/index.astro`, `contact/thanks.astro`, `[lang]/contact/thanks.astro`).
-  The build emits 7 pages (`index.html`, `404.html`, `ca/`, `es/`, plus the three `contact/thanks`)
-  alongside `robots.txt`, `favicon.*`, `og/og-default.png`, `sitemap-*.xml`, `_headers` and the hashed
-  `_astro/*` bundle. `astro check` reports **30 files**, which is therefore expected; don't go hunting
-  for a missing page.
+  component set under `components/` (`pages/` holds the three detail templates), the build-time
+  constants in `config.ts`, the collection accessors, path helpers and JSON-LD builders in `lib/`,
+  the `worker/` endpoint, the styles under `styles/`, and the pages.
+  The site is an **index + detail** shape: three home pages, three `/about/`, twelve
+  `/services/<translationKey>/`, twelve `/work/<translationKey>/`, three `/privacy/`, three
+  `/contact/thanks/` and one `404.html` — **37 prerendered files**, emitted alongside `robots.txt`,
+  `favicon.*`, `og/og-default.png`, `sitemap-*.xml`, `_headers` and the hashed `_astro/*` bundle.
+  `astro check` reports **62 files** (the modules it checks, not the pages) and the dry-run reads
+  **102 assets** from `dist/`; both numbers are expected, so don't go hunting for a missing page.
 - **The Worker needs `assets.run_worker_first` or browser form POSTs break.** `not_found_handling:
 '404-page'` intercepts _navigation_ requests before the Worker runs, so a real browser POST to
   `/api/contact` returned **405** while the identical `curl` request succeeded — curl does not send
@@ -189,8 +191,8 @@ wrong, raise it with the user rather than silently reverting it.
   `TODO(copy)` or `REPLACE_ME` under `src/`, and `ci.yml` runs it on every push with no escape-hatch
   condition or repository variable left behind — both were retired on 2026-10-19. The guard scans
   source text **including comments**, so prose under `src/` must not spell the sentinel.
-- **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/` being
-  empty by design, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
+- **Most other traps are path-specific** and now live with the files they concern: `dist/_astro/`
+  carrying the stylesheet as well as the fonts, `public/_headers` being inert under `preview`, `npm run dev` emitting no CSP meta tag,
   and the orphan `script-src` hashes. Read the matching scoped instruction file above before touching
   config, headers, or anything under `src/`.
 

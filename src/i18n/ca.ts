@@ -22,6 +22,7 @@ export const ca: Dictionary = {
     primaryNavLabel: 'Navegació principal',
     languageNavLabel: 'Seleccioneu l’idioma',
     skipToContent: 'Salta al contingut principal',
+    themeLabel: 'Mode fosc',
   },
   breadcrumbs: {
     label: 'Ruta de navegació',

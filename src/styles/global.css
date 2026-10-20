@@ -38,20 +38,47 @@
    Non-colour tokens live here too: they are not utility namespaces, so `@theme` would not emit
    them and `var()` references would silently resolve to nothing. */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --measure: 68ch;
   /* Denser on a phone, airier on a wide screen: the hub now has six short sections instead of four
      long ones, so the rhythm between them has to carry the separation the copy no longer does. */
   --space-section: clamp(2.5rem, 6vw, 4rem);
   --duration-fast: 150ms;
+  /* Hover/focus transitions get their own, slower step: 150 ms is right for a state change on a
+     control you are already touching, and feels abrupt on a card you are moving across. */
+  --duration-hover: 220ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   /* Display family for headings and figures. Space Grotesk carries the engineered, slightly quirky
      voice (the `G`, the `a`, the square terminals) while Inter keeps body copy readable at 16 px. */
   --font-display: 'Space Grotesk Variable', var(--font-sans);
+  /* Signature hairline for the top edge of a tinted band: accent → cyan, one adjacent hue step.
+     Decorative only; it never carries text. Dark mode overrides the accent stop below. */
+  --gradient-band-edge: linear-gradient(
+    90deg,
+    transparent,
+    #0b5fff 18%,
+    #22d3ee 82%,
+    transparent
+  );
+  /* Card and button hover ring. 135° runs top-left → bottom-right, so the start colour lands
+     top-left, the end colour bottom-right, and the middle colour runs across the anti-diagonal
+     (top-right and bottom-left). Decorative: no text ever sits on it. */
+  --gradient-ring: linear-gradient(
+    135deg,
+    #0b5fff 0%,
+    #10b981 50%,
+    #7c3aed 100%
+  );
 }
 
+/*
+ * Dark tokens, declared twice on purpose: once for the OS preference (no JS, or no stored choice)
+ * and once for an explicit `data-theme="dark"`. The two blocks must stay in sync — a media query
+ * and an attribute selector cannot be combined in one rule.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
     --color-bg: #101114;
     --color-fg: #f2f3f5;
     --color-muted: #9aa3b0;
@@ -64,12 +91,56 @@
     --color-accent-ink: #9dc0ff;
     /* Measured dark: 7.91:1 on the accent fill. */
     --color-fg-inverse: #101114;
+    --gradient-band-edge: linear-gradient(
+      90deg,
+      transparent,
+      #7aa7ff 18%,
+      #22d3ee 82%,
+      transparent
+    );
+    --gradient-ring: linear-gradient(
+      135deg,
+      #7aa7ff 0%,
+      #34d399 50%,
+      #a78bfa 100%
+    );
     /* Measured dark: border 3.91:1 vs page and 3.67:1 vs its own fill. */
     --color-control-bg: #16181d;
     --color-control-border: #6b7280;
     --color-danger: #ff8f85;
     --color-danger-border: #f97583;
   }
+}
+
+/* Keep in sync with the block above. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #101114;
+  --color-fg: #f2f3f5;
+  --color-muted: #9aa3b0;
+  --color-accent: #7aa7ff;
+  --color-border: #262a31;
+  --color-surface: #16181d;
+  --color-band: #171a20;
+  --color-accent-ink: #9dc0ff;
+  --color-fg-inverse: #101114;
+  --gradient-band-edge: linear-gradient(
+    90deg,
+    transparent,
+    #7aa7ff 18%,
+    #22d3ee 82%,
+    transparent
+  );
+  --gradient-ring: linear-gradient(
+    135deg,
+    #7aa7ff 0%,
+    #34d399 50%,
+    #a78bfa 100%
+  );
+  --color-control-bg: #16181d;
+  --color-control-border: #6b7280;
+  --color-danger: #ff8f85;
+  --color-danger-border: #f97583;
 }
 
 /* Scroll-driven section reveals: CSS only, no observer and no inline script, so there is no new
@@ -126,6 +197,27 @@ body {
   line-height: 1.6;
 }
 
+/* The header is sticky, so a fragment jump would otherwise land underneath it. 5.5rem clears the
+   header row plus its border at every breakpoint. */
+main section[id],
+#main-content {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Theme toggle icons. The `data-theme` attribute is always set by the pre-paint script, so these
+   two rules are all that is needed to show the icon for the *current* theme. */
+[data-theme-icon='sun'] {
+  display: none;
+}
+
+:root[data-theme='light'] [data-theme-icon='moon'] {
+  display: none;
+}
+
+:root[data-theme='light'] [data-theme-icon='sun'] {
+  display: block;
+}
+
 /* One rule for the display layer: family, tightening and balanced wrapping. Sizes stay in the
    markup, where each template knows its own scale. */
 h1,
@@ -140,6 +232,134 @@ h3 {
 .font-display {
   font-family: var(--font-display);
   letter-spacing: -0.025em;
+}
+
+/* Signature hairline on the top edge of a tinted band. Decorative: it carries no text, so it
+   creates no contrast obligation, and it is a pseudo-element, so the markup and the CSP are both
+   untouched (no inline style attribute, no hash). */
+.band-edge {
+  position: relative;
+}
+
+.band-edge::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: var(--gradient-band-edge);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  /* Gradients are dropped in high-contrast mode; a real border keeps the edge from vanishing. */
+  .band-edge {
+    border-top: 1px solid CanvasText;
+  }
+
+  .band-edge::before {
+    background: none;
+  }
+}
+
+/* Gradient ring on cards and buttons, revealed on interaction. The outset and width are
+   parameterised because the two shapes need different answers: a card is large enough that a 1px
+   ring laid over its own border reads clearly, while a button is not — see `.button-ring`. */
+.gradient-ring::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--ring-outset, 1px));
+  border-radius: inherit;
+  padding: var(--ring-width, 1px);
+  background: var(--gradient-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--duration-hover) var(--ease-standard);
+  pointer-events: none;
+}
+
+.gradient-ring:hover::after,
+.gradient-ring:focus-visible::after {
+  opacity: 1;
+}
+
+/*
+ * Where the ring exists it *is* the focus indicator, so the global outline would sit on top of it
+ * (outline-offset 2px lands in the same 1px gap). It is removed here — and restored in
+ * forced-colors mode below, where gradients are dropped and nothing would be left.
+ */
+.gradient-ring:focus-visible {
+  outline: none;
+}
+
+/* A card label is a label: small, uppercase, muted. It is not a heading and not a link.
+   Keeping labels out of the accent colour is what lets accent mean "interactive" inside a card —
+   otherwise "Measurable Impact" and "Read the case study" are typographically identical. */
+.card-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* A 1px ring laid over a button's own border is indistinguishable from the border. Buttons get a
+   2px ring that sits 1px clear of the fill, so the fill and the ring are separated by the page
+   background. */
+.button-ring {
+  --ring-outset: 3px;
+  --ring-width: 2px;
+}
+
+/* Cards also show the ring on keyboard focus: the focusable element is the title link inside the
+   card, not the card itself. Buttons keep the global 2 px outline instead — for a control, an
+   offset outline is a clearer indicator than a 1 px ring. */
+.card-ring:focus-within::after {
+  opacity: 1;
+}
+
+/*
+ * The ring is the card's focus indicator, so the title link's own outline is removed: a 2 px
+ * rectangle hugging wrapped text inside a 1 px ring is noise, and it says "this link" when the
+ * honest answer is "this card". The halo below keeps the indicator unmistakable — a 1 px gradient
+ * alone would be a weaker signal than the outline it replaces, which is what WCAG 2.4.7 asks about.
+ */
+.card-ring a:focus-visible {
+  outline: none;
+}
+
+.card-ring:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+@media (forced-colors: active) {
+  .gradient-ring::after,
+  .card-ring::after {
+    background: none;
+  }
+
+  /* Gradients do not exist here, so the outline has to come back. */
+  .gradient-ring:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .card-ring:hover,
+  .card-ring:focus-within {
+    border-color: CanvasText;
+  }
+
+  /* Both the gradient and the halo are dropped here; the border colour carries the state. */
+  .card-ring:focus-within {
+    box-shadow: none;
+  }
 }
 
 :focus-visible {

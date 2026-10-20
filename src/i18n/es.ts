@@ -22,6 +22,7 @@ export const es: Dictionary = {
     primaryNavLabel: 'Navegación principal',
     languageNavLabel: 'Seleccione el idioma',
     skipToContent: 'Saltar al contenido principal',
+    themeLabel: 'Modo oscuro',
   },
   breadcrumbs: {
     label: 'Ruta de navegación',

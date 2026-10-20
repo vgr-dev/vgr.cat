@@ -54,21 +54,21 @@ const {
   {variant === 'full' ? (
     <dl class="grid gap-6 lg:grid-cols-3">
       <div>
-        <dt class="text-sm font-medium text-accent">{problemLabel}</dt>
+        <dt class="card-label">{problemLabel}</dt>
         <dd class="mt-1 max-w-[var(--measure)] text-muted">{problem}</dd>
       </div>
       <div>
-        <dt class="text-sm font-medium text-accent">{approachLabel}</dt>
+        <dt class="card-label">{approachLabel}</dt>
         <dd class="mt-1 max-w-[var(--measure)] text-muted">{approach}</dd>
       </div>
       <div>
-        <dt class="text-sm font-medium text-accent">{outcomeLabel}</dt>
+        <dt class="card-label">{outcomeLabel}</dt>
         <dd class="mt-1 max-w-[var(--measure)] text-muted">{outcome}</dd>
       </div>
     </dl>
   ) : (
     <div>
-      <p class="text-sm font-medium text-accent">{outcomeLabel}</p>
+      <p class="card-label">{outcomeLabel}</p>
       <p class="mt-1 line-clamp-2 text-muted">{outcome}</p>
     </div>
   )}

@@ -31,6 +31,7 @@ export const en = {
     primaryNavLabel: 'Primary navigation',
     languageNavLabel: 'Select language',
     skipToContent: 'Skip to main content',
+    themeLabel: 'Dark mode',
   },
   breadcrumbs: {
     label: 'Breadcrumb',

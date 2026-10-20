@@ -79,6 +79,28 @@ const jsonLd = jsonLdOverride ?? buildJsonLd({ locale: lang, t });
     <script is:inline>
       document.documentElement.classList.add('js');
     </script>
+    {/*
+      Resolves the theme before the first paint, so the page never flashes the other one. The
+      attribute is always set: a stored choice wins, otherwise the OS preference does. Without
+      scripting the attribute is absent and the stylesheet's `prefers-color-scheme` block takes
+      over. Astro hashes this inline script for `script-src`, so it needs no CSP entry of its own.
+    */}
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem('theme');
+        } catch {
+          // Storage can be unavailable (private mode, blocked cookies): the OS preference stands in.
+        }
+        document.documentElement.dataset.theme =
+          stored === 'light' || stored === 'dark'
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+      })();
+    </script>
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />

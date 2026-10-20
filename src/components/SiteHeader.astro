@@ -30,6 +30,8 @@ interface Props {
   menuLabel: string;
   primaryNavLabel: string;
   languageNavLabel: string;
+  /** Accessible name for the light/dark toggle, rendered as a `sr-only` label. */
+  themeLabel: string;
   bookCallLabel?: string;
   bookCallHref?: string;
 }
@@ -42,6 +44,7 @@ const {
   menuLabel,
   primaryNavLabel,
   languageNavLabel,
+  themeLabel,
   bookCallLabel,
   bookCallHref,
 } = Astro.props;
@@ -56,7 +59,7 @@ const isCurrent = (item: NavItem): boolean =>
   (item.prefixes ?? []).some((prefix) => logicalPath.startsWith(prefix));
 ---
 
-<header class="border-b border-border">
+<header class="sticky top-0 z-40 border-b border-border bg-bg/95 backdrop-blur-sm">
   <Container class="flex flex-wrap items-center justify-between gap-4 py-4">
     <a href={homeHref} class="font-semibold tracking-tight">
       {brand}
@@ -110,6 +113,49 @@ const isCurrent = (item: NavItem): boolean =>
           ))}
         </ul>
       </nav>
+      {/*
+        `requires-js` hides the toggle when scripting is off: without JS it could not change the
+        theme, and a dead control is worse than no control (same convention as the contact form).
+      */}
+      <button
+        type="button"
+        data-theme-toggle
+        aria-pressed="false"
+        class="requires-js inline-flex size-11 items-center justify-center rounded border border-control-border text-fg hover:text-accent sm:size-9"
+      >
+        <span class="sr-only">{themeLabel}</span>
+        <svg
+          data-theme-icon="moon"
+          width="18"
+          height="18"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          aria-hidden="true"
+        >
+          <path
+            d="M16 12.5A6.5 6.5 0 0 1 7.5 4a7 7 0 1 0 8.5 8.5Z"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        <svg
+          data-theme-icon="sun"
+          width="18"
+          height="18"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          aria-hidden="true"
+        >
+          <circle cx="10" cy="10" r="3.75"></circle>
+          <path
+            d="M10 1.75v1.5M10 16.75v1.5M1.75 10h1.5M16.75 10h1.5M4.4 4.4l1.05 1.05M14.55 14.55l1.05 1.05M15.6 4.4l-1.05 1.05M5.45 14.55l-1.05 1.05"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
       <LanguagePicker current={lang} label={languageNavLabel} />
       {bookCallLabel && bookCallHref && (
         <Button href={bookCallHref} size="sm">
@@ -192,5 +238,57 @@ const isCurrent = (item: NavItem): boolean =>
       { rootMargin: '-45% 0px -45% 0px' },
     );
     for (const target of targets) observer.observe(target);
+  }
+
+  /**
+   * Light/dark toggle. The starting state is read from the DOM rather than from storage, so it
+   * always agrees with what the pre-paint script in `BaseLayout` decided; with nothing stored the
+   * resolved theme is the OS one, and `aria-pressed` reports the theme rather than the choice.
+   */
+  const themeToggle = document.querySelector<HTMLButtonElement>(
+    '[data-theme-toggle]',
+  );
+
+  if (themeToggle) {
+    const root = document.documentElement;
+    const system = window.matchMedia('(prefers-color-scheme: dark)');
+
+    let hasChoice = false;
+    try {
+      hasChoice = localStorage.getItem('theme') !== null;
+    } catch {
+      // Without storage every load starts from the OS preference.
+    }
+
+    const resolvedTheme = (): 'light' | 'dark' =>
+      root.dataset.theme === 'light' ? 'light' : 'dark';
+
+    const syncTheme = (): void => {
+      themeToggle.setAttribute(
+        'aria-pressed',
+        String(resolvedTheme() === 'dark'),
+      );
+    };
+
+    themeToggle.addEventListener('click', () => {
+      const next = resolvedTheme() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      hasChoice = true;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {
+        // Not persisting is better than a button that does nothing.
+      }
+      syncTheme();
+    });
+
+    // Keep following the OS until the reader has made an explicit choice.
+    system.addEventListener('change', () => {
+      if (hasChoice) return;
+      root.dataset.theme = system.matches ? 'dark' : 'light';
+      syncTheme();
+    });
+
+    syncTheme();
   }
 </script>

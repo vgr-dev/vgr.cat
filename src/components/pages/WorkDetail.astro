@@ -1,0 +1,79 @@
+---
+/**
+ * `/work/<translationKey>/` — the case-study narrative.
+ *
+ * Deliberately has no `<dl>`: the card on the home page already carries the three-part summary, and
+ * this page carries the long form. That split is what removed the duplication (UX-007, plan §4.0),
+ * so no statement is ever rendered twice on the same screen.
+ */
+import { render } from 'astro:content';
+import Container from '../Container.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Button from '../Button.astro';
+import { useTranslations } from '../../i18n';
+import { localizedPath, type Locale } from '../../i18n/config';
+import { bookingUrl } from '../../config';
+import { caseStudyPath } from '../../lib/paths';
+import { getCaseStudies, type CaseStudyEntry } from '../../lib/content';
+
+interface Props {
+  lang: Locale;
+  entry: CaseStudyEntry;
+}
+
+const { lang, entry } = Astro.props;
+const t = useTranslations(lang);
+const { Content } = await render(entry);
+
+const studies = await getCaseStudies(lang);
+const index = studies.findIndex(
+  (study) => study.data.translationKey === entry.data.translationKey,
+);
+// Wraps: the last study points at the first, so the sequence never dead-ends.
+const next = index === -1 ? undefined : studies[(index + 1) % studies.length];
+
+const home = localizedPath(lang, '/');
+const backHref = `${home}#work`;
+---
+
+<Container as="section" class="py-16">
+  <Breadcrumbs
+    label={t.breadcrumbs.label}
+    items={[
+      { label: t.breadcrumbs.home, href: home },
+      { label: t.nav.caseStudies, href: backHref },
+      { label: entry.data.title },
+    ]}
+  />
+
+  <p class="mt-8 text-sm font-medium text-accent">
+    {t.services.pillars[entry.data.pillar].tag}
+  </p>
+  <h1 class="mt-2 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+    {entry.data.title}
+  </h1>
+  <p class="mt-4 max-w-2xl text-lg text-muted">{entry.data.summary}</p>
+
+  <div class="prose prose-sm mt-10 max-w-[var(--measure)] text-muted dark:prose-invert">
+    <Content />
+  </div>
+
+  <div class="mt-12 flex flex-wrap items-center gap-4 border-t border-border pt-8">
+    <Button href={bookingUrl}>{t.contact.directContact.calendarButton}</Button>
+    <a href={backHref} class="py-2 text-sm font-medium hover:text-accent">
+      {t.caseStudies.backToWork}
+    </a>
+  </div>
+
+  {next && (
+    <nav aria-label={t.caseStudies.nextCase} class="mt-10">
+      <p class="text-sm font-medium text-muted">{t.caseStudies.nextCase}</p>
+      <a
+        href={localizedPath(lang, caseStudyPath(next.data.translationKey))}
+        class="mt-1 inline-block font-medium hover:text-accent"
+      >
+        {next.data.title}
+      </a>
+    </nav>
+  )}
+</Container>

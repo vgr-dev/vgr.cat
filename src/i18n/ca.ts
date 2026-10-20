@@ -23,6 +23,10 @@ export const ca: Dictionary = {
     languageNavLabel: 'Seleccioneu l’idioma',
     skipToContent: 'Salta al contingut principal',
   },
+  breadcrumbs: {
+    label: 'Ruta de navegació',
+    home: 'Inici',
+  },
   hero: {
     badge:
       'Disponible per a enginyeria de programari i assessorament a Europa i Catalunya',
@@ -61,6 +65,11 @@ export const ca: Dictionary = {
       infrastructure: { tag: 'Núvol i sistemes' },
       iot: { tag: 'IoT i dades de camp' },
     },
+    // Detail-page copy for `/services/<pillar>/`.
+    readService: 'Descobreix aquest servei',
+    relatedWork: 'Treballs seleccionats en aquest àmbit',
+    noRelatedWork:
+      'Encara no hi ha cap cas pràctic publicat en aquest àmbit. El pròxim es llistarà aquí.',
   },
   caseStudies: {
     eyebrow: 'Projectes executats',
@@ -72,6 +81,10 @@ export const ca: Dictionary = {
       approach: 'L’arquitectura',
       outcome: 'Impacte mesurable',
     },
+    // Card affordance and `/work/<translationKey>/` navigation.
+    readCase: 'Llegeix el cas pràctic',
+    backToWork: 'Tots els casos pràctics',
+    nextCase: 'Cas pràctic següent',
   },
   about: {
     eyebrow: 'Trajectòria i experiència',

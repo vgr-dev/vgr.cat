@@ -11,7 +11,7 @@ pillar: iot
 
 Aquest va ser un desplegament físic abans que un projecte de programari. Calia instal·lar i posar en marxa comptadors, gateways i circuits a tota una xarxa nacional de sucursals, seqüenciat de manera que cap sucursal perdés visibilitat del seu propi consum durant el canvi — i el mateix stack va portar després el programa des d’un primer desplegament pilot fins a una flota nacional.
 
-#### El repte
+## El repte
 
 Les decisions energètiques d’un banc nacional es prenien amb dades que arribaven setmanes després dels fets:
 
@@ -20,7 +20,7 @@ Les decisions energètiques d’un banc nacional es prenien amb dades que arriba
 - **Sistemes aïllats:** cada seu era una illa, i res agregava el consum de les sucursals en una visió de flota.
 - **Cap interrupció permesa:** el programa s’havia de desplegar en una xarxa de sucursals en funcionament, on deixar una sucursal fora de servei per instrumentar-la no era una opció.
 
-#### L’arquitectura
+## L’arquitectura
 
 Un sol stack, estès en lloc de substituït, des del primer pilot fins al desplegament nacional:
 
@@ -30,7 +30,7 @@ Un sol stack, estès en lloc de substituït, des del primer pilot fins al desple
 - **Quadres de comandament per a equips no tècnics:** el consum mostrat en termes sobre els quals pot actuar qui gestiona la sucursal, no pas registres en brut.
 - **Control remot:** la mateixa instrumentació que informa d’un circuit el pot accionar, de manera que una seu no necessita una visita per desconnectar-lo.
 
-#### Impacte mesurable
+## Impacte mesurable
 
 - **Abast:** monitoratge i control remot en més de 200 oficines.
 - **De les factures a les dades en viu:** l’anàlisi de factures mensuals substituïda per consum per sucursal disponible a mesura que es mesura.

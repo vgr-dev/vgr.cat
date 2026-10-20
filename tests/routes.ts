@@ -1,26 +1,61 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
 /**
  * Every prerendered route, so a new page cannot be added without the structural and axe assertions
  * noticing it. The 404 is a single file that answers any unknown path, so it is probed through one.
  *
- * `grids` marks the three home pages: they are the only routes with the services, case-study,
- * metric and contact grids that the 280 px rule applies to.
+ * The detail slugs are read from the content collections rather than copied into this file: adding a
+ * case study or a service must not be able to leave a route untested. The locale prefixes are the
+ * three the router emits (`/`, `/ca/`, `/es/`).
+ *
+ * `grids` marks routes that carry prose-bearing grids, which is what the 280 px rule in
+ * `layout.spec.ts` applies to. Case-study detail pages are prose with no grid; service detail pages
+ * carry the related-work card grid and the about page carries the experience `<dl>`.
  */
 export interface RouteSpec {
   path: string;
   grids: boolean;
 }
 
-export const ROUTES: RouteSpec[] = [
-  { path: '/', grids: true },
-  { path: '/ca/', grids: true },
-  { path: '/es/', grids: true },
-  { path: '/privacy/', grids: false },
-  { path: '/ca/privacy/', grids: false },
-  { path: '/es/privacy/', grids: false },
-  { path: '/contact/thanks/', grids: false },
-  { path: '/ca/contact/thanks/', grids: false },
-  { path: '/es/contact/thanks/', grids: false },
-  { path: '/this-page-does-not-exist', grids: false },
-];
+const CONTENT_DIR = join(process.cwd(), 'src/content');
 
-export const HOME_ROUTES = ROUTES.filter((route) => route.grids);
+function slugs(collection: 'caseStudies' | 'services'): string[] {
+  return readdirSync(join(CONTENT_DIR, collection))
+    .filter((name) => name.endsWith('.en.md'))
+    .map((name) => name.slice(0, -'.en.md'.length))
+    .sort();
+}
+
+const PREFIXES = ['', '/ca', '/es'];
+
+function buildRoutes(): RouteSpec[] {
+  const routes: RouteSpec[] = [];
+
+  for (const prefix of PREFIXES) {
+    routes.push({ path: `${prefix}/`, grids: true });
+  }
+
+  for (const prefix of PREFIXES) {
+    routes.push({ path: `${prefix}/privacy/`, grids: false });
+    routes.push({ path: `${prefix}/contact/thanks/`, grids: false });
+    routes.push({ path: `${prefix}/about/`, grids: true });
+    for (const slug of slugs('services')) {
+      routes.push({ path: `${prefix}/services/${slug}/`, grids: true });
+    }
+    for (const slug of slugs('caseStudies')) {
+      routes.push({ path: `${prefix}/work/${slug}/`, grids: false });
+    }
+  }
+
+  routes.push({ path: '/this-page-does-not-exist', grids: false });
+
+  return routes;
+}
+
+export const ROUTES = buildRoutes();
+
+/** The three home pages: the only routes with the services, work, metric and contact grids. */
+export const HOME_ROUTES = ROUTES.filter((route) =>
+  ['/', '/ca/', '/es/'].includes(route.path),
+);

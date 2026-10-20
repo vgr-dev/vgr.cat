@@ -11,7 +11,7 @@ pillar: entity-resolution
 
 Mientras la Unión Europea mantiene bases de datos sólidas para la certificación de productos, la realidad del mercado avanza mucho más rápido. El Registro Europeo de Productos para el Etiquetado Energético (EPREL) contiene declaraciones certificadas de los fabricantes, pero los consumidores compran productos a partir de nombres comerciales, SKU de minoristas y promociones.
 
-#### El reto
+## El reto
 
 Conectar los datos normativos con los datos reales de venta era históricamente casi imposible:
 
@@ -19,7 +19,7 @@ Conectar los datos normativos con los datos reales de venta era históricamente 
 - **Códigos de barras ausentes:** los sitios minoristas y los rastreadores a menudo carecen de códigos GTIN/EAN, lo que impide las uniones simples de bases de datos con las declaraciones oficiales.
 - **Invisibilidad del mercado:** los reguladores y los programas de eficiencia no podían responder fácilmente a preguntas políticas fundamentales: _¿los productos de alta eficiencia certificados en EPREL están realmente en stock en las tiendas? ¿son exactas las etiquetas energéticas que se anuncian?_
 
-#### La arquitectura
+## La arquitectura
 
 Para resolverlo, diseñé y desarrollé **Topten Scout**, una plataforma de observabilidad que mapea y monitoriza continuamente el mercado minorista:
 
@@ -28,7 +28,7 @@ Para resolverlo, diseñé y desarrollé **Topten Scout**, una plataforma de obse
 - **Motor de discrepancias:** comparación de la etiqueta energética declarada y las métricas de consumo almacenadas en EPREL con las especificaciones en directo de los principales portales minoristas, señalando discrepancias automáticamente.
 - **Panel de observabilidad:** gráficos dinámicos que muestran la cuota de mercado de cada clase de eficiencia energética sobre el stock minorista activo, con seguimiento de la evolución de precios y de la retirada de modelos.
 
-#### Impacto medible
+## Impacto medible
 
 - **Puente construido:** se cerró la brecha entre las declaraciones teóricas de cumplimiento de la UE y las estanterías reales de los principales mercados europeos.
 - **Escala:** se automatizó el emparejamiento de miles de productos que antes exigían un contraste manual laborioso de catálogos.

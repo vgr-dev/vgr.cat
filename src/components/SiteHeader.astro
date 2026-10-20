@@ -10,11 +10,15 @@
 import Container from './Container.astro';
 import Button from './Button.astro';
 import LanguagePicker from './LanguagePicker.astro';
-import type { Locale } from '../i18n/config';
+import { stripLocale, type Locale } from '../i18n/config';
 
 interface NavItem {
   href: string;
   label: string;
+  /** Fragment id on the home page; absent for entries that are real pages. */
+  section?: string;
+  /** Logical path prefixes that make this entry current on a detail page. */
+  prefixes?: string[];
 }
 
 interface Props {
@@ -41,6 +45,15 @@ const {
   bookCallLabel,
   bookCallHref,
 } = Astro.props;
+
+/**
+ * `/work/topten-ecosystem/` is not a nav entry, so `aria-current` has to come from the path, not
+ * from an exact href match. The scroll-spy only ever touches links that carry `data-section-link`,
+ * so it cannot clobber this on a detail page (where no target exists).
+ */
+const logicalPath = stripLocale(Astro.url.pathname);
+const isCurrent = (item: NavItem): boolean =>
+  (item.prefixes ?? []).some((prefix) => logicalPath.startsWith(prefix));
 ---
 
 <header class="border-b border-border">
@@ -87,7 +100,8 @@ const {
             <li>
               <a
                 href={item.href}
-                data-section-link={item.href.slice(1)}
+                data-section-link={item.section}
+                aria-current={isCurrent(item) ? 'page' : undefined}
                 class="flex min-h-11 items-center text-sm hover:text-accent aria-[current]:font-semibold aria-[current]:text-accent sm:min-h-6"
               >
                 {item.label}

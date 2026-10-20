@@ -3185,3 +3185,38 @@ The only expected addition to the working tree is this plan file itself:
 $ git status --short
 ?? .ai/plans/active/2026-10-19-ui-ux-improvement.md
 ```
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-20
+- **Verified Commit**: 5cce688
+- **Sign-off**: Manual Review Passed
+
+### Archived with deliberately-deferred criteria
+
+The owner explicitly confirmed archiving with the following four unchecked items on 2026-10-20. Each was
+already recorded in the body as a deliberate deferral with its reason; nothing was deferred silently, and no
+checkbox was ticked for partial work.
+
+1. **Phase 4 acceptance criterion — "no case-study statement is present twice on the page". Not met.**
+   D-5b (the owner's choice) keeps both the `<dl>` summary and the prose, so the duplication remains until
+   D-5 (A) deletes the prose. That deletion is a separate, owner-gated step.
+2. **Phase 6 task 5 — the optional Worker `Accept: text/html` branch. Not implemented, deliberately.**
+   Deviation 5 records why: D-6 already hides the form without JavaScript, so the branch would only affect a
+   half-broken JS environment and would alter Worker responses that archived plans record verbatim.
+3. **Phase 8 task 2 — the screen-reader pass. Not performed.** Requires NVDA/VoiceOver and a human. The
+   accessibility tree was inspected instead, which is not the same thing.
+4. **Phase 8 acceptance criterion — "every state of the form is announced and understandable without
+   sight". Deferred.** Supported by the accessibility tree; confirmable only by listening.
+
+**Consequence to carry forward:** no WCAG 2.2 AA conformance claim may be made for the contact form until
+items 3 and 4 are executed by a human with a screen reader.
+
+### Path note
+
+In-body and recorded-output paths still reading `.ai/plans/active/...` are **deliberate** and have not been
+rewritten: several occur inside recorded command output (including the final `git status --short` above, which
+records the file's location *at the time it was written*). Per
+`.github/instructions/plans.instructions.md`, recorded output is never rewritten to match a later state.

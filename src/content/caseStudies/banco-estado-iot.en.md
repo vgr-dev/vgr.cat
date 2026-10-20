@@ -11,7 +11,7 @@ pillar: iot
 
 This was a physical deployment before it was a software one. Meters, gateways and circuits had to be installed and commissioned across a national branch network, sequenced so that no branch lost visibility of its own consumption during the changeover — and the same stack then carried the programme from a first pilot rollout to a nationwide fleet.
 
-#### The Challenge
+## The Challenge
 
 Energy decisions at a national bank were being taken on data that arrived weeks after the fact:
 
@@ -20,7 +20,7 @@ Energy decisions at a national bank were being taken on data that arrived weeks 
 - **Standalone systems:** each site was its own island, so nothing aggregated branch consumption into a fleet-wide picture.
 - **No interruption allowed:** the programme had to be delivered across a live branch network, where taking a branch offline for instrumentation was not an option.
 
-#### The Architecture
+## The Architecture
 
 One stack, extended rather than replaced, from the first pilot to the national rollout:
 
@@ -30,7 +30,7 @@ One stack, extended rather than replaced, from the first pilot to the national r
 - **Dashboards for non-technical teams:** consumption shown in terms the people who run the branches can act on, rather than raw registers.
 - **Remote control:** the same instrumentation that reports a circuit can actuate it, so a site does not need a visit to switch one off.
 
-#### Measurable Impact
+## Measurable Impact
 
 - **Scope:** remote monitoring and control across 200+ offices.
 - **From bills to live data:** monthly billing analysis replaced by per-branch consumption available as it is measured.

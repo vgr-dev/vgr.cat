@@ -25,12 +25,20 @@ interface Props {
    * three hreflang siblings that do not resolve (live `GET /404/` → 307, `/ca/404/` → 404).
    */
   noindex?: boolean;
+  /**
+   * Per-page structured data. Defaults to the home page's `Person` + `ProfessionalService` graph,
+   * so a page that does not care keeps the previous behaviour and the home page keeps its nodes.
+   */
+  jsonLd?: Record<string, unknown>;
 }
 
 const { lang = defaultLocale, noindex = false } = Astro.props as Props;
 const t = useTranslations(lang);
-const { title = t.site.title, description = t.site.description } =
-  Astro.props as Props;
+const {
+  title = t.site.title,
+  description = t.site.description,
+  jsonLd: jsonLdOverride,
+} = Astro.props as Props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 // 1200x630 brand card. Regeneration command is recorded in the active plan (Phase 5, Task 5.2).
@@ -52,7 +60,8 @@ const ogLocale: Record<Locale, string> = {
   es: 'es_ES',
 };
 
-const jsonLd = buildJsonLd({ locale: lang, t });
+// A detail page supplies its own graph; everything else keeps the home page's Person/Service nodes.
+const jsonLd = jsonLdOverride ?? buildJsonLd({ locale: lang, t });
 ---
 
 <!doctype html>

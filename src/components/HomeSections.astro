@@ -1,5 +1,5 @@
 ---
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
 import Container from './Container.astro';
 import Hero from './Hero.astro';
 import ServiceCard from './ServiceCard.astro';
@@ -9,6 +9,8 @@ import ContactForm from './ContactForm.astro';
 import { useTranslations } from '../i18n';
 import { bookingUrl, contactEmail } from '../config';
 import { localizedPath, type Locale } from '../i18n/config';
+import { getCaseStudies, getServices } from '../lib/content';
+import { caseStudyPath, servicePath } from '../lib/paths';
 
 interface Props {
   lang: Locale;
@@ -17,54 +19,11 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const pillarOrder: CollectionEntry<'services'>['data']['pillar'][] = [
-  'regtech',
-  'entity-resolution',
-  'infrastructure',
-  'iot',
-];
-
-const services = (
-  await getCollection('services', ({ data }) => data.locale === lang)
-).sort(
-  (a, b) =>
-    pillarOrder.indexOf(a.data.pillar) - pillarOrder.indexOf(b.data.pillar),
-);
-
-/**
- * Explicit reading order. The collection loader returns entries alphabetically, which would put
- * `banco-estado-iot` first and desynchronise the list from `caseStudies.subtitle`, which enumerates
- * regulatory → platform → observability → IoT.
- */
-const caseStudyOrder = [
-  'eu-inspection-tooling',
-  'topten-ecosystem',
-  'topten-scout',
-  'banco-estado-iot',
-];
-
-/** Unknown keys sort last, so a future entry cannot jump the queue by accident. */
-const caseStudyRank = (key: string) => {
-  const index = caseStudyOrder.indexOf(key);
-  return index === -1 ? caseStudyOrder.length : index;
-};
-
-const caseStudies = (
-  await getCollection('caseStudies', ({ data }) => data.locale === lang)
-).sort(
-  (a, b) =>
-    caseStudyRank(a.data.translationKey) - caseStudyRank(b.data.translationKey),
-);
+const services = await getServices(lang);
+const caseStudies = await getCaseStudies(lang);
 
 const serviceCards = await Promise.all(
   services.map(async (entry) => ({
-    entry,
-    Content: (await render(entry)).Content,
-  })),
-);
-
-const studyCards = await Promise.all(
-  caseStudies.map(async (entry) => ({
     entry,
     Content: (await render(entry)).Content,
   })),
@@ -92,6 +51,8 @@ const studyCards = await Promise.all(
       <ServiceCard
         title={entry.data.title}
         tag={t.services.pillars[entry.data.pillar].tag}
+        href={localizedPath(lang, servicePath(entry.data.translationKey))}
+        ctaLabel={t.services.readService}
       >
         <p>{entry.data.summary}</p>
         <Content />
@@ -106,7 +67,7 @@ const studyCards = await Promise.all(
     {t.caseStudies.title}
   </h2>
   <p class="mt-4 max-w-2xl text-muted">{t.caseStudies.subtitle}</p>
-  {studyCards.map(({ entry, Content }) => (
+  {caseStudies.map((entry) => (
     <CaseStudy
       title={entry.data.title}
       summary={entry.data.summary}
@@ -116,42 +77,10 @@ const studyCards = await Promise.all(
       problem={entry.data.problem}
       approach={entry.data.approach}
       outcome={entry.data.outcome}
-    >
-      <Content />
-    </CaseStudy>
+      href={localizedPath(lang, caseStudyPath(entry.data.translationKey))}
+      ctaLabel={t.caseStudies.readCase}
+    />
   ))}
-</Container>
-
-<Container as="section" id="about" class="py-[var(--space-section)]">
-  <p class="text-sm font-medium text-accent">{t.about.eyebrow}</p>
-  <h2 class="mt-2 text-2xl font-semibold tracking-tight">{t.about.title}</h2>
-  {t.about.paragraphs.map((paragraph) => (
-    <p class="mt-4 max-w-2xl text-muted">{paragraph}</p>
-  ))}
-  <h3 class="mt-10 text-xl font-semibold tracking-tight">
-    {t.about.experienceTitle}
-  </h3>
-  <dl class="mt-4 grid max-w-2xl gap-5">
-    {t.about.experience.map((role) => (
-      <div class="border-l border-border pl-4">
-        <dt class="text-sm font-medium text-accent">{role.period}</dt>
-        <dd class="mt-1">
-          <span class="font-medium">{role.role}</span>
-          <span class="block text-sm text-muted">{role.org}</span>
-          <span class="block text-sm text-muted">{role.detail}</span>
-        </dd>
-      </div>
-    ))}
-  </dl>
-  <h3 class="mt-10 text-xl font-semibold tracking-tight">
-    {t.about.techStackTitle}
-  </h3>
-  <ul class="mt-4 grid max-w-2xl list-disc gap-2 pl-5 text-muted sm:grid-cols-2">
-    {t.about.competencies.map((competency) => (
-      <li>{competency}</li>
-    ))}
-  </ul>
-  <p class="mt-6 max-w-2xl text-sm text-muted">{t.about.credentials}</p>
 </Container>
 
 <ContactSection

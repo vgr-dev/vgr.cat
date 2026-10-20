@@ -1,0 +1,38 @@
+---
+/**
+ * Trail above a detail page's title.
+ *
+ * The last item is the page itself, so it is not a link and carries `aria-current="page"`.
+ * `data-breadcrumbs` is the hook `tests/structure.spec.ts` uses to prove the trail exists on every
+ * detail route — an affordance that is also an assertion, not just decoration.
+ */
+interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  /** Accessible name for the `nav` landmark, e.g. "Breadcrumb". */
+  label: string;
+  items: Crumb[];
+}
+
+const { label, items } = Astro.props;
+---
+
+<nav aria-label={label} data-breadcrumbs class="text-sm text-muted">
+  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    {items.map((item, index) => (
+      <li class="flex items-center gap-2">
+        {index > 0 && <span aria-hidden="true">/</span>}
+        {item.href ? (
+          <a href={item.href} class="py-1 hover:text-accent">
+            {item.label}
+          </a>
+        ) : (
+          <span aria-current="page">{item.label}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>

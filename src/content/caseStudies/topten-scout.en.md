@@ -11,7 +11,7 @@ pillar: entity-resolution
 
 While the European Union maintains robust databases for product certification, market realities move much faster. The official European Product Registry for Energy Labelling (EPREL) holds certified declarations from manufacturers, but consumers purchase products based on commercial names, retailer SKUs, and retail promotions.
 
-#### The Challenge
+## The Challenge
 
 Connecting regulatory data with real-world sales data was historically nearly impossible:
 
@@ -19,7 +19,7 @@ Connecting regulatory data with real-world sales data was historically nearly im
 - **Missing Barcodes:** Retail sites and scrapers frequently lack GTIN/EAN barcodes, preventing simple database joins against official filings.
 - **Market Invisibility:** Regulators and efficiency programs could not easily answer fundamental policy questions: _Are the high-efficiency products certified in EPREL actually in stock in retail stores? Are their advertised energy labels accurate?_
 
-#### The Architecture
+## The Architecture
 
 To solve this, I designed and developed **Topten Scout**, an observability platform that continuously maps and monitors the retail market:
 
@@ -28,7 +28,7 @@ To solve this, I designed and developed **Topten Scout**, an observability platf
 - **Discrepancy Engine:** Compares the declared energy label and consumption metrics stored in EPREL against the live specifications displayed across major retail portals, flagging discrepancies automatically.
 - **Observability Dashboard:** Delivers dynamic charts showing the market share of each energy efficiency class across active retail inventory, tracking price evolutions and model phase-outs over time.
 
-#### Measurable Impact
+## Measurable Impact
 
 - **Bridge Built:** Closed the gap between theoretical EU compliance filings and actual retail shelves across major European markets.
 - **Scale:** Automated the matching of thousands of products that previously required laborious manual catalog cross-referencing.

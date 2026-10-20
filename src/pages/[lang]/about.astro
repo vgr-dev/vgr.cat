@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageShell from '../../components/PageShell.astro';
+import AboutPage from '../../components/pages/AboutPage.astro';
+import { defaultLocale, locales, type Locale } from '../../i18n/config';
+import { useTranslations } from '../../i18n';
+import { buildAboutJsonLd } from '../../lib/schema';
+
+export const getStaticPaths = (() =>
+  locales
+    .filter((locale) => locale !== defaultLocale)
+    .map((locale) => ({ params: { lang: locale } }))) satisfies GetStaticPaths;
+
+const { lang } = Astro.params as { lang: Locale };
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  lang={lang}
+  title={t.about.title}
+  description={t.about.paragraphs[0]}
+  jsonLd={buildAboutJsonLd({ locale: lang, t })}
+>
+  <PageShell lang={lang}>
+    <AboutPage lang={lang} />
+  </PageShell>
+</BaseLayout>

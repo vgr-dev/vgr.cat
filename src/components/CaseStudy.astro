@@ -1,4 +1,11 @@
 ---
+/**
+ * Case-study card: the scannable summary layer only.
+ *
+ * The markdown body is *not* rendered here. It used to be, and it restated the three `<dl>` items
+ * in prose — the same three ideas twice per study, six times on the page (UX-007). The body now
+ * belongs to `/work/<translationKey>/`; this card never renders it.
+ */
 interface Props {
   title: string;
   summary: string;
@@ -8,6 +15,10 @@ interface Props {
   problem: string;
   approach: string;
   outcome: string;
+  /** Detail page for this study. */
+  href: string;
+  /** Visible affordance; the title link carries the accessible name. */
+  ctaLabel: string;
 }
 
 const {
@@ -19,11 +30,18 @@ const {
   problem,
   approach,
   outcome,
+  href,
+  ctaLabel,
 } = Astro.props;
 ---
 
-<article class="border-t border-border py-10">
-  <h3 class="text-xl font-semibold tracking-tight">{title}</h3>
+{/* `relative` + the anchor's `after:inset-0` make the whole card clickable from one focus stop. */}
+<article class="relative border-t border-border py-10">
+  <h3 class="text-xl font-semibold tracking-tight">
+    <a href={href} class="hover:text-accent after:absolute after:inset-0">
+      {title}
+    </a>
+  </h3>
   <p class="mt-2 max-w-2xl text-muted">{summary}</p>
   <dl class="mt-6 grid gap-6 lg:grid-cols-3">
     <div>
@@ -39,7 +57,5 @@ const {
       <dd class="mt-1 max-w-[var(--measure)] text-muted">{outcome}</dd>
     </div>
   </dl>
-  <div class="prose prose-sm mt-6 max-w-[var(--measure)] text-muted dark:prose-invert">
-    <slot />
-  </div>
+  <p class="mt-6 text-sm font-medium text-accent">{ctaLabel}</p>
 </article>

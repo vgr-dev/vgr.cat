@@ -1,0 +1,38 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageShell from '../../components/PageShell.astro';
+import WorkDetail from '../../components/pages/WorkDetail.astro';
+import { defaultLocale } from '../../i18n/config';
+import { useTranslations } from '../../i18n';
+import { getCaseStudies, getCaseStudy } from '../../lib/content';
+import { buildWorkJsonLd } from '../../lib/schema';
+
+export const getStaticPaths = (async () => {
+  const studies = await getCaseStudies(defaultLocale);
+  return studies.map((entry) => ({
+    params: { slug: entry.data.translationKey },
+  }));
+}) satisfies GetStaticPaths;
+
+const { slug } = Astro.params as { slug: string };
+const entry = await getCaseStudy(defaultLocale, slug);
+// Prerendered, so this is a build-time assertion: a slug in `getStaticPaths` that the collection
+// cannot resolve means the two sources of truth have drifted, and the build should fail.
+if (entry === undefined) {
+  throw new Error(`No case study "${slug}" for locale "${defaultLocale}"`);
+}
+
+const t = useTranslations(defaultLocale);
+---
+
+<BaseLayout
+  lang={defaultLocale}
+  title={entry.data.title}
+  description={entry.data.summary}
+  jsonLd={buildWorkJsonLd({ locale: defaultLocale, t, entry })}
+>
+  <PageShell lang={defaultLocale}>
+    <WorkDetail lang={defaultLocale} entry={entry} />
+  </PageShell>
+</BaseLayout>

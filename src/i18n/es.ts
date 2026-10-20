@@ -23,6 +23,10 @@ export const es: Dictionary = {
     languageNavLabel: 'Seleccione el idioma',
     skipToContent: 'Saltar al contenido principal',
   },
+  breadcrumbs: {
+    label: 'Ruta de navegación',
+    home: 'Inicio',
+  },
   hero: {
     badge:
       'Disponible para ingeniería de software y asesoramiento en Europa y Cataluña',
@@ -61,6 +65,11 @@ export const es: Dictionary = {
       infrastructure: { tag: 'Nube y sistemas' },
       iot: { tag: 'IoT y datos de campo' },
     },
+    // Detail-page copy for `/services/<pillar>/`.
+    readService: 'Descubre este servicio',
+    relatedWork: 'Trabajos seleccionados en este ámbito',
+    noRelatedWork:
+      'Todavía no hay ningún caso práctico publicado en este ámbito. El próximo se listará aquí.',
   },
   caseStudies: {
     eyebrow: 'Proyectos ejecutados',
@@ -72,6 +81,10 @@ export const es: Dictionary = {
       approach: 'La arquitectura',
       outcome: 'Impacto medible',
     },
+    // Card affordance and `/work/<translationKey>/` navigation.
+    readCase: 'Leer el caso práctico',
+    backToWork: 'Todos los casos prácticos',
+    nextCase: 'Siguiente caso práctico',
   },
   about: {
     eyebrow: 'Trayectoria y experiencia',

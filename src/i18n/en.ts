@@ -32,6 +32,10 @@ export const en = {
     languageNavLabel: 'Select language',
     skipToContent: 'Skip to main content',
   },
+  breadcrumbs: {
+    label: 'Breadcrumb',
+    home: 'Home',
+  },
   hero: {
     badge: 'Available for European & Catalan software engineering and advisory',
     title: 'Engineering the platforms behind',
@@ -69,6 +73,11 @@ export const en = {
       infrastructure: { tag: 'Cloud & Systems' },
       iot: { tag: 'IoT & Field Data' },
     },
+    // Detail-page copy for `/services/<pillar>/`.
+    readService: 'Explore this service',
+    relatedWork: 'Selected work in this pillar',
+    noRelatedWork:
+      'No published case study covers this pillar yet. The next one will be listed here.',
   },
   caseStudies: {
     eyebrow: 'Proven Deliverables',
@@ -80,6 +89,10 @@ export const en = {
       approach: 'The Architecture',
       outcome: 'Measurable Impact',
     },
+    // Card affordance and `/work/<translationKey>/` navigation.
+    readCase: 'Read the case study',
+    backToWork: 'All case studies',
+    nextCase: 'Next case study',
   },
   about: {
     eyebrow: 'Background & Track Record',

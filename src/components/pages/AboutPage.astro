@@ -1,0 +1,60 @@
+---
+/**
+ * `/about/` — the background block that used to sit in the middle of an 11,500 px home page.
+ *
+ * The markup is the one that lived in `HomeSections.astro`; only the heading levels changed, because
+ * the page title is now the `h1` and the two former `h3`s became `h2`s.
+ */
+import Container from '../Container.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import { useTranslations } from '../../i18n';
+import { localizedPath, type Locale } from '../../i18n/config';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const home = localizedPath(lang, '/');
+---
+
+<Container as="section" class="py-16">
+  <Breadcrumbs
+    label={t.breadcrumbs.label}
+    items={[{ label: t.breadcrumbs.home, href: home }, { label: t.nav.about }]}
+  />
+
+  <h1 class="mt-8 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+    {t.about.title}
+  </h1>
+  {t.about.paragraphs.map((paragraph) => (
+    <p class="mt-4 max-w-2xl text-muted">{paragraph}</p>
+  ))}
+
+  <h2 class="mt-10 text-xl font-semibold tracking-tight">
+    {t.about.experienceTitle}
+  </h2>
+  <dl class="mt-4 grid max-w-2xl gap-5">
+    {t.about.experience.map((role) => (
+      <div class="border-l border-border pl-4">
+        <dt class="text-sm font-medium text-accent">{role.period}</dt>
+        <dd class="mt-1">
+          <span class="font-medium">{role.role}</span>
+          <span class="block text-sm text-muted">{role.org}</span>
+          <span class="block text-sm text-muted">{role.detail}</span>
+        </dd>
+      </div>
+    ))}
+  </dl>
+
+  <h2 class="mt-10 text-xl font-semibold tracking-tight">
+    {t.about.techStackTitle}
+  </h2>
+  <ul class="mt-4 grid max-w-2xl list-disc gap-2 pl-5 text-muted sm:grid-cols-2">
+    {t.about.competencies.map((competency) => (
+      <li>{competency}</li>
+    ))}
+  </ul>
+  <p class="mt-6 max-w-2xl text-sm text-muted">{t.about.credentials}</p>
+</Container>

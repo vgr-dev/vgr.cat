@@ -11,7 +11,7 @@ pillar: iot
 
 Este fue un despliegue físico antes que un proyecto de software. Había que instalar y poner en marcha contadores, gateways y circuitos en toda una red nacional de sucursales, secuenciado de modo que ninguna sucursal perdiera visibilidad de su propio consumo durante el cambio — y el mismo stack llevó después el programa desde un primer despliegue piloto hasta una flota nacional.
 
-#### El reto
+## El reto
 
 Las decisiones energéticas de un banco nacional se tomaban con datos que llegaban semanas después de los hechos:
 
@@ -20,7 +20,7 @@ Las decisiones energéticas de un banco nacional se tomaban con datos que llegab
 - **Sistemas aislados:** cada sede era una isla, y nada agregaba el consumo de las sucursales en una visión de flota.
 - **Ninguna interrupción permitida:** el programa debía desplegarse en una red de sucursales en funcionamiento, donde dejar una sucursal fuera de servicio para instrumentarla no era una opción.
 
-#### La arquitectura
+## La arquitectura
 
 Un solo stack, extendido en lugar de sustituido, desde el primer piloto hasta el despliegue nacional:
 
@@ -30,7 +30,7 @@ Un solo stack, extendido en lugar de sustituido, desde el primer piloto hasta el
 - **Cuadros de mando para equipos no técnicos:** el consumo mostrado en términos sobre los que puede actuar quien gestiona la sucursal, no registros en bruto.
 - **Control remoto:** la misma instrumentación que informa de un circuito puede accionarlo, de modo que una sede no necesita una visita para desconectarlo.
 
-#### Impacto medible
+## Impacto medible
 
 - **Alcance:** monitorización y control remoto en más de 200 oficinas.
 - **De las facturas a los datos en vivo:** el análisis de facturas mensuales sustituido por consumo por sucursal disponible a medida que se mide.

@@ -11,7 +11,7 @@ pillar: regtech
 
 Market surveillance is essential to ensure that European Ecodesign and Energy Labelling directives deliver real emissions reductions. However, national Market Surveillance Authorities (MSAs) across Europe often operate with limited resources against an overwhelming volume of imported and domestic appliances.
 
-#### The Challenge
+## The Challenge
 
 Verifying whether a product on the market complies with EU standards traditionally required:
 
@@ -21,7 +21,7 @@ Verifying whether a product on the market complies with EU standards traditional
 
 This manual bottleneck meant only a tiny fraction of the market could be audited each year, leaving space for non-compliant models and fraudulent energy labeling.
 
-#### The Architecture
+## The Architecture
 
 I designed and implemented custom tooling tailored specifically for public evaluators and surveillance experts:
 
@@ -29,7 +29,7 @@ I designed and implemented custom tooling tailored specifically for public evalu
 - **Automated Registry Cross-Validation:** Connected the tooling directly with official databases (such as EPREL) to immediately flag missing fiches, incorrect parameters, or invalid declarations.
 - **Defensible Audit Logs:** Implemented immutable audit trails detailing the input data, formula version, and mathematical derivation behind every detected anomaly, ready for legal enforcement procedures.
 
-#### Measurable Impact
+## Measurable Impact
 
 The tooling transformed how surveillance teams operate:
 

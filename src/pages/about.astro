@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageShell from '../components/PageShell.astro';
+import AboutPage from '../components/pages/AboutPage.astro';
+import { defaultLocale } from '../i18n/config';
+import { useTranslations } from '../i18n';
+import { buildAboutJsonLd } from '../lib/schema';
+
+const t = useTranslations(defaultLocale);
+---
+
+<BaseLayout
+  lang={defaultLocale}
+  title={t.about.title}
+  description={t.about.paragraphs[0]}
+  jsonLd={buildAboutJsonLd({ locale: defaultLocale, t })}
+>
+  <PageShell lang={defaultLocale}>
+    <AboutPage lang={defaultLocale} />
+  </PageShell>
+</BaseLayout>

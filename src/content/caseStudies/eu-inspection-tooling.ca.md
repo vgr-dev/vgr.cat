@@ -11,7 +11,7 @@ pillar: regtech
 
 La supervisió de mercat és essencial perquè les directrius europees d’Ecodesign i d’etiquetatge energètic generin reduccions reals d’emissions. Tanmateix, les autoritats nacionals de supervisió de mercat (MSA) de tot Europa sovint operen amb recursos limitats davant d’un volum aclaparador d’aparells importats i nacionals.
 
-#### El repte
+## El repte
 
 Verificar si un producte del mercat compleix les normes de la UE requeria tradicionalment:
 
@@ -21,7 +21,7 @@ Verificar si un producte del mercat compleix les normes de la UE requeria tradic
 
 Aquest coll d’ampolla manual feia que només una fracció mínima del mercat es pogués auditar cada any, cosa que deixava espai per a models no conformes i etiquetatge energètic fraudulent.
 
-#### L’arquitectura
+## L’arquitectura
 
 Vaig dissenyar i implementar eines a mida per a avaluadors públics i experts en supervisió:
 
@@ -29,7 +29,7 @@ Vaig dissenyar i implementar eines a mida per a avaluadors públics i experts en
 - **Validació creuada automatitzada amb registres:** connexió directa amb bases de dades oficials (com EPREL) per assenyalar immediatament fitxes absents, paràmetres incorrectes o declaracions invàlides.
 - **Registres d’auditoria defensables:** implementació de traces d’auditoria immutables amb les dades d’entrada, la versió de la fórmula i la derivació matemàtica de cada anomalia detectada, a punt per a procediments sancionadors.
 
-#### Impacte mesurable
+## Impacte mesurable
 
 Les eines van transformar la manera com operen els equips de supervisió:
 

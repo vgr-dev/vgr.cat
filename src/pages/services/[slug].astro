@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageShell from '../../components/PageShell.astro';
+import ServiceDetail from '../../components/pages/ServiceDetail.astro';
+import { defaultLocale } from '../../i18n/config';
+import { useTranslations } from '../../i18n';
+import { getService, getServices } from '../../lib/content';
+import { buildServiceJsonLd } from '../../lib/schema';
+
+export const getStaticPaths = (async () => {
+  const services = await getServices(defaultLocale);
+  return services.map((entry) => ({
+    params: { slug: entry.data.translationKey },
+  }));
+}) satisfies GetStaticPaths;
+
+const { slug } = Astro.params as { slug: string };
+const entry = await getService(defaultLocale, slug);
+if (entry === undefined) {
+  throw new Error(`No service "${slug}" for locale "${defaultLocale}"`);
+}
+
+const t = useTranslations(defaultLocale);
+---
+
+<BaseLayout
+  lang={defaultLocale}
+  title={entry.data.title}
+  description={entry.data.summary}
+  jsonLd={buildServiceJsonLd({ locale: defaultLocale, t, entry })}
+>
+  <PageShell lang={defaultLocale}>
+    <ServiceDetail lang={defaultLocale} entry={entry} />
+  </PageShell>
+</BaseLayout>

@@ -1,0 +1,83 @@
+---
+/**
+ * `/services/<translationKey>/` — one capability, its markdown body, and the case studies that
+ * share its `pillar`.
+ *
+ * The cross-link is derived from the shared enum rather than authored twice, which is what stops a
+ * ~160-word service body from being a thin page: the page always has either proof or an explicit
+ * statement that proof is pending.
+ */
+import { render } from 'astro:content';
+import Container from '../Container.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Button from '../Button.astro';
+import CaseStudy from '../CaseStudy.astro';
+import { useTranslations } from '../../i18n';
+import { localizedPath, type Locale } from '../../i18n/config';
+import { bookingUrl } from '../../config';
+import { caseStudyPath } from '../../lib/paths';
+import { getCaseStudiesByPillar, type ServiceEntry } from '../../lib/content';
+
+interface Props {
+  lang: Locale;
+  entry: ServiceEntry;
+}
+
+const { lang, entry } = Astro.props;
+const t = useTranslations(lang);
+const { Content } = await render(entry);
+
+const related = await getCaseStudiesByPillar(lang, entry.data.pillar);
+const home = localizedPath(lang, '/');
+---
+
+<Container as="section" class="py-16">
+  <Breadcrumbs
+    label={t.breadcrumbs.label}
+    items={[
+      { label: t.breadcrumbs.home, href: home },
+      { label: t.nav.services, href: `${home}#services` },
+      { label: entry.data.title },
+    ]}
+  />
+
+  <p class="mt-8 text-sm font-medium text-accent">
+    {t.services.pillars[entry.data.pillar].tag}
+  </p>
+  <h1 class="mt-2 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+    {entry.data.title}
+  </h1>
+  <p class="mt-4 max-w-2xl text-lg text-muted">{entry.data.summary}</p>
+
+  <div class="prose prose-sm mt-10 max-w-[var(--measure)] text-muted dark:prose-invert">
+    <Content />
+  </div>
+
+  <h2 class="mt-14 text-xl font-semibold tracking-tight">
+    {t.services.relatedWork}
+  </h2>
+  {related.length > 0 ? (
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      {related.map((study) => (
+        <CaseStudy
+          title={study.data.title}
+          summary={study.data.summary}
+          problemLabel={t.caseStudies.labels.problem}
+          approachLabel={t.caseStudies.labels.approach}
+          outcomeLabel={t.caseStudies.labels.outcome}
+          problem={study.data.problem}
+          approach={study.data.approach}
+          outcome={study.data.outcome}
+          href={localizedPath(lang, caseStudyPath(study.data.translationKey))}
+          ctaLabel={t.caseStudies.readCase}
+        />
+      ))}
+    </div>
+  ) : (
+    <p class="mt-4 max-w-2xl text-muted">{t.services.noRelatedWork}</p>
+  )}
+
+  <div class="mt-12 border-t border-border pt-8">
+    <Button href={bookingUrl}>{t.contact.directContact.calendarButton}</Button>
+  </div>
+</Container>

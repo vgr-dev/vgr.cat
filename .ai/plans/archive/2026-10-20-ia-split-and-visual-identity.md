@@ -460,13 +460,13 @@ the markup that renders them is shared by one component per template.
       logical path. Update `SiteFooter.astro` for the new `NavItem` shape.
 - [x] Task 2.11: In `src/components/CaseStudy.astro` and `ServiceCard.astro`, add `href` and `ctaLabel`
       props and render the whole-card link per §4.3. Cards on the home page link to their detail page.
-- [ ] Task 2.12: Add the new dictionary keys to `en.ts` (`breadcrumbs.home`, `caseStudy.backToWork`,
+- [x] Task 2.12: Add the new dictionary keys to `en.ts` (`breadcrumbs.home`, `caseStudy.backToWork`,
       `caseStudy.readCase`, `caseStudy.nextCase`, `services.readService`, `services.relatedWork`,
       `services.noRelatedWork`, `about.pageTitle`, `nav.about`), then mirror them in `ca.ts` and `es.ts`.
       **Catalan and Spanish must be real copy supplied or approved by the owner** — see §7, risk 1.
-      **Status (2026-10-20): implemented, awaiting approval.** Every key exists in all three locales and
-      the build is green; the `ca`/`es` values are agent-authored drafts pending owner review. See
-      deviation 2 for the list to check. `about.pageTitle` and `nav.about` were not added — see
+      **Status (2026-10-20): closed — approved by the owner.** Every key exists in all three locales, the
+      build is green, and the agent-authored `ca`/`es` drafts were reviewed and accepted as-is. See
+      deviation 2 for the list that was reviewed. `about.pageTitle` and `nav.about` were not added — see
       deviation 3.
 - [x] Task 2.13: Update `tests/routes.ts` to the full route table. Keep `grids` but rename its meaning to
       "has prose-bearing grids" and add the detail routes that contain grids (`/services/*` related-work
@@ -1115,5 +1115,22 @@ outgrown Astro's inline threshold, so `dist/_astro/` carries
 - astro-config, cloudflare-config: both claimed the stylesheet stays inline
 ```
 
-Not committed: two files' worth of `ca`/`es` strings from Tasks 2.12 and 4.x are agent-authored
-drafts, and Task 2.12 stays open until the owner reviews them.
+The `ca`/`es` strings from Tasks 2.12 and 4.x were authored by the agent; the owner reviewed and
+approved them on 2026-10-20, which is what closed Task 2.12. The only open item left in this plan is
+the §6 contact-form happy path, deferred with the owner's agreement because Cloudflare's test secret
+cannot satisfy Siteverify.
+
+---
+
+## Archive Metadata
+
+- **Completed Date**: 2026-10-20
+- **Verified Commit**: a88dbdc
+- **Sign-off**: Manual Review Passed
+- **Deferred**: §6 end-to-end contact form — Cloudflare's test secret omits `action`, so Siteverify
+  rejects every test-key submission and the delivery path is not locally exercisable. Authorised by the
+  owner on 2026-10-20. Everything up to the submit is covered by `tests/form.spec.ts` and was verified.
+- **Reviewed by the owner**: the agent-authored `ca`/`es` copy closed Task 2.12 on 2026-10-20.
+- **Path note**: source comments in `tests/structure.spec.ts` and `tests/page-weight.spec.ts` still
+  reference this plan as `.ai/plans/active/2026-10-20-ia-split-and-visual-identity.md`. They were left as
+  written rather than rewritten during the move; read them as `.ai/plans/archive/…`.

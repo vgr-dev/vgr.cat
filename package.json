@@ -22,7 +22,6 @@
     "build:e2e": "PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA astro build",
     "pretest:e2e": "npm run build:e2e",
     "test:e2e": "playwright test",
-    "posttest:e2e": "astro preview stop",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {

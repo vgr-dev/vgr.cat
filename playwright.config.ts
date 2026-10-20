@@ -5,9 +5,11 @@ import { defineConfig, devices } from '@playwright/test';
  * CSP meta tag, the hashed assets and the inline-script hashes exist, and every defect this suite
  * guards surfaced there rather than in development (see the plan's Phase 6 and 7 notes).
  *
- * `astro preview` daemonises in Astro 7 — it prints a pid and exits — so the command starts it and
- * then holds a foreground process open for Playwright. `posttest:e2e` stops the daemon afterwards,
- * which also guarantees the next run starts against the freshly built `dist/`.
+ * `astro preview` daemonises in Astro 7 — it prints a pid and exits — and it binds to `localhost`, so
+ * it cannot be Playwright's webServer: on a CI runner the readiness probe against `127.0.0.1` timed
+ * out after 120 s and blocked the deploy. `tests/support/serve.mjs` is a foreground `node:http`
+ * server bound explicitly to `127.0.0.1` that serves the built `dist/`, so the local and CI paths are
+ * now the same one.
  */
 export default defineConfig({
   testDir: './tests',
@@ -39,9 +41,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview && node -e "setTimeout(() => {}, 1e9)"',
+    command: 'node tests/support/serve.mjs',
     url: 'http://127.0.0.1:4321/',
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // A local static server binds in milliseconds; a longer wait only delays the diagnosis.
+    timeout: 30_000,
   },
 });

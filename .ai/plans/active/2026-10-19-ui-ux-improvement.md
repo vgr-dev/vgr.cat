@@ -2636,6 +2636,64 @@ $ npm run build:e2e && npx playwright test tests/structure.spec.ts --project=des
   Those remain Phase 8's manual pass against production.
 - No throttled-network run; the 8 s token wait is exercised only through its blocked-CDN branch.
 
+#### Correction (2026-10-20) — the `e2e` job failed on its first real run and blocked `Deploy`
+
+The limitation above became a fact within hours. Run
+[39276928404](https://github.com/vgr-dev/vgr.cat/actions/runs/39276928404): `validate` passed in 42 s, `e2e`
+failed after 2 m 43 s, and `Deploy` was **skipped** — the gate worked, on a broken harness rather than on a
+broken site.
+
+**What failed, verbatim:**
+
+```
+##[error]Error: Timed out waiting 120000ms from config.webServer.
+```
+
+The build and the Chromium install both succeeded; Playwright never got a reachable URL.
+
+**Why the earlier evidence missed it.** Locally `reuseExistingServer` was `true` and a preview server I had
+started by hand was already listening, so `npm run test:e2e` *reused* it and never executed the `webServer`
+command. The spawn path only ever ran on CI.
+
+**Cause.** The command was `npm run preview && node -e "setTimeout(…)";`. Two fragilities met:
+
+1. `astro preview` **daemonises** in Astro 7 — it prints a pid and exits — and it binds `localhost` rather
+   than a specific address, so `127.0.0.1` was not guaranteed to answer.
+2. Chaining the daemon start with a blocking `node -e` means a partial failure shows up as a silent
+   120-second wait instead of an "exited early" error.
+
+**Fix.** `tests/support/serve.mjs`: ~70 lines of `node:http`, no dependencies, run **in the foreground** by
+`webServer`, bound explicitly to `127.0.0.1`, serving `dist/` with the only static-asset rules the suite
+needs (`/x/` → `x/index.html`, `/x` → `x.html`, unknown → `404.html` with status 404). `posttest:e2e` is gone
+because nothing daemonises, and the `webServer` timeout dropped to 30 s so a future failure is diagnosed in
+half a minute rather than two.
+
+**Evidence after the fix:**
+
+```console
+$ node tests/support/serve.mjs
+e2e static server listening on http://127.0.0.1:4321 (dist: …/vgr.cat/dist)
+
+$ curl -o /dev/null -w '%{http_code} %{content_type}'
+/                  200 text/html; charset=utf-8
+/ca/               200 text/html; charset=utf-8
+/es/privacy/       200 text/html; charset=utf-8
+/contact/thanks/   200 text/html; charset=utf-8
+/missing-page      404 text/html; charset=utf-8
+/sitemap-0.xml     200 application/xml; charset=utf-8
+/_astro/<hash>.js  200 text/javascript; charset=utf-8
+
+$ CI=1 npm run test:e2e     # spawn path, no pre-existing server, as in CI
+  110 passed (4.8s)
+
+$ npm run test:e2e          # reuse path
+  110 passed (4.7s)
+```
+
+The claim in deviation 5 — that a local run and a CI run execute the identical path — was **false when it was
+written** and is only true now; the harness no longer depends on a daemon, on `localhost` resolution, or on
+anything a runner can differ about.
+
 ### Phase 8: Final manual validation
 
 - **Goal:** verify the things automation cannot.

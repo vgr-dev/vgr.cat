@@ -2,19 +2,20 @@ import type { Dictionary } from './en';
 
 export const es: Dictionary = {
   site: {
-    title: 'VGR | Ingeniero Principal de Software y Consultor',
+    title:
+      'Victor Gonzalez | Ingeniero full-stack sénior y tech lead a tiempo parcial',
     description:
-      'Ingeniería full-stack para plataformas de eficiencia energética: datos normativos europeos, supervisión de mercado y monitorización IoT. Más de 12 años.',
-    author: 'VGR',
-    location: 'Sant Cugat del Vallès, Cataluña',
-    jobTitle: 'Ingeniero Principal de Software y Consultor',
+      'Ingeniero full-stack sénior y tech lead a tiempo parcial cerca de Barcelona. Construyo, modernizo y opero software, con foco en energía y datos de producto de la UE.',
+    author: 'Victor Gonzalez',
+    location: 'Sant Cugat del Vallès, cerca de Barcelona',
+    jobTitle: 'Ingeniero full-stack sénior y tech lead a tiempo parcial',
   },
   nav: {
     services: 'Servicios',
-    caseStudies: 'Casos prácticos',
+    caseStudies: 'Proyectos seleccionados',
     about: 'Sobre mí',
     contact: 'Contacto',
-    bookCall: 'Agendar una llamada',
+    bookCall: 'Reservar una llamada',
   },
   header: {
     brand: 'vgr.cat',
@@ -30,26 +31,28 @@ export const es: Dictionary = {
   },
   hero: {
     badge:
-      'Disponible para ingeniería de software y asesoramiento en Europa y Cataluña',
-    title: 'Ingeniería de las plataformas que hacen posible la',
-    titleHighlight: 'eficiencia energética europea',
+      'Sant Cugat del Vallès, cerca de Barcelona · en remoto en toda la UE · inglés y español; consultas en catalán bienvenidas',
+    title: 'Construir, modernizar y operar',
+    titleHighlight: 'el software del que depende su negocio.',
     subtitle:
-      'Más de 12 años de entrega de extremo a extremo en eficiencia energética: motores de cumplimiento normativo europeo (EPREL, Ecodesign, ESPR), herramientas de supervisión de mercado, flotas IoT a escala nacional y las plataformas multiinquilino que las operan.',
-    ctaPrimary: 'Agendar una llamada técnica de 30 minutos',
-    ctaSecondary: 'Explorar los casos prácticos',
+      'Soy Victor Gonzalez, ingeniero full-stack sénior y tech lead a tiempo parcial. Ayudo a equipos pequeños a lanzar productos, a mejorar aplicaciones heredadas y a mantener la producción fiable. La energía y los datos de producto de la UE son mi especialidad.',
+    ctaPrimary: 'Reservar una llamada de 30 minutos',
+    ctaSecondary: 'Ver los proyectos seleccionados',
     metrics: [
       {
-        value: '12+',
-        label: 'Años construyendo software para la eficiencia energética',
-      },
-      {
-        value: '1,5 M+',
+        value: 'Construir',
         label:
-          'Visitantes mensuales en los 17 sitios multiinquilino en producción que opero',
+          'Productos nuevos, herramientas internas y API, de una especificación escrita a producción.',
       },
       {
-        value: '200+',
-        label: 'Oficinas bancarias instrumentadas con monitorización IoT',
+        value: 'Modernizar',
+        label:
+          'Aplicaciones heredadas en PHP, Python y JavaScript actualizadas de forma incremental.',
+      },
+      {
+        value: 'Operar',
+        label:
+          'Alojamiento, caché, monitorización, seguridad y CI/CD para plataformas donde la fiabilidad importa.',
       },
     ],
   },
@@ -87,56 +90,58 @@ export const es: Dictionary = {
     nextCase: 'Siguiente caso práctico',
   },
   about: {
-    eyebrow: 'Trayectoria y experiencia',
-    title:
-      'Ingeniería full-stack para la eficiencia energética, de los sensores de campo a los registros europeos',
+    eyebrow: 'Sobre mí',
+    title: 'Ingeniero, constructor y operador',
     paragraphs: [
-      'Soy ingeniero principal de software y consultor, con sede en Sant Cugat del Vallès (Barcelona). Llevo más de 12 años construyendo y operando software para la eficiencia energética y la sostenibilidad: primero como ingeniero en una fundación nacional de innovación, después como fundador de mi propia consultora y ahora como ingeniero principal de una flota de 17 sitios multiinquilino en producción que sostienen un 99,99 % de disponibilidad anual en Suiza, Chile y la UE.',
-      'Mi trabajo se sitúa en los dos extremos del stack. En el campo, he instrumentado cientos de oficinas bancarias con flotas de monitorización energética IoT, conectando hardware, gateways y protocolos con cuadros de mando que los equipos de mantenimiento usan a diario. En datos normativos, convierto las obligaciones de Ecodesign, etiquetado energético y ESPR en software verificable: integraciones con EPREL, fórmulas de tolerancia en código y herramientas de supervisión de mercado que producen evidencia auditable.',
-      'Soy ingeniero full-stack por temperamento: PHP, Python, TypeScript y Go en el servidor; Vue, React y Next.js en el frontal; Docker, Kubernetes, CI/CD, Grafana y Prometheus por debajo. Prefiero ser responsable de todo el camino antes que pasar el trabajo en una interfaz.',
-      'También he llevado la parte de negocio. Fundé y hice crecer una consultora hasta los 20.000 USD al mes con un equipo de tres o cuatro ingenieros y cinco clientes de largo plazo, mantuve una alianza estratégica con una empresa suiza de eficiencia energética y acompañé la plataforma Topten hasta su adquisición por otra empresa suiza de mayor tamaño del mismo sector. Por eso me siento cómodo con las partes interesadas, los presupuestos y los plazos, no solo con el código.',
+      'Soy Victor Gonzalez, ingeniero full-stack sénior y tech lead a tiempo parcial, con sede en Sant Cugat del Vallès, cerca de Barcelona. Construyo, modernizo y opero software en producción, con un foco especial en energía y datos de producto de la UE. Trabajo en remoto en toda la UE y presencialmente en el área de Barcelona. Actualmente lidero la ingeniería de plataforma de Topten.',
+      'Antes de eso, fundé y dirigí VGR SpA, mi consultora de software en Chile, incluido trabajo con Bush Energie en Suiza. Dirigir un negocio me enseñó lo que les importa a los clientes: presupuestos, plazos y alguien que conteste el teléfono.',
+      'Soy generalista por elección. PHP, Python y TypeScript son mis lenguajes principales; también trabajo con Go y he usado C#, Rust y Java. Me desenvuelvo igual de bien en una base de código Laravel que en un panel de Grafana o en un servidor Linux.',
+      'Uso agentes de programación con IA como parte de un proceso revisado y guiado por especificaciones. La entrega asistida por IA es opcional: acordamos las herramientas y los límites del código antes de empezar. Los agentes ayudan a redactar código y pruebas; yo reviso lo que se publica y conservo las decisiones en el repositorio.',
+      'Gran parte de mi trabajo ha sido en eficiencia energética y sostenibilidad, desde la medición IoT en oficinas bancarias hasta la normativa europea de producto. Es el dominio que mejor conozco y la razón por la que me importa el software que es eficiente de ejecutar y también de escribir.',
     ],
-    experienceTitle: 'Dónde he trabajado',
+    experienceTitle: 'Experiencia',
     experience: [
       {
         period: '2025 — actualidad',
-        role: 'Ingeniero Principal de Software y Consultor',
-        org: 'Operador suizo de plataformas de eficiencia energética · consultora chilena de eficiencia energética',
+        role: 'Ingeniero líder de plataforma y consultor',
+        org: 'Topten (Suiza)',
         detail:
-          '17 sitios multiinquilino en producción, 1,5 M+ visitantes mensuales, 99,99 % de disponibilidad.',
+          'Arquitectura de plataforma, la transición de Yii2 a Laravel y la operación de una plataforma de producto de consumo multilingüe.',
       },
       {
         period: '2017 — 2025',
         role: 'Fundador y jefe de equipo',
-        org: 'VGR SpA (CL)',
+        org: 'VGR SpA (Chile)',
         detail:
-          'Consultora escalada a un equipo de 3–4 personas y 5+ clientes de largo plazo.',
+          'Entrega de software para clientes de energía, sostenibilidad y datos de producto.',
       },
       {
         period: '2014 — 2017',
         role: 'Ingeniero de software',
-        org: 'Fundación nacional de innovación',
+        org: 'Fundación Chile',
         detail:
-          'Plataformas IoT y de eficiencia energética para clientes públicos y privados.',
+          'Plataformas IoT y de eficiencia energética, incluido trabajo para Banco Estado.',
       },
     ],
-    techStackTitle: 'Competencias y stack técnico principal',
+    techStackTitle: 'Con qué trabajo',
     competencies: [
-      'Codificación normativa (EPREL, Ecodesign, ESPR)',
-      'Resolución de entidades y desambiguación de GTIN/EAN',
-      'Arquitectura de plataformas multiinquilino',
-      'Flotas IoT: gateways, MQTT, Express, ingesta de series temporales',
-      'Diseño de APIs y canalizaciones de ingesta automatizada',
-      'Docker, Kubernetes, CI/CD, Grafana, Prometheus',
-      'PHP · Python · TypeScript · Go',
-      'Vue · React · Next.js · Tailwind',
+      'TypeScript, PHP, Python, Go',
+      'Laravel, Symfony, Django, Node',
+      'Vue, React, Astro, Tailwind',
+      'AWS, Cloudflare, Docker, Kubernetes, Linux',
+      'GitHub Actions, GitLab CI, Grafana, Prometheus',
+      'Entrega guiada por especificaciones y asistida por IA',
+      'Gestión remota de proyectos',
+      'EPREL, Ecodesign, ESPR / DPP',
+      'Monitorización energética IoT',
+      'Análisis de facturas',
     ],
     // Home-page teaser; the full history lives on `/about/`.
     teaser:
       'Ingeniero de software principal y consultor en Sant Cugat del Vallès. Doce años construyendo y operando las plataformas que hay detrás de la eficiencia energética europea: motores de cumplimiento, observabilidad de mercado y flotas IoT a escala nacional.',
     readMore: 'Lee la trayectoria completa',
     credentials:
-      'Diploma en dirección de proyectos TI (PMBOK v6) y miembro de PMI; coautor de un manual universitario sobre entrega ágil y predictiva (2021).',
+      'Alcance por escrito, decisiones documentadas y un traspaso que su equipo puede usar.',
   },
   contact: {
     eyebrow: 'Contacto',
@@ -255,17 +260,17 @@ export const es: Dictionary = {
     ],
   },
   ctaBand: {
-    title:
-      '¿Tienes una plataforma, un registro o una flota que necesita ingeniería?',
-    body: 'Doce años de entrega end-to-end en software europeo de eficiencia energética: desde motores de cumplimiento EPREL hasta flotas IoT a escala nacional.',
-    primary: 'Agendar una llamada técnica de 30 min',
-    secondary: 'Ver los casos prácticos',
+    title: '¿Algo que construir, arreglar o mantener en marcha?',
+    body: 'Cuénteme qué quiere conseguir. Respondo personalmente, normalmente en dos días laborables.',
+    primary: 'Reservar una llamada de 30 minutos',
+    secondary: 'Ver los proyectos seleccionados',
   },
   footer: {
     tagline:
-      'Ingeniería full-stack para la eficiencia energética: de los sensores de campo a los registros europeos.',
+      'Ingeniero full-stack sénior y tech lead a tiempo parcial cerca de Barcelona. Energía y datos de producto de la UE, con entrega asistida por IA y revisión integradas en el proceso.',
     builtWith:
-      'Desarrollado con Astro y Tailwind. Alojado en Cloudflare Workers.',
+      'Hecho con Astro y Tailwind, alojado en Cloudflare Workers, con un proceso revisado y guiado por especificaciones.',
+    sourceLabel: 'Ver el código fuente en GitHub',
     sectionsLabel: 'Secciones',
     contactLabel: 'Contacto',
     languageLabel: 'Idioma',

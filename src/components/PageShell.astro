@@ -9,7 +9,7 @@
 import SiteHeader from './SiteHeader.astro';
 import SiteFooter from './SiteFooter.astro';
 import { useTranslations } from '../i18n';
-import { bookingUrl } from '../config';
+import { bookingUrl, repositoryUrl } from '../config';
 import { sectionNav } from '../lib/navigation';
 import { localizedPath, type Locale } from '../i18n/config';
 
@@ -51,7 +51,10 @@ const legalHref = localizedPath(lang, '/privacy/');
 <SiteFooter
   lang={lang}
   tagline={t.footer.tagline}
+  author={t.site.author}
   builtWith={t.footer.builtWith}
+  sourceLabel={t.footer.sourceLabel}
+  sourceHref={repositoryUrl}
   nav={nav}
   sectionsLabel={t.footer.sectionsLabel}
   contactLabel={t.footer.contactLabel}

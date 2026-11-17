@@ -18,7 +18,12 @@ interface NavItem {
 interface Props {
   lang: Locale;
   tagline: string;
+  /** Name in the copyright line; the dictionary's `site.author`, so it cannot disagree with the JSON-LD. */
+  author: string;
   builtWith: string;
+  /** Label and destination of the source link, rendered as a real anchor rather than HTML in a string. */
+  sourceLabel: string;
+  sourceHref: string;
   nav: NavItem[];
   sectionsLabel: string;
   contactLabel: string;
@@ -36,7 +41,10 @@ interface Props {
 const {
   lang,
   tagline,
+  author,
   builtWith,
+  sourceLabel,
+  sourceHref,
   nav,
   sectionsLabel,
   contactLabel,
@@ -103,7 +111,13 @@ const linkClass = 'inline-block py-1 hover:text-accent';
     <div class="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
       <p>{tagline}</p>
       <p>
-        © {year} VGR. {builtWith}
+        © {year} {author}. {builtWith}{' '}
+        <a
+          href={sourceHref}
+          class="underline underline-offset-4 hover:text-accent"
+        >
+          {sourceLabel}
+        </a>
       </p>
     </div>
   </Container>

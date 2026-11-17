@@ -7,7 +7,7 @@
  * the fragment id the scroll-spy watches, and is absent for the entry that is a real page.
  *
  * `prefixes` is what lets the header mark a detail page as its own entry: while the reader is on
- * `/work/topten-ecosystem/`, "Case Studies" is the current item even though its link points at the
+ * `/work/topten-ecosystem/`, "Selected work" is the current item even though its link points at the
  * home page's section.
  */
 import { useTranslations } from '../i18n';

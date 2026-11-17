@@ -52,7 +52,9 @@ export function buildJsonLd({ locale, t, email, sameAs }: JsonLdInput) {
     url: home,
     areaServed: ['ES', 'EU'],
     founder: { '@id': person['@id'] },
-    knowsLanguage: ['en', 'ca', 'es'],
+    // English and Spanish are the working languages; Catalan enquiries are welcome but no Catalan
+    // proficiency is claimed, so it is not listed here (spec D2, copy deck "Working languages").
+    knowsLanguage: ['en', 'es'],
   };
 
   return { '@context': 'https://schema.org', '@graph': [person, service] };

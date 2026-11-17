@@ -588,3 +588,103 @@ infrastructure` in the `ctaBand` title (step 5 rewrites it), `negligible infrast
   service cards, hero and about copy still use the old positioning (step 5).
 - Visual rendering of the new service pages was not inspected in a browser beyond what the e2e a11y/structure
   specs cover.
+
+## 2026-11-17: Step 3 — Align the contact form's focus options with the new services
+
+Commit: uncommitted
+
+Precondition: step 2 reconciled against git. `git log` showed `841b39c` (signed, `feat(content): replace the
+service pillars…`) and `d3b904e`; the Status line for step 2 now carries `841b39c`. Working tree was clean
+before this step started. `.github/instructions/worker.instructions.md` read before touching the Worker.
+
+### Changes
+
+- `src/worker/index.ts`: `SERVICE_TYPES` is now `build`, `modernize`, `platform`, `energy`, `audit`, `other`
+  with the approved English labels, and is a named export (`export const`) for test access only. No other
+  Worker logic, Turnstile, rate-limit or `wrangler.jsonc` change.
+- `src/i18n/{en,ca,es}.ts`: `contact.eyebrow/title/subtitle`; the form's `nameLabel`, `emailLabel`,
+  `emailHint`, `organizationLabel`, `organizationPlaceholder`, `serviceTypeLabel`, `serviceTypePlaceholder`,
+  `messageLabel`, `submitButton`; the six `serviceTypes`; and `directContact.orDivider`, `calendarButton`,
+  `emailDirect`, `locationLabel`, `locationValue`. `directContact.timezone` and every retained-unchanged
+  string in the deck are untouched.
+- `tests/form.spec.ts`: the selected value `iot` is now `energy`.
+- New `tests/contact-options.spec.ts` (9 tests, run in both Playwright projects): imports the Worker's actual
+  `SERVICE_TYPES`; checks it equals the approved key set; checks each dictionary has exactly the Worker's
+  keys, in the approved order; checks the Worker's English labels equal `en.contact.form.serviceTypes`; and,
+  on `/`, `/ca/` and `/es/`, checks the rendered `<option>` values and labels and selects every option.
+  Validation logic was not moved or changed to make it pass.
+
+### Recorded deviations and observations
+
+- `ca`/`es` strings are my translations, not owner-reviewed. Flagged for review: every changed `contact.*`
+  string in both locales (including `Contacte`/`Contacto`, `Expliqueu-me què necessiteu`/`Cuénteme qué
+necesita`, the six option labels, `Amb seu a`/`Con sede en`, `Reservar una trucada/llamada de 30 minuts`).
+- Register: the existing contact block is formal (`Trieu`, `Seleccione`), so the new contact strings keep that
+  formal register. The step 2 service bodies use informal `tu`/`tú`. The site now mixes the two; the owner
+  should choose one before release.
+- Retained strings that now read slightly out of step with the new labels (the deck lists
+  `contact.form.errors.*` as retained, so I did not change them): `serviceTypeRequired` still says
+  `Select a focus area.` against the placeholder `Select a topic`; `organizationRequired` still says
+  `Enter your organization.` against the label `Company or organisation`.
+- The Worker's notification still reads `Primary focus: <label>` and `Organization: <value>` (Worker logic is
+  out of scope for this step). Only the label text now comes from the new map.
+- `thanks.*` keeps the existing `inquiry` spelling by the deck's retain rule.
+- `astro check` now reports **63 files** (the new spec). Record this in `AGENTS.md` in step 8 together with
+  any later change.
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0, `found 0 vulnerabilities`; the same two `allowScripts` warnings (`esbuild`, `workerd`),
+  unchanged and not approved.
+- `npm audit --audit-level=high` → exit 0, `found 0 vulnerabilities`.
+- `npm run format:check` → exit 0, `All matched files use Prettier code style!`.
+- `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (63 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `34 page(s) built`.
+- `npm run test:e2e` → exit 0, `386 passed (2.4m)` (368 earlier tests + 18 new: 9 in each project). The
+  `form`, `a11y`, `structure` and `layout` specs pass with the new labels.
+- Rendered values on all three home pages: covered by the `en`/`ca`/`es` "offers every focus option" tests
+  above (values `build modernize platform energy audit other`, labels equal to each dictionary).
+- **Mutation check that the parity test fails.** Each edit below was made, `npx playwright test
+tests/contact-options.spec.ts --project=desktop --grep 'Worker|dictionary|labels'` was run, and the files
+  were restored from copies (sha256 of the four files matched before and after):
+  - `ca.ts` without `audit` → 1 failed (`the ca dictionary has the Worker's keys…`).
+  - `es.ts` with an extra `extra` key → 1 failed (`the es dictionary…`).
+  - `en.ts` without `energy` → 2 failed (`the en dictionary…`, `the notification labels…`).
+  - Worker map without `other` → 5 failed (Worker key set, three dictionaries, labels).
+  - Worker map with an extra `advisory` → 5 failed (same five).
+  - Worker label `New product or internal tool` shortened to `New product` → 1 failed (`the notification
+labels…`).
+    The browser-rendered option test needs a build and was not part of the mutation runs; a missing
+    dictionary key would also fail it on the next build.
+- Production rebuild after e2e: `34 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey
+  in use, not a test key.
+- `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` → exit 0; `Read 96 files from the assets
+directory`; `Total Upload: 8.67 KiB / gzip: 3.22 KiB`; the binding table lists `NOTIFY`, `REPLY`,
+  `CONTACT_RATE_LIMITER`, `ASSETS` and the two vars; no warnings printed. `AGENTS.md` still says 102 files for
+  37 pages; 96 is the count for the current 34-page tree and I did not reconcile the six-file difference
+  beyond the three removed pages. Step 8 records the final count.
+- **Local Worker integration** with `npx wrangler dev --port 8799 --ip 127.0.0.1` (the simulated bindings and
+  the gitignored `.dev.vars`; its contents were not read or logged). Requests were `multipart/form-data` with
+  a valid name, email, `elapsed=5000` and message, no Turnstile token, and were never sent to a real inbox:
+  - `serviceType=entityResolution` → `{"error":"Invalid field"} [HTTP 400]`
+  - `serviceType=advisory` (retired) → `HTTP 400`; empty `serviceType` → `HTTP 400`
+  - `serviceType=build` and `modernize` → `HTTP 403`; `platform`, `energy`, `audit`, `other` →
+    `{"error":"Challenge missing"} [HTTP 403]` (the first attempt returned `429` for the last four because
+    the local limiter allows 5 requests per 60 s; they were repeated after the window reset and the
+    `429`s are not evidence about the keys).
+  - So each approved key clears the `serviceType` gate and stops at the missing-token gate; unknown and
+    retired keys are rejected earlier. The dev server was stopped afterwards (`curl` to the port returned
+    `HTTP 000`, no `wrangler`/`workerd` process remained).
+
+### Not verified
+
+- The browser E2E suite stubs `/api/contact`, so it verifies UI responses only, not Worker rejection paths or
+  delivery. The `wrangler dev` runs above exercise the `serviceType` gate only.
+- The contact happy path (token accepted, email sent) is unverified: Cloudflare's test keys cannot satisfy the
+  `action` and `hostname` checks, and no real enquiry was sent. Action and hostname checks were not relaxed.
+- The notification email body and the auto-reply were not inspected.
+- Production secrets, bindings and the zone rate-limit rule were not touched.
+- I did not run `pkill -f` safely: one cleanup command matched its own shell and exited 144 after the
+  integration results were already captured. No state was affected.

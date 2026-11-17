@@ -688,3 +688,110 @@ directory`; `Total Upload: 8.67 KiB / gzip: 3.22 KiB`; the binding table lists `
 - Production secrets, bindings and the zone rate-limit rule were not touched.
 - I did not run `pkill -f` safely: one cleanup command matched its own shell and exited 144 after the
   integration results were already captured. No state was affected.
+
+## 2026-11-17: Step 4 — Rewrite the case studies and add "This website" (blocked on the dependency audit)
+
+Commit: uncommitted
+
+**Status: blocked, not done.** The implementation is complete and every Verify command passed except
+`npm audit --audit-level=high`, which failed on an advisory that is not caused by this step. The Status line
+is `[!]`, not `[x]`, because the plan stops release on any gate failure and forbids hiding a dependency change
+in a copy step.
+
+Precondition: step 3 reconciled against git. `git log` showed `5e7164f` (signed, `feat(contact): align the
+form's focus options with the new services`) and `bb18d94`; the Status line for step 3 now carries `5e7164f`.
+Working tree was clean before this step started.
+
+### Changes
+
+- `src/content/caseStudies/{topten-ecosystem,eu-inspection-tooling,banco-estado-iot}.{en,ca,es}.md`: rewritten
+  from `copy-en.md` (frontmatter and full bodies). Filenames and `translationKey`s unchanged, so URLs are
+  unchanged. Pillars stay `platform`, `energy`, `energy` as set in step 2. Body headings are
+  `Problem` / `What I built` / `Result` and their ca/es equivalents.
+- New `src/content/caseStudies/vgr-cat.{en,ca,es}.md` (pillar `build`), from the deck. Its claims were checked
+  against the repository: `.github/workflows/ci.yml` triggers on `pull_request`, pushes to `main` and manual
+  dispatch, and runs types, lint, build and the Playwright suite (which includes the axe accessibility
+  spec); the deploy dry-run is not a CI step; `.ai/plans/archive/` exists. No rule, page or branch counts are
+  hard-coded.
+- `src/lib/content.ts`: `caseStudyOrder` is `topten-ecosystem`, `eu-inspection-tooling`, `banco-estado-iot`,
+  `vgr-cat`, with the comment updated. `getCaseStudiesByPillar` gained an explicit `alsoRelatedTo` map
+  (`modernize → topten-ecosystem`); one filter over the locale's entries means an entry matching both ways
+  is listed once and only in the requested locale. No schema migration and no duplicate case study.
+- `src/i18n/{en,ca,es}.ts`: `caseStudies.eyebrow`, `title`, `subtitle`, `labels.*` and `backToWork`.
+  `readCase` and `nextCase` are retained unchanged.
+- `src/content/services/modernize.{en,ca,es}.md` needed no edit: step 2 already links the localised Topten case.
+- `tests/structure.spec.ts`: new assertions, run per locale and per project: related-work cards of each service
+  equal the deck's mapping and `noRelatedWork` is absent; the exact internal link count and locale prefix of
+  each service body (`build` 0, `modernize` 1, `platform` 1, `energy` 2); `modernize` and `platform` link to
+  `<prefix>/work/topten-ecosystem/`; and the home page's Selected work order. The first draft of the
+  link-count test wrongly required at least one link on `build`; six runs failed on that, and the
+  assertion was replaced with exact counts. The content was correct.
+
+### Recorded deviations and observations
+
+- `ca`/`es` text is my translation, not owner-reviewed. Flagged for review: all four case studies (frontmatter
+  and bodies) and `caseStudies.*` in both locales. Choices that are not in the deck's locale tables: the ca/es
+  `caseStudies.eyebrow` (`Projectes seleccionats` / `Proyectos seleccionados`), `title` (`Sistemes en
+producció` / `Sistemas en producción`), `subtitle`, the three labels and `backToWork`. I kept the English
+  term `Content Security Policy` in the `vgr-cat` ca/es text rather than coin a translation.
+- Attribution (D1, D8, D9): the copy names Topten, Banco Estado and Fundación Chile as the deck specifies.
+  Owner review of contracts, confidentiality and permission for each named attribution remains a release
+  requirement; nothing in this step establishes it. The inspection-tooling claim that results retain input
+  data, formula version and calculation is the owner's statement (D9); the implementation was not inspected.
+- The deck's case-study link lines were already placed in their own paragraph in step 2; no change here.
+- `astro check` still reports **63 files**; no file was added to the checked set by this step.
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0 (same two `allowScripts` warnings for `esbuild` and `workerd`, unchanged and not approved).
+- **`npm audit --audit-level=high` → exit 1, `16 high severity vulnerabilities`.** Steps 1–3 recorded
+  `found 0 vulnerabilities` earlier today. `package.json` and `package-lock.json` have no diff, so the lockfile
+  did not change; the advisory data did. Root cause per `npm audit --json`: `picomatch` advisory
+  [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (ReDoS through single-branch
+  repeated extglobs), affected range `<=4.0.7`. `npm view picomatch` reports `latest` as `4.0.7`, so **no
+  patched release exists to move to**. The installed copies are 4.0.7 (via `astro`, `vite`, `tinyglobby`,
+  `fdir`, `@astrojs/internal-helpers`) and 2.3.2 (via `unstorage → anymatch`). The 16 entries are that one
+  advisory propagated up through `astro`, `@astrojs/check`, `eslint-plugin-astro`, `@typescript-eslint/parser`,
+  `vite`, `unstorage` and related packages. npm's suggested remedy (`npm audit fix --force`) would install
+  `astro@5.3.0`, a breaking downgrade; it was **not** run, and nothing in `package.json`, the lockfile, the
+  `overrides` block or the CI audit step was changed. A `minimatch`-style override cannot help because there is
+  no patched `picomatch` to select.
+  `ci.yml` runs `npm audit --audit-level=high` in the `validate` job, so a pull request or push to `main` would
+  fail `CI` and `Deploy` would not run.
+- `npm run format:check` → exit 0, `All matched files use Prettier code style!`.
+- `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (63 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `37 page(s) built` (the three `/work/vgr-cat/` routes return the count to 37).
+- `npm run test:e2e` → exit 0, `482 passed (2.4m)`, including `page-weight.spec.ts` (all six desktop and
+  mobile budget tests pass; the numbers were not logged, since step 6 owns that baseline).
+  The 482 is the earlier 386 plus 66 new assertions (33 per project) and 30 from the three new `vgr-cat`
+  routes in the route-driven specs.
+- Claim-phrase scan: `rg -ni 'sub-second|zero maintenance|legally defensible|defensible audit|immutable audit|
+legal enforcement|days to minutes|hours to seconds|weeks to hours|negligible|days rather than months|slashed
+analyst' src/content` → no output, exit 1. The translated equivalents were reviewed by reading the six
+  rewritten ca/es case studies; none of the removed claims survives. A looser scan for `defensible`,
+  `immutable`, `uptime`, `failover`, traffic and fleet numbers matched only the ordinary word `rules`.
+- Mutation check: with the `modernize` addition emptied in `src/lib/content.ts`, `npx playwright test
+tests/structure.spec.ts --project=desktop --grep 'related work of|localised Topten'` gave `3 failed, 15
+passed` (the `modernize` related-work test in en, ca and es). The file was restored; sha256 matched.
+- Production rebuild after e2e and after the mutation run: `37 page(s) built`; `npm run check:production-env`
+  → exit 0, committed sitekey in use, not a test key.
+- Built output: `dist/{,ca/,es/}services/modernize/` and `…/platform/` link `/work/topten-ecosystem/`,
+  `/ca/work/topten-ecosystem/` and `/es/work/topten-ecosystem/`; `…/build/` links `…/work/vgr-cat/`;
+  `dist/{,ca/,es/}work/` each hold `banco-estado-iot eu-inspection-tooling topten-ecosystem vgr-cat`.
+
+### Not verified
+
+- A passing dependency audit. Everything else in the standard gate passed; this one did not.
+- No browser inspection of the new pages beyond what the structure, axe and layout specs cover.
+- `npx wrangler deploy --dry-run` was not run; step 4's Verify does not require it.
+- Named attribution, the D8/D9 technical facts and permission to publish them (owner review).
+- The retired `/work/topten-scout/` URLs and the old pillar URLs return 404 by the no-redirects decision.
+
+### Decision needed from the owner
+
+The audit failure blocks release and is not fixable inside this change. Options, none taken:
+(a) wait for an upstream `picomatch` release and re-run; (b) approve a separate, explicit change to how the
+audit gate treats this advisory, which AGENTS.md rule 5 forbids doing silently; (c) review whether the affected
+packages only run at build time. Steps 5–8 will hit the same failure until one of these is chosen.

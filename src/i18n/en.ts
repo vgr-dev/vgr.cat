@@ -81,6 +81,7 @@ export const en = {
     readService: 'Explore this service',
     relatedWork: 'Related work',
     noRelatedWork: 'No public case study is listed for this service yet.',
+    engageLink: 'See ways to work together',
   },
   caseStudies: {
     eyebrow: 'Selected work',
@@ -129,6 +130,43 @@ export const en = {
     proof:
       'This site is developed with the same process, and the repository is public: the current spec, architecture decisions and earlier planning records.',
     proofLinkLabel: 'See the specs and history on GitHub',
+  },
+  engage: {
+    eyebrow: 'Ways to work together',
+    title: 'Three ways to start',
+    subtitle: 'Each starts with a written scope.',
+    items: [
+      {
+        name: 'Audit or second opinion',
+        description:
+          'Review of one agreed application, environment or technical plan, with a prioritised report and walkthrough.',
+        price: '€2,500 fixed',
+        detail:
+          'Up to 5 working days, normally over 1–2 calendar weeks. Not a penetration test or compliance certification.',
+      },
+      {
+        name: 'Project',
+        description:
+          'A build or modernisation, starting with two days of paid discovery and a written spec.',
+        price: '€640 per day',
+        detail:
+          'Discovery is €1,280, credited once towards an accepted fixed project quote. You keep the spec if you stop.',
+      },
+      {
+        name: 'Fractional tech lead',
+        description:
+          'Four eight-hour days a month as your part-time tech lead or platform engineer.',
+        price: '€2,400 per month',
+        detail:
+          "Three-month minimum (€7,200), then one month's notice. Scheduling and response expectations agreed in writing.",
+      },
+    ],
+    terms: [
+      'Prices exclude VAT. Travel and third-party costs are agreed in writing before they are incurred.',
+      'The project day rate is an eight-hour estimating basis, not an extra charge on a fixed quote. Discovery produces a quote for the agreed scope; unresolved complexity is reported before further paid work. The fixed total includes discovery, with the €1,280 already paid deducted once.',
+      'Extra work, scheduling and response expectations require written agreement. The retainer does not include 24/7 on-call.',
+      'Working languages: English and Spanish. Catalan enquiries are welcome; we agree the delivery language in writing. Remote across the EU; on site in the Barcelona area.',
+    ],
   },
   about: {
     eyebrow: 'About',

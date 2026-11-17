@@ -73,6 +73,7 @@ export const es: Dictionary = {
     relatedWork: 'Trabajos relacionados',
     noRelatedWork:
       'Todavía no hay ningún caso práctico público listado para este servicio.',
+    engageLink: 'Ver las formas de trabajar juntos',
   },
   caseStudies: {
     eyebrow: 'Proyectos seleccionados',
@@ -121,6 +122,43 @@ export const es: Dictionary = {
     proof:
       'Este sitio se desarrolla con el mismo proceso y el repositorio es público: la especificación actual, las decisiones de arquitectura y los registros de planificación anteriores.',
     proofLinkLabel: 'Ver las especificaciones y el historial en GitHub',
+  },
+  engage: {
+    eyebrow: 'Formas de trabajar juntos',
+    title: 'Tres formas de empezar',
+    subtitle: 'Cada una empieza con un alcance por escrito.',
+    items: [
+      {
+        name: 'Auditoría o segunda opinión',
+        description:
+          'Revisión de una aplicación, un entorno o un plan técnico acordados, con un informe priorizado y una sesión de presentación.',
+        price: '2.500 € precio fijo',
+        detail:
+          'Hasta 5 días laborables, normalmente repartidos en 1–2 semanas naturales. No es una prueba de intrusión ni una certificación de cumplimiento.',
+      },
+      {
+        name: 'Proyecto',
+        description:
+          'Una construcción o una modernización que empieza con dos días de descubrimiento de pago y una especificación escrita.',
+        price: '640 € por día',
+        detail:
+          'El descubrimiento cuesta 1.280 € y se abona una sola vez a un presupuesto cerrado de proyecto aceptado. Si lo deja, se queda con la especificación.',
+      },
+      {
+        name: 'Tech lead a tiempo parcial',
+        description:
+          'Cuatro días de ocho horas al mes como tech lead o ingeniero de plataforma a tiempo parcial.',
+        price: '2.400 € al mes',
+        detail:
+          'Mínimo de tres meses (7.200 €), después un mes de preaviso. Los horarios y las expectativas de respuesta se acuerdan por escrito.',
+      },
+    ],
+    terms: [
+      'Los precios no incluyen el IVA. Los viajes y los costes de terceros se acuerdan por escrito antes de incurrir en ellos.',
+      'La tarifa diaria del proyecto es una base de estimación de ocho horas, no un cargo adicional sobre un presupuesto cerrado. El descubrimiento produce un presupuesto para el alcance acordado; la complejidad sin resolver se comunica antes de seguir con trabajo de pago. El total cerrado incluye el descubrimiento, descontando una sola vez los 1.280 € ya pagados.',
+      'El trabajo adicional, los horarios y las expectativas de respuesta requieren un acuerdo por escrito. La iguala no incluye guardia 24/7.',
+      'Idiomas de trabajo: inglés y español. Las consultas en catalán son bienvenidas; acordamos por escrito el idioma de entrega. En remoto en toda la UE; presencialmente en el área de Barcelona.',
+    ],
   },
   about: {
     eyebrow: 'Sobre mí',

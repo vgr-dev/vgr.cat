@@ -4,6 +4,7 @@ import Hero from './Hero.astro';
 import ServiceCard from './ServiceCard.astro';
 import CaseStudy from './CaseStudy.astro';
 import ProcessSection from './ProcessSection.astro';
+import EngageSection from './EngageSection.astro';
 import CtaBand from './CtaBand.astro';
 import ContactSection from './ContactSection.astro';
 import ContactForm from './ContactForm.astro';
@@ -93,6 +94,14 @@ const caseStudies = await getCaseStudies(lang);
   proof={t.process.proof}
   proofLinkLabel={t.process.proofLinkLabel}
   proofHref={repositoryUrl}
+/>
+
+<EngageSection
+  eyebrow={t.engage.eyebrow}
+  title={t.engage.title}
+  subtitle={t.engage.subtitle}
+  items={t.engage.items}
+  terms={t.engage.terms}
 />
 
 <CtaBand

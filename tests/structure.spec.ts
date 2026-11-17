@@ -324,13 +324,13 @@ for (const { locale, prefix } of LOCALES) {
   const t = DICTIONARIES[locale];
   const home = `${prefix}/`;
 
-  test(`the ${locale} home page orders services, work, how I work and contact`, async ({
+  test(`the ${locale} home page orders services, work, how I work, engage and contact`, async ({
     page,
   }) => {
     await page.goto(home);
 
     const result = await page.evaluate(() => {
-      const ids = ['services', 'work', 'how-i-work', 'contact'];
+      const ids = ['services', 'work', 'how-i-work', 'engage', 'contact'];
       const elements = ids.map((id) => document.getElementById(id));
       return {
         missing: ids.filter((_, index) => elements[index] === null),
@@ -385,4 +385,58 @@ for (const { locale, prefix } of LOCALES) {
       page.locator('main h2').filter({ hasText: t.about.title }),
     ).toHaveCount(0);
   });
+}
+
+/** The approved figures, written out so a dictionary typo cannot agree with itself. */
+const PRICES = {
+  en: ['€2,500', '€640', '€2,400', '€1,280', '€7,200'],
+  ca: ['2.500 €', '640 €', '2.400 €', '1.280 €', '7.200 €'],
+  es: ['2.500 €', '640 €', '2.400 €', '1.280 €', '7.200 €'],
+} as const;
+
+for (const { locale, prefix } of LOCALES) {
+  const t = DICTIONARIES[locale];
+
+  test(`the ${locale} Ways to work together section shows three priced offers and four terms`, async ({
+    page,
+  }) => {
+    await page.goto(`${prefix}/`);
+
+    const section = page.locator('#engage');
+    await expect(section.locator('h2')).toHaveText(t.engage.title);
+    await expect(section).toContainText(t.engage.subtitle);
+
+    const cards = section.locator('article');
+    await expect(cards).toHaveCount(3);
+    for (const [index, item] of t.engage.items.entries()) {
+      const card = cards.nth(index);
+      await expect(card.locator('h3')).toHaveText(item.name);
+      await expect(card).toContainText(item.price);
+      await expect(card).toContainText(item.description);
+      await expect(card).toContainText(item.detail);
+    }
+
+    await expect(section.locator('ul > li')).toHaveCount(4);
+    for (const term of t.engage.terms) {
+      await expect(section).toContainText(term);
+    }
+
+    const text = (await section.innerText()).replace(/\s+/g, ' ');
+    for (const price of PRICES[locale]) {
+      expect(text, `the section shows ${price}`).toContain(price);
+    }
+    await expect(section.locator('[style]')).toHaveCount(0);
+  });
+
+  for (const service of Object.keys(RELATED_WORK)) {
+    test(`${prefix}/services/${service}/ links to the matching engage section`, async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}/services/${service}/`);
+
+      const link = page.getByRole('link', { name: t.services.engageLink });
+      await expect(link).toHaveCount(1);
+      await expect(link).toHaveAttribute('href', `${prefix}/#engage`);
+    });
+  }
 }

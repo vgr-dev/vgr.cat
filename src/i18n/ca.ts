@@ -73,6 +73,7 @@ export const ca: Dictionary = {
     relatedWork: 'Treballs relacionats',
     noRelatedWork:
       'Encara no hi ha cap cas pràctic públic llistat per a aquest servei.',
+    engageLink: 'Veure les formes de treballar junts',
   },
   caseStudies: {
     eyebrow: 'Projectes seleccionats',
@@ -121,6 +122,43 @@ export const ca: Dictionary = {
     proof:
       'Aquest lloc es desenvolupa amb el mateix procés, i el repositori és públic: l’especificació actual, les decisions d’arquitectura i els registres de planificació anteriors.',
     proofLinkLabel: 'Veure les especificacions i l’historial a GitHub',
+  },
+  engage: {
+    eyebrow: 'Formes de treballar junts',
+    title: 'Tres maneres de començar',
+    subtitle: 'Cada una comença amb un abast per escrit.',
+    items: [
+      {
+        name: 'Auditoria o segona opinió',
+        description:
+          'Revisió d’una aplicació, un entorn o un pla tècnic acordats, amb un informe prioritzat i una sessió de presentació.',
+        price: '2.500 € preu fix',
+        detail:
+          'Fins a 5 dies laborables, normalment repartits en 1–2 setmanes naturals. No és una prova d’intrusió ni una certificació de compliment.',
+      },
+      {
+        name: 'Projecte',
+        description:
+          'Una construcció o una modernització que comença amb dos dies de descobriment de pagament i una especificació escrita.',
+        price: '640 € per dia',
+        detail:
+          'El descobriment costa 1.280 € i s’abona una sola vegada a un pressupost tancat de projecte acceptat. Si ho deixeu, us quedeu l’especificació.',
+      },
+      {
+        name: 'Tech lead a temps parcial',
+        description:
+          'Quatre dies de vuit hores al mes com a tech lead o enginyer de plataforma a temps parcial.',
+        price: '2.400 € al mes',
+        detail:
+          'Mínim de tres mesos (7.200 €), després un mes de preavís. Els horaris i les expectatives de resposta s’acorden per escrit.',
+      },
+    ],
+    terms: [
+      'Els preus no inclouen l’IVA. Els viatges i els costos de tercers s’acorden per escrit abans d’incórrer-hi.',
+      'La tarifa diària del projecte és una base d’estimació de vuit hores, no un càrrec addicional sobre un pressupost tancat. El descobriment produeix un pressupost per a l’abast acordat; la complexitat no resolta es comunica abans de continuar amb feina de pagament. El total tancat inclou el descobriment, descomptant una sola vegada els 1.280 € ja pagats.',
+      'El treball addicional, els horaris i les expectatives de resposta requereixen un acord per escrit. La iguala no inclou guàrdia 24/7.',
+      'Llengües de treball: anglès i castellà. Les consultes en català són benvingudes; acordem per escrit la llengua de lliurament. En remot arreu de la UE; presencialment a l’àrea de Barcelona.',
+    ],
   },
   about: {
     eyebrow: 'Qui soc',

@@ -1,14 +1,18 @@
 ---
-description: 'Use when creating, updating, verifying, or archiving implementation plans and decision records under .ai/plans. Covers the evidence standard, the archive footer, and why recorded command output must never be rewritten.'
-applyTo: '.ai/plans/**'
+description: 'Use when creating, updating, verifying, or archiving specs, plans, progress logs and decision records under specs/ or .ai/plans. Covers the evidence standard, the archive footer, and why recorded command output must never be rewritten.'
+applyTo: 'specs/**,.ai/plans/**'
 ---
 
 # Plans and decision records
 
-- `.ai/plans/active/` — the in-progress plan.
-- `.ai/plans/archive/` — completed plans and decision records, each with an `## Archive Metadata` footer.
+New work lives in `specs/<YYYY-MM-DD>-<slug>/` (see `docs/adr/0001-agent-workflow.md`). The evidence
+standard below applies to its `progress.md` and `review.md`. A finished spec is closed by setting
+`status: done` and `status-date` in `spec.md`; it needs no archive footer or move.
 
-Check `active/` before starting work.
+`.ai/plans/` is frozen history, kept for the plans and decision records `AGENTS.md` cites:
+
+- `.ai/plans/active/` — retired; no new plans.
+- `.ai/plans/archive/` — completed plans and decision records, each with an `## Archive Metadata` footer.
 
 `.ai/plans/active/` is kept in git by an empty `.gitkeep` even when no plan is in progress. **Do not
 delete it** — git does not track empty directories, so removing it makes `active/` vanish for everyone

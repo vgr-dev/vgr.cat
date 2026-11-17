@@ -36,3 +36,10 @@ test-results/
 
 # jetbrains setting folder
 .idea/
+
+# agent tooling (local state, never shared)
+.claude/settings.local.json
+.claude/agent-memory-local/
+.kilo/agent-manager.json
+.kilo/worktrees/
+.kilocode/agent-manager.json

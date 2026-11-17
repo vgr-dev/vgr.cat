@@ -884,3 +884,158 @@ and that "nothing is committed" refer to the state I assumed, not the real one. 
 carries `8caace1`. The audit-threshold, `AGENTS.md`, `ci.yml` and workflow-instruction edits in this follow-up
 remain uncommitted. The `83da336` commit recorded step 4 as `[!]` blocked; this follow-up supersedes that, and
 the earlier entry is left as written.
+
+## 2026-11-17: Step 5 — Rewrite hero, meta, about, CTA band and footer
+
+Commit: uncommitted
+
+Precondition: step 4 reconciled against git. `git log` showed `8caace1` (signed, `feat(content): rewrite the
+case studies and add the vgr.cat case`) and the follow-up commits `83da336`, `80538e2` and `f71ea0a`; the Status
+line for step 4 already carried `8caace1`. The working tree was clean before this step started. The standard
+gate ran with `npm audit --audit-level=critical`, the owner-approved threshold recorded earlier today; `plan.md`
+still says `high` (see that entry).
+
+### Changes
+
+- `src/i18n/{en,ca,es}.ts`: `site.*` (title, description, author `Victor Gonzalez`, location, jobTitle),
+  `nav.caseStudies` (`Selected work`) and `nav.bookCall`, `hero.*` (badge, title, highlight, subtitle, both CTAs
+  and the three metrics, now `Build`/`Modernise`/`Run` with qualitative labels and no figures), `about.*`
+  (eyebrow, title, the five paragraphs, three experience entries with approved attribution, ten flat
+  competencies, `experienceTitle`, `techStackTitle`, `credentials`), `ctaBand.*`, and `footer.tagline`,
+  `footer.builtWith` and the new `footer.sourceLabel`. `about.competencies` stays a flat array because
+  `schema.ts` feeds it to `knowsAbout`. The hero metrics keep the existing `{ value, label }` shape.
+- `src/config.ts`: new `repositoryUrl` (`https://github.com/vgr-dev/vgr.cat`), the single constant for links to
+  the repository; step 6 will reuse it.
+- `src/components/SiteFooter.astro` and `PageShell.astro`: the copyright line is `© {year} {author}.` from
+  `t.site.author` instead of a hard-coded `VGR`; the source link is a real anchor with `footer.sourceLabel` and
+  `repositoryUrl`, passed as props rather than HTML inside a translated string.
+- `src/lib/schema.ts`: `knowsLanguage` is `['en', 'es']`, was `['en', 'ca', 'es']`. The copy deck and spec D2 make
+  English and Spanish the working languages and Catalan enquiries welcome without a proficiency claim, so listing
+  Catalan as a known language did not agree with the approved copy. This is a judgement call for the owner.
+  Location and `areaServed` (`ES`, `EU`) were checked against the copy ("remote across the EU, on site in the
+  Barcelona area") and left unchanged.
+- `src/lib/navigation.ts`: comment only (`"Case Studies"` → `"Selected work"`).
+- The hero secondary CTA and the CTA-band secondary link already pointed at `#work` in `HomeSections.astro`;
+  only their labels changed.
+- New `tests/identity.spec.ts` (4 tests per locale, in both Playwright projects): the `<title>`; the JSON-LD
+  `Person` (`name`, `jobTitle`, `address`, `knowsAbout`) and `knowsLanguage`; both `#work` anchors and the hero
+  metric; the footer's author line and its source anchor (compared with the approved URL literal, not read from
+  `config.ts`, which cannot be imported under plain Node because it reads `import.meta.env`); and the About
+  page's three roles and ten competencies.
+
+### Recorded deviations and observations
+
+- **Interim stale copy.** `about.teaser` and `about.readMore` are deliberately untouched: the plan removes them
+  in step 6. The home page therefore still renders the old About teaser (`Principal software engineer and
+consultant…`, `Twelve years…`, `market observability`) in all three locales until step 6. Do not release this
+  branch between steps 5 and 6. A scan of `src` and `tests` for the old claims (`12+`, `1.5M`, `99.99`, `17 multi`,
+  `200+`, `principal`, `observab`, `acquisition`, `GTIN`, `Case Studies`, `technical call`) matched only those
+  teaser strings, the generic word `principal` in `Navegació principal`-style labels and translated prose, and code
+  comments.
+- **Translations are mine, not owner-reviewed.** Flagged for review: every changed `site`, `nav`, `hero`,
+  `about`, `ctaBand` and `footer` string in `ca` and `es`, and in particular the ca/es headline titles (`Enginyer
+full-stack sènior i tech lead a temps parcial` / `Ingeniero full-stack sénior y tech lead a tiempo parcial`,
+  following D2's `tech lead a temps/tiempo parcial`), the metric words (`Construir`, `Modernitzar`, `Operar` /
+  `Construir`, `Modernizar`, `Operar`), the translated competencies, and the three experience entries
+  (`Enginyer líder de plataforma i consultor`, `Ingeniero líder de plataforma y consultor`).
+- **Register.** These strings address the reader formally (`vostre`/`su`), matching the contact block from step 3. The step 2 service bodies use informal `tu`/`tú`. The mix remains and needs an owner decision.
+- **Gendered forms.** ca/es job titles use the masculine forms (`Enginyer`, `Ingeniero`, `sènior`, `sénior`), as
+  the existing site did. I phrased the first-person prose gender-neutrally where that was easy (`Em moc igual de
+bé…`, `Me desenvuelvo igual de bien…`), but the titles cannot avoid it. Please confirm.
+- **Attribution.** About paragraph 2 names Bush Energie, the experience entries name Topten, Fundación Chile and
+  Banco Estado, and the hero/about make no unsourced figure claims. Owner review of permission to name them
+  remains a release requirement (D1).
+- **Commitments in copy.** `ctaBand.body` says `I reply personally, usually within two business days`, as the
+  deck specifies; the retained thanks page says `one or two business days`. Both are owner-approved statements,
+  but they are not the same.
+- `astro check` now reports **64 files** (63 plus the new spec). Record in `AGENTS.md` in step 8.
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0 (the same two `allowScripts` warnings; the approval question is still open).
+- `npm audit --audit-level=critical` → exit 0; the report still lists `16 high severity vulnerabilities` (the
+  picomatch advisory), as recorded earlier.
+- `npm run format:check` → exit 0, `All matched files use Prettier code style!`.
+- `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (64 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `37 page(s) built`.
+- `npm run test:e2e` → exit 0, `506 passed (2.4m)`: the earlier 482 plus 24 new (4 tests × 3 locales × 2
+  projects). This includes `page-weight.spec.ts` and `layout.spec.ts`; all budgets pass. The page-weight numbers
+  were not logged, since step 6 owns the baseline.
+- Production rebuild after e2e: `37 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey in
+  use, not a test key.
+- `<title>` in the built HTML, from `dist/index.html`: `Victor Gonzalez | Senior Full-Stack Engineer &amp;
+Fractional Tech Lead`; `dist/ca/index.html`: `Victor Gonzalez | Enginyer full-stack sènior i tech lead a temps
+parcial`; `dist/es/index.html`: `Victor Gonzalez | Ingeniero full-stack sénior y tech lead a tiempo parcial`.
+- JSON-LD parsed from each home page: `name: Victor Gonzalez` in all three (and `grep -c '"name":"Victor
+Gonzalez"' dist/index.html` → `1`); `jobTitle` equal to the locale's headline title; `address` `Sant Cugat del
+Vallès, near Barcelona` / `a prop de Barcelona` / `cerca de Barcelona`; `knowsLanguage ['en', 'es']`;
+  `areaServed ['ES', 'EU']`; ten `knowsAbout` entries.
+- Footer anchor in `dist/{,ca/,es/}index.html`: `<a href="https://github.com/vgr-dev/vgr.cat" …>` with the
+  translated label. `curl -L https://github.com/vgr-dev/vgr.cat` → `HTTP 200`; `gh api repos/vgr-dev/vgr.cat`
+  reports `visibility: public`.
+- `public/og/og-default.png` was viewed: it shows only the `vgr.cat` wordmark and logo, so it carries no
+  positioning text to update.
+
+### Not verified
+
+- The footer link was checked by its built `href` and an HTTP request, not by clicking it in a browser.
+- `npx wrangler deploy --dry-run` was not run; step 5's Verify does not require it.
+- No external account, CV, LinkedIn or directory listing was touched (out of scope), so those can still carry the
+  old title and claims.
+- Visual rendering of the new hero metrics (`Modernitzar` at display size in the narrow panel) is covered only by
+  the layout and page-weight specs, which pass, not by a manual look.
+- Owner review of all ca/es wording, attribution and the `knowsLanguage` change.
+
+## 2026-11-17: Install-script approval for esbuild and workerd (owner re-confirmed)
+
+Commit: uncommitted
+
+Closes the question left open in the audit-blocker entry. After I corrected my earlier statement (npm _skips_
+unapproved install scripts; it does not run them), the owner re-confirmed that `esbuild` and `workerd` should
+be approved and asked for it to be done. The owner did not choose between pinned and name-only entries, so I used
+npm's default, **version-pinned**, which is the narrower grant. Say if name-only is wanted instead.
+
+### Review before approving (read-only)
+
+- `npm install-scripts ls` listed exactly `esbuild@0.28.2` and `workerd@1.20261117.1`, each with `postinstall:
+node install.js`, and nothing else.
+- `node_modules/{esbuild,workerd}/package.json` define only that one script. `install.js` in each (300 and 252
+  lines) imports `fs`, `os`, `path`, `zlib`, `https`, `crypto` and `child_process`; the only URL built is
+  `https://registry.npmjs.org/<platform package>/-/<name>-<version>.tgz`, used as a fallback download of the
+  platform binary package. I read the matching lines, not the whole files, so this is a review of what they
+  fetch and execute at the surface, not an audit of every line.
+
+### Change
+
+- `npm install-scripts approve esbuild workerd` → `Approved esbuild: added esbuild@0.28.2` and `Approved
+workerd: added workerd@1.20261117.1`. `package.json` gains
+  `"allowScripts": { "esbuild@0.28.2": true, "workerd@1.20261117.1": true }` and nothing else changes in it.
+  `package-lock.json` has no diff. No dependency version, override or `--all` approval was involved.
+- `AGENTS.md`: dated "Resolved 2026-11-17" note appended to the existing install-script gotcha, recording the
+  decision, that the scripts were previously skipped, that entries are pinned, and what to do when a bump
+  reintroduces the warning. The earlier text was left as written.
+
+### Verification (all run 2026-11-17, after the change)
+
+- `npm install-scripts ls` → `No packages with unreviewed install scripts.`
+- `npm ci` → exit 0 with **no** `install-scripts` warning lines (a count of the string in the output was `0`);
+  the output ends with the picomatch `16 high severity vulnerabilities` audit summary recorded earlier.
+- `npm audit --audit-level=critical` → exit 0. `npm run format:check`, `npm run lint` → exit 0.
+- `npm run check` → exit 0, `0 errors, 0 warnings, 0 hints`. `npm run check:placeholders` → exit 0.
+- `npm run build` → exit 0, `37 page(s) built`.
+- `npm run test:e2e` → exit 0, `506 passed (2.5m)`, with the scripts now running during install.
+- Rebuilt normally afterwards: `37 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey in
+  use, not a test key.
+- `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` → exit 0; `Read 102 files from the assets
+directory`, which matches the `AGENTS.md` figure for the current 37-page tree; no warnings printed.
+
+### Not verified
+
+- The change was not exercised on GitHub Actions (nothing pushed). CI runs `npm ci`, so it will now run the two
+  scripts on the runner. Locally they ran harmlessly, but a runner-specific difference is not ruled out.
+  An earlier draft of this line claimed the scripts had been run by hand before; that was not done and the claim
+  was removed before commit.
+- Whether a future bump of either package changes what its install script does; pinned entries mean it will be
+  skipped until re-approved, which is the intent.

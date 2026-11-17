@@ -14,7 +14,7 @@ const FILLED = {
   name: 'Ana Ruiz',
   email: 'ana@example.com',
   organization: 'ACME SL',
-  serviceType: 'iot',
+  serviceType: 'energy',
   message: 'Necesito ayuda con EPREL.',
 };
 

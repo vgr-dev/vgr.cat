@@ -17,16 +17,26 @@ const pillarOrder: Pillar[] = ['build', 'modernize', 'platform', 'energy'];
 
 /**
  * Explicit reading order. The collection loader returns entries alphabetically, which would put
- * `banco-estado-iot` first and desynchronise the list from `caseStudies.subtitle`, which enumerates
- * regulatory → platform → IoT.
+ * `banco-estado-iot` first and desynchronise the list from `caseStudies.subtitle`. The order is
+ * client platform → regulatory tooling → IoT deployment → this website, with the site last.
  *
  * UX-031: a reorder edits this array, never the filenames.
  */
 const caseStudyOrder = [
-  'eu-inspection-tooling',
   'topten-ecosystem',
+  'eu-inspection-tooling',
   'banco-estado-iot',
+  'vgr-cat',
 ];
+
+/**
+ * Case studies that also evidence a service whose `pillar` they do not carry. Topten's canonical
+ * pillar is `platform`, but the Yii2-to-Laravel work is the modernisation proof as well, so
+ * `modernize` lists it without a schema migration or a duplicate case study.
+ */
+const alsoRelatedTo: Partial<Record<Pillar, readonly string[]>> = {
+  modernize: ['topten-ecosystem'],
+};
 
 /** Unknown keys sort last, so a future entry cannot jump the queue by accident. */
 const caseStudyRank = (key: string) => {
@@ -80,13 +90,17 @@ export async function getCaseStudy(
 
 /**
  * The cross-link that keeps `/services/<pillar>/` from being a thin page: the case studies already
- * carry the same `pillar` enum, so the relationship is derived rather than authored twice.
+ * carry the same `pillar` enum, so the relationship is derived rather than authored twice, plus the
+ * explicit `alsoRelatedTo` additions. A single filter over the locale's entries means an entry that
+ * matches both ways is listed once, and only in the requested locale.
  */
 export async function getCaseStudiesByPillar(
   locale: Locale,
   pillar: Pillar,
 ): Promise<CaseStudyEntry[]> {
+  const extra = alsoRelatedTo[pillar] ?? [];
   return (await getCaseStudies(locale)).filter(
-    (entry) => entry.data.pillar === pillar,
+    (entry) =>
+      entry.data.pillar === pillar || extra.includes(entry.data.translationKey),
   );
 }

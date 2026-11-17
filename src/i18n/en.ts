@@ -79,18 +79,18 @@ export const en = {
     noRelatedWork: 'No public case study is listed for this service yet.',
   },
   caseStudies: {
-    eyebrow: 'Proven Deliverables',
-    title: 'Selected platforms and deployments',
+    eyebrow: 'Selected work',
+    title: 'Systems in production',
     subtitle:
-      'Systems in production: regulatory verification for European authorities, a pan-European product platform, and a nationwide IoT fleet.',
+      'Platforms and tools I have built or run, for organisations in Switzerland, the EU and Chile.',
     labels: {
-      problem: 'The Challenge',
-      approach: 'The Architecture',
-      outcome: 'Measurable Impact',
+      problem: 'Problem',
+      approach: 'What I built',
+      outcome: 'Result',
     },
     // Card affordance and `/work/<translationKey>/` navigation.
     readCase: 'Read the case study',
-    backToWork: 'All case studies',
+    backToWork: 'All selected work',
     nextCase: 'Next case study',
   },
   about: {

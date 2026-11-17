@@ -1,6 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
+import { ca } from '../src/i18n/ca';
+import { en } from '../src/i18n/en';
+import { es } from '../src/i18n/es';
 import { HOME_ROUTES, ROUTES } from './routes';
 
 /**
@@ -198,5 +201,116 @@ for (const route of DETAIL_ROUTES) {
     await expect(page.locator('h1')).toHaveText(
       frontmatterTitle(COLLECTION_DIR[kind], locale, slug),
     );
+  });
+}
+
+/**
+ * The service → case-study relation the copy deck specifies. `modernize` and `platform` both list
+ * Topten, though Topten's own pillar is `platform`: `getCaseStudiesByPillar` carries an explicit
+ * addition for `modernize`, and this is the only place that guards it end to end.
+ */
+const RELATED_WORK: Record<string, string[]> = {
+  build: ['vgr-cat'],
+  modernize: ['topten-ecosystem'],
+  platform: ['topten-ecosystem'],
+  energy: ['eu-inspection-tooling', 'banco-estado-iot'],
+};
+
+/**
+ * Internal links written in each service body (the case-study links). Exact counts, so a link lost
+ * from a translation is caught; `build` links only through its related-work card.
+ */
+const BODY_LINK_COUNT: Record<string, number> = {
+  build: 0,
+  modernize: 1,
+  platform: 1,
+  energy: 2,
+};
+
+/** The order of the home page's Selected work section. */
+const WORK_ORDER = [
+  'topten-ecosystem',
+  'eu-inspection-tooling',
+  'banco-estado-iot',
+  'vgr-cat',
+];
+
+const NO_RELATED_WORK = {
+  en: en.services.noRelatedWork,
+  ca: ca.services.noRelatedWork,
+  es: es.services.noRelatedWork,
+} as const;
+
+const LOCALES = [
+  { locale: 'en', prefix: '' },
+  { locale: 'ca', prefix: '/ca' },
+  { locale: 'es', prefix: '/es' },
+] as const;
+
+for (const { locale, prefix } of LOCALES) {
+  for (const [service, studies] of Object.entries(RELATED_WORK)) {
+    const path = `${prefix}/services/${service}/`;
+
+    test(`related work of ${path}`, async ({ page }) => {
+      await page.goto(path);
+
+      const hrefs = await page
+        .locator('main article a[href*="/work/"]')
+        .evaluateAll((nodes) => [
+          ...new Set(nodes.map((node) => node.getAttribute('href'))),
+        ]);
+      expect(hrefs).toEqual(studies.map((key) => `${prefix}/work/${key}/`));
+      await expect(page.getByText(NO_RELATED_WORK[locale])).toHaveCount(0);
+    });
+
+    test(`internal body links of ${path} stay in the page's locale`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      const hrefs = await page
+        .locator('.prose a[href^="/"]')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute('href') ?? ''),
+        );
+      expect(hrefs, 'internal links in the service body').toHaveLength(
+        BODY_LINK_COUNT[service] ?? -1,
+      );
+      for (const href of hrefs) {
+        if (prefix === '') {
+          expect(href, 'an English body link carries no locale prefix').toMatch(
+            /^\/(?!ca\/|es\/)/,
+          );
+        } else {
+          expect(href.startsWith(`${prefix}/`)).toBe(true);
+        }
+      }
+    });
+  }
+
+  for (const service of ['modernize', 'platform']) {
+    test(`${prefix}/services/${service}/ links to the localised Topten case`, async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}/services/${service}/`);
+      await expect(
+        page.locator(`.prose a[href="${prefix}/work/topten-ecosystem/"]`),
+      ).toHaveCount(1);
+    });
+  }
+}
+
+for (const route of HOME_ROUTES) {
+  const prefix = route.path === '/' ? '' : route.path.replace(/\/$/, '');
+
+  test(`Selected work order on ${route.path}`, async ({ page }) => {
+    await page.goto(route.path);
+
+    const hrefs = await page
+      .locator('#work article a[href*="/work/"]')
+      .evaluateAll((nodes) => [
+        ...new Set(nodes.map((node) => node.getAttribute('href'))),
+      ]);
+    expect(hrefs).toEqual(WORK_ORDER.map((key) => `${prefix}/work/${key}/`));
   });
 }

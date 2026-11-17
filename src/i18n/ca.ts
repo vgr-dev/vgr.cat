@@ -72,18 +72,18 @@ export const ca: Dictionary = {
       'Encara no hi ha cap cas pràctic públic llistat per a aquest servei.',
   },
   caseStudies: {
-    eyebrow: 'Projectes executats',
-    title: 'Plataformes i desplegaments seleccionats',
+    eyebrow: 'Projectes seleccionats',
+    title: 'Sistemes en producció',
     subtitle:
-      'Sistemes en producció: verificació normativa per a autoritats europees, una plataforma de producte paneuropea i una flota IoT a escala nacional.',
+      'Plataformes i eines que he construït o operat, per a organitzacions a Suïssa, la UE i Xile.',
     labels: {
-      problem: 'El repte',
-      approach: 'L’arquitectura',
-      outcome: 'Impacte mesurable',
+      problem: 'El problema',
+      approach: 'Què he construït',
+      outcome: 'El resultat',
     },
     // Card affordance and `/work/<translationKey>/` navigation.
     readCase: 'Llegeix el cas pràctic',
-    backToWork: 'Tots els casos pràctics',
+    backToWork: 'Tots els projectes seleccionats',
     nextCase: 'Cas pràctic següent',
   },
   about: {

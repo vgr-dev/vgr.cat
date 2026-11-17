@@ -72,18 +72,18 @@ export const es: Dictionary = {
       'Todavía no hay ningún caso práctico público listado para este servicio.',
   },
   caseStudies: {
-    eyebrow: 'Proyectos ejecutados',
-    title: 'Plataformas y despliegues seleccionados',
+    eyebrow: 'Proyectos seleccionados',
+    title: 'Sistemas en producción',
     subtitle:
-      'Sistemas en producción: verificación normativa para autoridades europeas, una plataforma de producto paneuropea y una flota IoT a escala nacional.',
+      'Plataformas y herramientas que he construido u operado, para organizaciones en Suiza, la UE y Chile.',
     labels: {
-      problem: 'El reto',
-      approach: 'La arquitectura',
-      outcome: 'Impacto medible',
+      problem: 'El problema',
+      approach: 'Lo que construí',
+      outcome: 'El resultado',
     },
     // Card affordance and `/work/<translationKey>/` navigation.
     readCase: 'Leer el caso práctico',
-    backToWork: 'Todos los casos prácticos',
+    backToWork: 'Todos los proyectos seleccionados',
     nextCase: 'Siguiente caso práctico',
   },
   about: {

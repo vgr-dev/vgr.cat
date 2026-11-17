@@ -6,7 +6,7 @@ summary: 'A scalable multi-tenant platform powering Topten.eu, Topten.ch, and in
 problem: 'Managing independent country portals across Europe with diverging national criteria, language requirements, and disconnected codebases created massive operational overhead.'
 approach: 'Architected a consolidated multi-tenant platform with centralized data modeling, modular criteria engines, and bespoke internal onboarding tools.'
 outcome: 'Unified operations across European and Swiss portals, slashed analyst maintenance hours, and achieved sub-second catalog response times with zero maintenance downtime.'
-pillar: infrastructure
+pillar: platform
 ---
 
 Topten is a leading European consumer initiative that tracks and presents the most energy-efficient products on the market, guiding consumers, corporate procurement teams, and policymakers.

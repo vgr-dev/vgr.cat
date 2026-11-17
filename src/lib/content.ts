@@ -13,12 +13,7 @@ export type CaseStudyEntry = CollectionEntry<'caseStudies'>;
 export type Pillar = ServiceEntry['data']['pillar'];
 
 /** Mirrors the collection `pillar` enum, so this is also the home page's capability order. */
-const pillarOrder: Pillar[] = [
-  'regtech',
-  'entity-resolution',
-  'infrastructure',
-  'iot',
-];
+const pillarOrder: Pillar[] = ['build', 'modernize', 'platform', 'energy'];
 
 /**
  * Explicit reading order. The collection loader returns entries alphabetically, which would put

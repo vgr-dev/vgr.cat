@@ -54,23 +54,22 @@ export const ca: Dictionary = {
     ],
   },
   services: {
-    eyebrow: 'Capacitats especialitzades',
-    title:
-      'Enginyeria full-stack de dades energètiques: dels sensors de camp als registres europeus',
+    eyebrow: 'Serveis',
+    title: 'El que et puc treure de sobre',
     subtitle:
-      'Motors normatius, observabilitat de mercat, monitoratge IoT i les plataformes que els fan funcionar. Una sola persona per a tot l’stack: ingesta, model, validació, desplegament i operació.',
+      'Una sola persona sènior per a tot el camí: l’especificació, el codi, la infraestructura i el traspàs.',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
-      regtech: { tag: 'RegTech i compliment normatiu' },
-      'entity-resolution': { tag: 'Intel·ligència de dades' },
-      infrastructure: { tag: 'Núvol i sistemes' },
-      iot: { tag: 'IoT i dades de camp' },
+      build: { tag: 'Nous productes' },
+      modernize: { tag: 'Rescat d’aplicacions heretades' },
+      platform: { tag: 'Operació de plataformes' },
+      energy: { tag: 'Energia i normativa' },
     },
     // Detail-page copy for `/services/<pillar>/`.
     readService: 'Descobreix aquest servei',
-    relatedWork: 'Treballs seleccionats en aquest àmbit',
+    relatedWork: 'Treballs relacionats',
     noRelatedWork:
-      'Encara no hi ha cap cas pràctic publicat en aquest àmbit. El pròxim es llistarà aquí.',
+      'Encara no hi ha cap cas pràctic públic llistat per a aquest servei.',
   },
   caseStudies: {
     eyebrow: 'Projectes executats',

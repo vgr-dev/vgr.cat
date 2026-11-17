@@ -6,7 +6,7 @@ summary: 'Programari algorísmic a mida que permet a les autoritats de supervisi
 problem: 'Les autoritats de supervisió de mercat acumulaven endarreriments importants per la inspecció manual de fitxes tècniques heterogènies, fórmules de tolerància complexes i registres públics desconnectats.'
 approach: 'Es va construir una plataforma de validació especialitzada que tradueix les fórmules europees d’assaig en algorismes de verificació automatitzada amb verificació directa a EPREL.'
 outcome: 'El temps d’avaluació tècnica va passar de dies a minuts per lot, i els inspectors van obtenir informes de no-conformitat reproduïbles i jurídicament defensables.'
-pillar: regtech
+pillar: energy
 ---
 
 La supervisió de mercat és essencial perquè les directrius europees d’Ecodesign i d’etiquetatge energètic generin reduccions reals d’emissions. Tanmateix, les autoritats nacionals de supervisió de mercat (MSA) de tot Europa sovint operen amb recursos limitats davant d’un volum aclaparador d’aparells importats i nacionals.

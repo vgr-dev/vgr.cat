@@ -54,23 +54,22 @@ export const es: Dictionary = {
     ],
   },
   services: {
-    eyebrow: 'Capacidades especializadas',
-    title:
-      'Ingeniería full-stack de datos energéticos: de los sensores de campo a los registros europeos',
+    eyebrow: 'Servicios',
+    title: 'Lo que puedo quitarte de encima',
     subtitle:
-      'Motores normativos, observabilidad de mercado, monitorización IoT y las plataformas que los hacen funcionar. Una sola persona para todo el stack: ingesta, modelo, validación, despliegue y operación.',
+      'Un solo ingeniero sénior para todo el camino: la especificación, el código, la infraestructura y el traspaso.',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
-      regtech: { tag: 'RegTech y cumplimiento normativo' },
-      'entity-resolution': { tag: 'Inteligencia de datos' },
-      infrastructure: { tag: 'Nube y sistemas' },
-      iot: { tag: 'IoT y datos de campo' },
+      build: { tag: 'Nuevos productos' },
+      modernize: { tag: 'Rescate de aplicaciones heredadas' },
+      platform: { tag: 'Operación de plataformas' },
+      energy: { tag: 'Energía y normativa' },
     },
     // Detail-page copy for `/services/<pillar>/`.
     readService: 'Descubre este servicio',
-    relatedWork: 'Trabajos seleccionados en este ámbito',
+    relatedWork: 'Trabajos relacionados',
     noRelatedWork:
-      'Todavía no hay ningún caso práctico publicado en este ámbito. El próximo se listará aquí.',
+      'Todavía no hay ningún caso práctico público listado para este servicio.',
   },
   caseStudies: {
     eyebrow: 'Proyectos ejecutados',

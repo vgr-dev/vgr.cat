@@ -6,7 +6,7 @@ summary: 'Purpose-built algorithmic software enabling Market Surveillance Author
 problem: 'Market Surveillance Authorities faced major backlogs due to manual inspection of heterogeneous technical sheets, complex tolerance formulas, and disconnected public registries.'
 approach: 'Engineered a specialized validation platform that translates European testing formulas into automated verification algorithms with direct EPREL verification.'
 outcome: 'Reduced technical evaluation time from days to minutes per batch, providing inspectors with legally defensible, reproducible non-compliance reports.'
-pillar: regtech
+pillar: energy
 ---
 
 Market surveillance is essential to ensure that European Ecodesign and Energy Labelling directives deliver real emissions reductions. However, national Market Surveillance Authorities (MSAs) across Europe often operate with limited resources against an overwhelming volume of imported and domestic appliances.

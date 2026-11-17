@@ -62,23 +62,21 @@ export const en = {
     ],
   },
   services: {
-    eyebrow: 'Specialized Capabilities',
-    title:
-      'Full-stack engineering for energy data: from field sensors to European registries',
+    eyebrow: 'Services',
+    title: 'What I can take off your plate',
     subtitle:
-      'Regulatory engines, market observability, IoT monitoring and the platforms that run them. One engineer across the whole stack: ingest, model, validate, ship, operate.',
+      'One senior engineer across the whole path: the spec, the code, the infrastructure and the handover.',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
-      regtech: { tag: 'RegTech & Compliance' },
-      'entity-resolution': { tag: 'Data Intelligence' },
-      infrastructure: { tag: 'Cloud & Systems' },
-      iot: { tag: 'IoT & Field Data' },
+      build: { tag: 'New products' },
+      modernize: { tag: 'Legacy rescue' },
+      platform: { tag: 'Platform operations' },
+      energy: { tag: 'Energy & regulation' },
     },
     // Detail-page copy for `/services/<pillar>/`.
     readService: 'Explore this service',
-    relatedWork: 'Selected work in this pillar',
-    noRelatedWork:
-      'No published case study covers this pillar yet. The next one will be listed here.',
+    relatedWork: 'Related work',
+    noRelatedWork: 'No public case study is listed for this service yet.',
   },
   caseStudies: {
     eyebrow: 'Proven Deliverables',

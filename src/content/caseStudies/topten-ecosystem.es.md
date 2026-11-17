@@ -6,7 +6,7 @@ summary: 'Una plataforma multiinquilino escalable que impulsa Topten.eu, Topten.
 problem: 'Gestionar portales nacionales independientes con criterios nacionales divergentes, requisitos lingüísticos y bases de código desconectadas generaba un coste operativo enorme.'
 approach: 'Se diseñó una plataforma multiinquilino consolidada con modelado de datos centralizado, motores de criterios modulares y herramientas internas de alta de productos a medida.'
 outcome: 'Se unificó la operación de los portales europeos y suizos, se redujeron drásticamente las horas de mantenimiento de los analistas y se lograron tiempos de respuesta inferiores a un segundo sin interrupciones de servicio.'
-pillar: infrastructure
+pillar: platform
 ---
 
 Topten es una iniciativa de consumidores europea líder que hace seguimiento y presenta los productos más eficientes del mercado, para orientar a consumidores, equipos de compra corporativa y responsables políticos.

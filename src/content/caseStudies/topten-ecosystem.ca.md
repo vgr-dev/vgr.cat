@@ -6,7 +6,7 @@ summary: 'Una plataforma multi-tenant escalable que impulsa Topten.eu, Topten.ch
 problem: 'Gestionar portals nacionals independents amb criteris nacionals divergents, requisits lingüístics i bases de codi desconnectades generava un cost operatiu enorme.'
 approach: 'Es va dissenyar una plataforma multi-tenant consolidada amb modelatge de dades centralitzat, motors de criteris modulars i eines internes d’alta de productes a mida.'
 outcome: 'Es va unificar l’operació dels portals europeus i suïssos, es van reduir dràsticament les hores de manteniment dels analistes i es van assolir temps de resposta inferiors a un segon sense interrupcions de servei.'
-pillar: infrastructure
+pillar: platform
 ---
 
 Topten és una iniciativa de consumidors europea capdavantera que fa seguiment i presenta els productes més eficients del mercat, per orientar consumidors, equips de compra corporativa i responsables polítics.

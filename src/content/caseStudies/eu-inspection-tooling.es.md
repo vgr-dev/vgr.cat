@@ -6,7 +6,7 @@ summary: 'Software algorítmico a medida que permite a las autoridades de superv
 problem: 'Las autoridades de supervisión de mercado acumulaban retrasos importantes por la inspección manual de fichas técnicas heterogéneas, fórmulas de tolerancia complejas y registros públicos desconectados.'
 approach: 'Se construyó una plataforma de validación especializada que traduce las fórmulas europeas de ensayo en algoritmos de verificación automatizada con verificación directa en EPREL.'
 outcome: 'El tiempo de evaluación técnica pasó de días a minutos por lote, y los inspectores obtuvieron informes de no conformidad reproducibles y jurídicamente defendibles.'
-pillar: regtech
+pillar: energy
 ---
 
 La supervisión de mercado es esencial para que las directivas europeas de Ecodesign y etiquetado energético generen reducciones reales de emisiones. Sin embargo, las autoridades nacionales de supervisión de mercado (MSA) de toda Europa suelen operar con recursos limitados frente a un volumen abrumador de aparatos importados y nacionales.

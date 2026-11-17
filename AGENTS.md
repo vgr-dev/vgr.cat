@@ -181,7 +181,9 @@ wrong, raise it with the user rather than silently reverting it.
 
 Spec-driven, per `docs/adr/0001-agent-workflow.md`. Work lives in `specs/<YYYY-MM-DD>-<slug>/`
 (`spec.md` → `plan.md` → `progress.md`, plus `review.md` for large reviews), handed off between the global
-architect / builder / reviewer roles. Copy `specs/_template/` to start one, and check `specs/` for
+architect / builder / reviewer roles. `plan.md` opens with a `## Status` checklist (one line per step,
+with `uncommitted` or the commit hash) — the only part of a plan edited after sign-off
+(`docs/adr/0002-plan-status-checklist.md`). Copy `specs/_template/` to start one, and check `specs/` for
 `status: active` work before starting. `stale-after-days: 14`.
 
 `.ai/plans/` is **frozen history**: `archive/` holds the completed plans and decision records this file

@@ -23,14 +23,13 @@ const pillarOrder: Pillar[] = [
 /**
  * Explicit reading order. The collection loader returns entries alphabetically, which would put
  * `banco-estado-iot` first and desynchronise the list from `caseStudies.subtitle`, which enumerates
- * regulatory → platform → observability → IoT.
+ * regulatory → platform → IoT.
  *
  * UX-031: a reorder edits this array, never the filenames.
  */
 const caseStudyOrder = [
   'eu-inspection-tooling',
   'topten-ecosystem',
-  'topten-scout',
   'banco-estado-iot',
 ];
 

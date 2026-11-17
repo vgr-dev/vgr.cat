@@ -76,7 +76,7 @@ export const ca: Dictionary = {
     eyebrow: 'Projectes executats',
     title: 'Plataformes i desplegaments seleccionats',
     subtitle:
-      'Sistemes en producció: verificació normativa per a autoritats europees, una plataforma de producte paneuropea, observabilitat de mercat i una flota IoT a escala nacional.',
+      'Sistemes en producció: verificació normativa per a autoritats europees, una plataforma de producte paneuropea i una flota IoT a escala nacional.',
     labels: {
       problem: 'El repte',
       approach: 'L’arquitectura',

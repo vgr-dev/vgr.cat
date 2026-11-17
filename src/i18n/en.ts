@@ -84,7 +84,7 @@ export const en = {
     eyebrow: 'Proven Deliverables',
     title: 'Selected platforms and deployments',
     subtitle:
-      'Systems in production: regulatory verification for European authorities, a pan-European product platform, market observability, and a nationwide IoT fleet.',
+      'Systems in production: regulatory verification for European authorities, a pan-European product platform, and a nationwide IoT fleet.',
     labels: {
       problem: 'The Challenge',
       approach: 'The Architecture',

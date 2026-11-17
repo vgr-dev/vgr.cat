@@ -76,7 +76,7 @@ export const es: Dictionary = {
     eyebrow: 'Proyectos ejecutados',
     title: 'Plataformas y despliegues seleccionados',
     subtitle:
-      'Sistemas en producción: verificación normativa para autoridades europeas, una plataforma de producto paneuropea, observabilidad de mercado y una flota IoT a escala nacional.',
+      'Sistemas en producción: verificación normativa para autoridades europeas, una plataforma de producto paneuropea y una flota IoT a escala nacional.',
     labels: {
       problem: 'El reto',
       approach: 'La arquitectura',

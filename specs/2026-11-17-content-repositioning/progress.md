@@ -1039,3 +1039,118 @@ directory`, which matches the `AGENTS.md` figure for the current 37-page tree; n
   was removed before commit.
 - Whether a future bump of either package changes what its install script does; pinned entries mean it will be
   skipped until re-approved, which is the intent.
+
+## 2026-11-17: Step 6 — Add the "How I work" home section
+
+Commit: uncommitted
+
+Precondition: step 5 reconciled against git. `git log` showed `a9bd379` (signed, `feat(content): rewrite the
+hero, meta, about, CTA band and footer`), `c57658b` and `81ed747`; the Status line for step 5 now carries
+`a9bd379` in place of `uncommitted`. The working tree was clean before this step started. The standard gate ran
+with `npm audit --audit-level=critical`, the owner-approved threshold recorded earlier today.
+
+### Page-weight baseline (recorded before any section was added)
+
+`tests/page-weight.spec.ts` now prints the figures it already computed; no budget or assertion changed.
+`npm run test:e2e -- tests/page-weight.spec.ts --project=desktop` on the step 5 tree gave `6 passed`:
+
+```text
+page-weight / desktop 1280×900: 4776 px, 772 words, 8 cards, tallest card 320 px
+page-weight /ca/ desktop 1280×900: 5039 px, 916 words, 8 cards, tallest card 320 px
+page-weight /es/ desktop 1280×900: 5055 px, 915 words, 8 cards, tallest card 320 px
+page-weight / mobile 390×844: 6888 px
+page-weight /ca/ mobile 390×844: 7123 px
+page-weight /es/ mobile 390×844: 7309 px
+```
+
+The historical figures in the spec's header comment (4,792 / 5,057 / 5,137 px) are older than this and were not used.
+
+### Changes
+
+- New `src/components/ProcessSection.astro`: `<section id="how-i-work">` with the eyebrow, title, subtitle, the
+  data-boundary note, an `<ol>` of five steps with native list markers (title plus one line each), the proof line
+  and a link whose `href` comes from `repositoryUrl` in `src/config.ts`. Astro only, existing Tailwind tokens, no
+  inline `style=""`, single column below `lg`.
+- `src/components/HomeSections.astro`: the About teaser band is removed and `ProcessSection` sits after Selected
+  work and before the CTA band. The now-unused `aboutPath` import and `aboutHref` were deleted.
+- `src/i18n/{en,ca,es}.ts`: new `process` key (`eyebrow`, `title`, `subtitle`, `steps[]` of `{ title, body }`,
+  `dataBoundary`, `proof`, `proofLinkLabel`), and `about.teaser` and `about.readMore` deleted from all three.
+  Before deleting them: `rg -n "about\.teaser|about\.readMore|\.teaser\b|\.readMore\b|aboutHref" src tests
+scripts -g '!src/content/**'` matched only `HomeSections.astro` (the band being removed), and the keys exist
+  only in the three dictionaries. `/about/` stays reachable from the header and footer.
+- `tests/structure.spec.ts`: per locale, (1) `#services`, `#work`, `#how-i-work` and `#contact` all exist and
+  appear in that document order; (2) the section's `h2`, subtitle, boundary note, five steps in order and the
+  proof link, whose `href` is compared with the approved repository URL literal rather than read from
+  `config.ts`, and no `[style]` inside it; (3) no `a[href$="/about/"]` and no About-title `h2` remain in `main`.
+- `tests/page-weight.spec.ts`: logging only, as above.
+- Copy follows `copy-en.md` verbatim in English. `ca`/`es` are my translations.
+
+### Page-weight results after the change
+
+`npm run test:e2e`, same viewports, all assertions passing:
+
+```text
+page-weight / desktop 1280×900: 5051 px, 876 words, 8 cards, tallest card 320 px
+page-weight /ca/ desktop 1280×900: 5385 px, 1035 words, 8 cards, tallest card 320 px
+page-weight /es/ desktop 1280×900: 5374 px, 1039 words, 8 cards, tallest card 320 px
+page-weight / mobile 390×844: 7501 px
+page-weight /ca/ mobile 390×844: 7833 px
+page-weight /es/ mobile 390×844: 8038 px
+```
+
+Net change: `/` +275 px, `/ca/` +346 px, `/es/` +319 px desktop (the section replaced the About band, so these are
+net of it). Headroom to the 5,500 px budget is now **449 px, 115 px and 126 px**. Mobile stays far inside
+12,000 px, words inside 1,700, and the tallest card is unchanged at 320 px against 340.
+
+**Risk for step 7.** The "Ways to work together" section (three offer cards plus four terms) is expected to be
+taller than this section, and `ca`/`es` have only ~115–126 px left. If step 7 pushes any home page past a
+budget, the plan's stop rule applies: stop and ask, do not raise a threshold or remove an assertion. The
+plan's fallback is a separate `/pricing/` page, only with owner approval. This is an estimate, not a measurement.
+
+### Recorded deviations and observations
+
+- **Translations are mine, not owner-reviewed.** Flagged for review: every `process.*` string in `ca` and `es`,
+  including the titles (`La IA ajuda amb els esborranys. Jo en continuo sent responsable.` / `La IA ayuda con los
+borradores. Yo sigo siendo responsable.`) and the step titles (`Especificació`, `Pla`, `Construcció`, `Revisió`,
+  `Lliurament` / `Especificación`, `Plan`, `Construcción`, `Revisión`, `Entrega`).
+- **Register.** Like the contact block and step 5, these address the reader formally (`vosaltres`, `vostre` /
+  `Usted`, `su`). The step 2 service bodies are informal. The mix remains open for the owner.
+- The "five short steps and the code-sharing boundary" are the deck's wording verbatim; no competing copy was
+  written. The copy states AI-assisted delivery is opt-in and that I review what ships; it makes no speed or
+  perfect-review guarantee.
+- The proof line says the repository is public. `gh api repos/vgr-dev/vgr.cat` reported `visibility: public`
+  during step 5.
+- `astro check` now reports **65 files** (was 64): the new component. Record in `AGENTS.md` in step 8.
+- No new `Dictionary` mismatches: `astro check` enforces the `process` shape and the removal of the teaser keys
+  across all three locales.
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0, no install-script warning. `npm audit --audit-level=critical` → exit 0 (the report still
+  lists the 16 high picomatch findings recorded earlier).
+- `npm run format:check` → exit 0. `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (65 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `37 page(s) built`.
+- `npm run test:e2e` → exit 0, `524 passed (2.5m)`: the earlier 506 plus 18 new (3 tests × 3 locales × 2
+  projects). Includes `page-weight.spec.ts`, `layout.spec.ts` and the axe `a11y.spec.ts` on the home pages.
+- Production rebuild after e2e: `37 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey in
+  use, not a test key.
+- **CSP check in the production build.** `npm run build`, `npm run preview` (`Preview server running at
+http://localhost:4321`), then a Chromium script visited `/`, `/ca/` and `/es/` at 1280×900, scrolled to
+  `#how-i-work`, and collected console messages, page errors and `securitypolicyviolation` events. Each page
+  reported `cspMeta: true` (the CSP `<meta>` tag is present, so this is the build the policy applies to),
+  `visible: true`, `steps: 5`, `inlineStyle: 0`, `violations: []` and `console errors/warnings: []`. The section
+  title read back as `AI helps with the drafting. I stay accountable.` / `La IA ajuda amb els esborranys. Jo en
+continuo sent responsable.` / `La IA ayuda con los borradores. Yo sigo siendo responsable.` The preview server
+  was then stopped with `npx astro preview stop` (`curl` to the port returned `HTTP 000`).
+
+### Not verified
+
+- Visual quality of the section by eye (spacing, band contrast in dark mode) beyond the axe, layout and
+  page-weight specs, which pass. No screenshot was taken or reviewed.
+- The CSP check covered the three home pages in one browser (Chromium) and did not exercise the contact form or
+  Turnstile, which load lazily on first focus; the edge-injected Cloudflare Web Analytics beacon does not exist
+  in `preview`.
+- `npx wrangler deploy --dry-run` was not run; step 6's Verify does not require it.
+- Owner review of the ca/es wording and the register question.

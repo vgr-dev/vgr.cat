@@ -14,8 +14,8 @@ short commit hash, or the reason. The only part of this file that changes after 
 - [x] 2. Replace the service pillars and rewrite the four services — 841b39c
 - [x] 3. Align the contact form's focus options with the new services — 5e7164f
 - [x] 4. Rewrite the case studies and add "This website" — 8caace1 (audit gate run at critical by owner decision; see progress.md)
-- [x] 5. Rewrite hero, meta, about, CTA band and footer — uncommitted
-- [ ] 6. Add the "How I work" home section
+- [x] 5. Rewrite hero, meta, about, CTA band and footer — a9bd379
+- [x] 6. Add the "How I work" home section — uncommitted
 - [ ] 7. Add the "Ways to work together" home section with prices
 - [ ] 8. Sync docs and close out
 

@@ -24,8 +24,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Threshold is `critical` by owner decision on 2026-11-17: picomatch advisory GHSA-fc5q-39xc-vjpf
+      # (`<=4.0.7`) has no patched release and only affects build-time tooling. Restore `high` once a
+      # patched picomatch ships (see AGENTS.md, "Dependency audit threshold").
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical
       - run: npm run format:check
       - run: npm run check
       - run: npm run lint

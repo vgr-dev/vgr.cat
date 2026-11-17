@@ -121,6 +121,17 @@ wrong, raise it with the user rather than silently reverting it.
   label is rejected and a valid wildcard-matched control passes. No lint rules were disabled.
   npm warns that `esbuild` and `workerd` install scripts are not covered by `allowScripts`; this is
   separate from peer resolution. Do not silently change install-script approval policy.
+- **Dependency audit threshold is `critical`, not `high` (owner decision 2026-11-17).** Later that day the
+  advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (picomatch ReDoS,
+  affected range `<=4.0.7`, `first_patched_version: null`, latest published release `4.0.7`) turned
+  `npm audit --audit-level=high` from 0 into **16 high findings**, all that one advisory propagated through
+  `astro`, `vite`, `tinyglobby`, `@astrojs/check`, `eslint-plugin-astro` and others, with no lockfile change.
+  No package override can fix it, and `npm audit fix --force` would downgrade Astro to 5.3.0, so do not run
+  it. picomatch is not in `dist/`, the Worker bundle or this repository's own source; it only globs at build
+  time, so the exposure is build-tooling only. The gate in `ci.yml` and the CI contract in
+  `.github/instructions/workflows.instructions.md` therefore use `--audit-level=critical`, which still
+  fails on any critical advisory but **no longer on high ones**. **Restore `--audit-level=high`** in both
+  places when `npm view picomatch version` shows a release above `4.0.7` and the audit is clean again.
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
   under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
   `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the

@@ -1154,3 +1154,150 @@ continuo sent responsable.` / `La IA ayuda con los borradores. Yo sigo siendo re
   in `preview`.
 - `npx wrangler deploy --dry-run` was not run; step 6's Verify does not require it.
 - Owner review of the ca/es wording and the register question.
+
+## 2026-11-17: Step 7 — Add the "Ways to work together" home section with prices (blocked on the page-height budget)
+
+Commit: uncommitted
+
+**Status: blocked, not done.** The section is implemented and every Verify command passed **except** the
+desktop page-height budget in `tests/page-weight.spec.ts`, which fails on all three home pages. The plan's stop
+rule applies ("Same stop rule if a budget is exceeded"; step 6: "do not raise thresholds or remove assertions"),
+so no threshold, assertion or other copy was changed, and the owner's decision is needed. The Status line is
+`[!]`, not `[x]`.
+
+Precondition: step 6 reconciled against git. `git log` showed `cf72215` (signed, `feat(home): add the How I work
+section and drop the About teaser`) and `fb7a53d`; the Status line for step 6 now carries `cf72215` in place of
+`uncommitted`. The working tree was clean before this step started. The gate ran with `npm audit
+--audit-level=critical`, the owner-approved threshold recorded earlier today.
+
+### Changes
+
+- New `src/components/EngageSection.astro`: `<section id="engage">` with eyebrow, title, subtitle, three offer
+  `article` cards (name as `h3`, price, description, detail) in a grid that is single-column below `lg`, and a
+  `ul` of four terms. Prices are display strings from the dictionary, not computed. The cards are not links, so
+  they do not use `Card.astro`'s stretched-link behaviour. Astro only, existing tokens, no inline `style=""`.
+- `src/components/HomeSections.astro`: the section sits after `ProcessSection` and before the CTA band.
+- `src/i18n/{en,ca,es}.ts`: new `engage` key (`eyebrow`, `title`, `subtitle`, `items[]` of `{ name, description,
+price, detail }`, `terms[]`) and `services.engageLink`. English is the copy deck's wording verbatim; prices read
+  `€2,500 fixed`, `€640 per day`, `€2,400 per month` in `en` and `2.500 € …`, `640 € …`, `2.400 € …` in `ca`/`es`.
+- `src/components/pages/ServiceDetail.astro`: the bottom row now also renders a `${home}#engage` anchor labelled
+  `t.services.engageLink`, so the link is locale-prefixed and never a hard-coded English label.
+- `tests/layout.spec.ts`: `'#engage .grid > *'` added to the 280 px prose-grid selectors, plus an explicit test
+  that the section has exactly three `article` cards and each is at least 280 px wide at 640 px.
+- `tests/structure.spec.ts`: the section-order test now includes `#engage` between `#how-i-work` and `#contact`;
+  a per-locale test checks the heading, subtitle, three cards (name, price, description, detail), four terms,
+  and the approved figures written out literally (`€2,500`, `€640`, `€2,400`, `€1,280`, `€7,200`; the `2.500 €`
+  style in `ca`/`es`) so a dictionary typo cannot agree with itself; and each of the four service pages in each
+  locale links to `${prefix}/#engage` with the translated label.
+- `tests/page-weight.spec.ts`: unchanged in this step. No budget, constant or assertion was edited.
+
+### The budget problem, with measurements
+
+`npm run test:e2e`, 1280×900 (budget 5,500 px desktop, 12,000 px mobile, 1,700 words, 340 px card):
+
+```text
+page-weight / desktop 1280×900: 5832 px, 1100 words, 8 cards, tallest card 320 px
+page-weight /ca/ desktop 1280×900: 6232 px, 1318 words, 8 cards, tallest card 320 px
+page-weight /es/ desktop 1280×900: 6242 px, 1333 words, 8 cards, tallest card 320 px
+page-weight / mobile 390×844: 8959 px
+page-weight /ca/ mobile 390×844: 9416 px
+page-weight /es/ mobile 390×844: 9713 px
+```
+
+Before this step (step 6 tree): 5,051 / 5,385 / 5,374 px desktop, 7,501 / 7,833 / 8,038 px mobile. The desktop
+height budget is exceeded by **332 px, 732 px and 742 px**. The six failing tests are the desktop height test on
+`/`, `/ca/` and `/es/` in each of the two Playwright projects (`Expected: <= 5500`, `Received: 5832`, `6232`,
+`6242`). The mobile height, word and tallest-card budgets all pass, and the tallest service or case-study card
+is unchanged at 320 px; the offer cards are deliberately outside that teaser-height selector.
+
+What the section's height is made of (measured in the production `preview` build, Chromium, 1280×900):
+
+```text
+/     section 782 px = padding 128 + heading block + cards 304 + terms 184
+/ca/  section 848 px = padding 128 + heading block + cards 350 + terms 204
+/es/  section 868 px = padding 128 + heading block + cards 350 + terms 224
+```
+
+Headroom before the step was 449, 115 and 126 px. So dropping the terms alone (about 185–225 px) would still
+leave the section well above the headroom; the three cards by themselves are 300–350 px. By this measurement,
+nothing short of changing a budget, moving the section off the home page, or removing other home content fits.
+
+### Recorded deviations and observations
+
+- **Translations are mine, not owner-reviewed, and this section carries the most legal-adjacent wording**
+  (VAT, the discovery credit, the three-month minimum and one month's notice, "does not include 24/7 on-call").
+  The plan's risk register says these need the most care. Flagged for review in `ca` and `es`: every
+  `engage.*` string and `services.engageLink`. Vocabulary choices that need a native check: `preu fix` /
+  `precio fijo` for "fixed", `descobriment` / `descubrimiento` for "discovery", `iguala` for "retainer",
+  `pressupost tancat` / `presupuesto cerrado` for "fixed quote", `guàrdia` / `guardia` for "on-call".
+- Number format follows the copy deck's instruction (`2.500 €` in `ca`/`es`). Spanish orthography often omits the
+  thousands separator in four-digit numbers (`2500 €`); I followed the deck and flag it.
+- Register: formal in `ca`/`es` (`us quedeu`, `se queda`), matching steps 3, 5 and 6; the step 2 service bodies
+  remain informal.
+- Business terms are the owner's proposals (D6, D7), not terms agreed with any customer; nothing here is a
+  contractual commitment, and the copy makes no 24/7 or blanket at-cost claim.
+- `astro check` now reports **66 files** (65 plus the new component). Record in `AGENTS.md` in step 8.
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0, no install-script warning. `npm audit --audit-level=critical` → exit 0 (the report still
+  lists the 16 high picomatch findings recorded earlier).
+- `npm run format:check` → exit 0. `npm run lint` → exit 0.
+- `npm run check` → exit 0, `Result (66 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `37 page(s) built`.
+- `npm run test:e2e` → **exit 1, `6 failed`, `554 passed`**. The six failures are exactly the desktop
+  page-height budget tests listed above. Everything else passes, including the new `#engage` layout test (three
+  cards, each at least 280 px at 640 px), the structure and service-link tests, and the axe `a11y.spec.ts` on the
+  home pages.
+- **CSP check in the production build.** `npm run build`, `npm run check:production-env` (exit 0, committed
+  sitekey), `npm run preview`, then Chromium at 1280×900 on `/`, `/ca/` and `/es/`: each reported `cspMeta: true`,
+  `visible: true`, `cards: 3`, `terms: 4`, `inlineStyle: 0`, `violations: []` and `console errors/warnings: []`.
+  The titles read back as `Three ways to start`, `Tres maneres de començar` and `Tres formas de empezar`. The
+  preview server was stopped (`curl` to the port returned `HTTP 000`).
+
+### Not verified
+
+- A passing page-height budget. That is the blocker.
+- Visual quality by eye (price emphasis, card balance at 1024–1280 px, dark mode) beyond the axe, layout and
+  page-weight specs. No screenshot was taken.
+- `npx wrangler deploy --dry-run` was not run; step 7's Verify does not require it.
+- Owner review of the ca/es wording, the number format and the business terms.
+
+### Decision needed from the owner
+
+Options, none taken. The plan permits only (b) with the owner's approval; (a) is a deliberate threshold change.
+
+1. **Raise the desktop height budget** in `tests/page-weight.spec.ts`. The current measurements need at least
+   about 5,850 px (`/`), 6,250 px (`/ca/`) and 6,250 px (`/es/`) to pass; a single new value with some headroom,
+   such as 6,500 px, would leave about 270 px on the longest page. The mobile (12,000), word (1,700) and
+   card (340) budgets would stay. This abandons the "scannable at 5,500 px" target for the home page.
+2. **Move the offers to a separate `/pricing/` page** (the plan's fallback, only with owner approval), leaving a
+   compact teaser and link on the home page. This adds three routes (37 → 40 pages), a nav or footer link,
+   sitemap and test changes. By the breakdown above even a compact teaser may not fit in the 115–126 px of
+   `ca`/`es` headroom, so a small budget change could still be needed.
+3. **Trim** the home section (for example fewer or shorter terms, or the terms on the service pages only). By
+   the measurement above this cannot close a 332–742 px gap on its own.
+
+### Resolution (2026-11-17): owner raised the desktop height budget; step 7 complete
+
+The owner chose option 1 from the list above: raise the desktop page-height budget to **6,500 px**. Done as
+decided; nothing else was relaxed. Earlier text in this entry is unchanged.
+
+- Change: `tests/page-weight.spec.ts` `HEIGHT_BUDGET` `5_500` → `6_500`, with a comment recording the date, the
+  reason, the three measured heights and that the owner decided. The assertion itself, `MOBILE_HEIGHT_BUDGET`
+  (12,000), `WORD_BUDGET` (1,700) and `CARD_BUDGET` (340) are untouched, and no assertion was removed. The
+  original 5,500 px "scannable in three seconds" target no longer applies to the desktop height.
+- Headroom against 6,500 px with the measurements above: `/` 668 px, `/ca/` 268 px, `/es/` 258 px. Step 8 should
+  note this when it refreshes `AGENTS.md`, since later copy growth in `ca`/`es` has about 260 px to spend.
+- Re-verification after the change (all 2026-11-17): `npm ci` → exit 0; `npm audit --audit-level=critical` →
+  exit 0; `npm run format:check` → exit 0; `npm run lint` → exit 0; `npm run check` → exit 0, `0 errors, 0
+warnings, 0 hints` (66 files); `npm run check:placeholders` → exit 0; `npm run build` → exit 0, `37 page(s)
+built`; **`npm run test:e2e` → exit 0, `560 passed (2.5m)`** (the earlier 524 plus 36 new: 3 layout, 3 section,
+  12 service-link tests per project, each run in both projects). The measurements were identical to those
+  recorded above, so the page did not change, only the threshold.
+- Production rebuild after e2e: `37 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey in
+  use, not a test key. The CSP check recorded above was run on this same section and was not repeated, because
+  no rendering code changed after it.
+
+Step 7 Status line: `[!]` → `[x] … uncommitted`.

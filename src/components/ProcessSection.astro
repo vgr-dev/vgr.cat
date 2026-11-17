@@ -1,0 +1,72 @@
+---
+/**
+ * "How I work": the spec-driven, AI-assisted process in five short steps, the boundary on what
+ * AI tools may see, and a proof line pointing at the public repository.
+ *
+ * The steps are an ordered list with native markers, so the numbering is real list semantics rather
+ * than a decorative digit. Everything in the copy is passed in; the destination of the proof link is
+ * the shared `repositoryUrl` from `src/config.ts`, never a URL inside a translated string.
+ */
+import Container from './Container.astro';
+
+interface Step {
+  title: string;
+  body: string;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  steps: Step[];
+  /** What AI tools may and may not see; shown beside the heading so it is not buried. */
+  dataBoundary: string;
+  proof: string;
+  proofLinkLabel: string;
+  proofHref: string;
+}
+
+const {
+  eyebrow,
+  title,
+  subtitle,
+  steps,
+  dataBoundary,
+  proof,
+  proofLinkLabel,
+  proofHref,
+} = Astro.props;
+---
+
+<section id="how-i-work" class="bg-band band-edge" data-reveal>
+  <Container class="py-[var(--space-section)]">
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:gap-16">
+      <div>
+        <p class="text-sm font-medium text-accent-ink">{eyebrow}</p>
+        <h2 class="mt-2 text-2xl font-semibold">{title}</h2>
+        <p class="mt-4 max-w-2xl text-muted">{subtitle}</p>
+        <p class="mt-4 max-w-2xl border-l border-border pl-4 text-sm text-muted">
+          {dataBoundary}
+        </p>
+      </div>
+
+      <div>
+        <ol class="grid list-decimal gap-4 pl-6 marker:font-medium marker:text-accent-ink">
+          {steps.map((step) => (
+            <li class="pl-2">
+              <span class="block font-medium text-fg">{step.title}</span>
+              <span class="block text-muted">{step.body}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="mt-6 max-w-2xl text-sm text-muted">{proof}</p>
+        <a
+          href={proofHref}
+          class="mt-2 inline-block py-1 text-sm font-medium text-accent-ink underline underline-offset-4 hover:no-underline"
+        >
+          {proofLinkLabel}
+        </a>
+      </div>
+    </div>
+  </Container>
+</section>

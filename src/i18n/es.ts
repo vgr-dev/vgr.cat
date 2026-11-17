@@ -89,6 +89,39 @@ export const es: Dictionary = {
     backToWork: 'Todos los proyectos seleccionados',
     nextCase: 'Siguiente caso práctico',
   },
+  process: {
+    eyebrow: 'Cómo trabajo',
+    title: 'La IA ayuda con los borradores. Yo sigo siendo responsable.',
+    subtitle:
+      'La entrega asistida por IA es opcional. Antes de empezar, acordamos qué herramientas pueden ver qué código y qué revisaré.',
+    steps: [
+      {
+        title: 'Especificación',
+        body: 'Acordamos por escrito qué significa «hecho». Usted la aprueba.',
+      },
+      {
+        title: 'Plan',
+        body: 'Divido el trabajo en pasos pequeños que puede ver antes de que exista una sola línea de código.',
+      },
+      {
+        title: 'Construcción',
+        body: 'Los agentes de IA ayudan a redactar código y pruebas dentro de las herramientas y los límites de código aprobados.',
+      },
+      {
+        title: 'Revisión',
+        body: 'Reviso lo que se publica y dejo constancia de las decisiones y las comprobaciones.',
+      },
+      {
+        title: 'Entrega',
+        body: 'Las especificaciones, las decisiones y las notas de verificación se quedan en su repositorio.',
+      },
+    ],
+    dataBoundary:
+      'El código y los datos del cliente quedan fuera de las herramientas de IA salvo que hayamos acordado por escrito las herramientas y los datos permitidos.',
+    proof:
+      'Este sitio se desarrolla con el mismo proceso y el repositorio es público: la especificación actual, las decisiones de arquitectura y los registros de planificación anteriores.',
+    proofLinkLabel: 'Ver las especificaciones y el historial en GitHub',
+  },
   about: {
     eyebrow: 'Sobre mí',
     title: 'Ingeniero, constructor y operador',
@@ -136,10 +169,6 @@ export const es: Dictionary = {
       'Monitorización energética IoT',
       'Análisis de facturas',
     ],
-    // Home-page teaser; the full history lives on `/about/`.
-    teaser:
-      'Ingeniero de software principal y consultor en Sant Cugat del Vallès. Doce años construyendo y operando las plataformas que hay detrás de la eficiencia energética europea: motores de cumplimiento, observabilidad de mercado y flotas IoT a escala nacional.',
-    readMore: 'Lee la trayectoria completa',
     credentials:
       'Alcance por escrito, decisiones documentadas y un traspaso que su equipo puede usar.',
   },

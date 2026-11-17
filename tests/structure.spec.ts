@@ -314,3 +314,75 @@ for (const route of HOME_ROUTES) {
     expect(hrefs).toEqual(WORK_ORDER.map((key) => `${prefix}/work/${key}/`));
   });
 }
+
+const DICTIONARIES = { en, ca, es } as const;
+
+/** The approved destination of the proof link; deliberately not read from `src/config.ts`. */
+const REPOSITORY_URL = 'https://github.com/vgr-dev/vgr.cat';
+
+for (const { locale, prefix } of LOCALES) {
+  const t = DICTIONARIES[locale];
+  const home = `${prefix}/`;
+
+  test(`the ${locale} home page orders services, work, how I work and contact`, async ({
+    page,
+  }) => {
+    await page.goto(home);
+
+    const result = await page.evaluate(() => {
+      const ids = ['services', 'work', 'how-i-work', 'contact'];
+      const elements = ids.map((id) => document.getElementById(id));
+      return {
+        missing: ids.filter((_, index) => elements[index] === null),
+        ordered: elements.every((element, index) => {
+          const previous = elements[index - 1];
+          return (
+            index === 0 ||
+            (previous !== null &&
+              previous !== undefined &&
+              element !== null &&
+              (previous.compareDocumentPosition(element) &
+                Node.DOCUMENT_POSITION_FOLLOWING) !==
+                0)
+          );
+        }),
+      };
+    });
+    expect(result.missing, 'every section anchor exists').toEqual([]);
+    expect(result.ordered, 'the sections follow the approved order').toBe(true);
+  });
+
+  test(`the ${locale} How I work section has the five steps, the boundary and the proof link`, async ({
+    page,
+  }) => {
+    await page.goto(home);
+
+    const section = page.locator('#how-i-work');
+    await expect(section.locator('h2')).toHaveText(t.process.title);
+    await expect(section).toContainText(t.process.subtitle);
+    await expect(section).toContainText(t.process.dataBoundary);
+
+    const items = section.locator('ol > li');
+    await expect(items).toHaveCount(5);
+    for (const [index, step] of t.process.steps.entries()) {
+      await expect(items.nth(index)).toContainText(step.title);
+      await expect(items.nth(index)).toContainText(step.body);
+    }
+
+    const proof = section.getByRole('link', { name: t.process.proofLinkLabel });
+    await expect(proof).toHaveCount(1);
+    await expect(proof).toHaveAttribute('href', REPOSITORY_URL);
+    await expect(section.locator('[style]')).toHaveCount(0);
+  });
+
+  test(`the ${locale} home page no longer carries the About teaser band`, async ({
+    page,
+  }) => {
+    await page.goto(home);
+
+    await expect(page.locator('main a[href$="/about/"]')).toHaveCount(0);
+    await expect(
+      page.locator('main h2').filter({ hasText: t.about.title }),
+    ).toHaveCount(0);
+  });
+}

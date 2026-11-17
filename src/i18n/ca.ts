@@ -89,6 +89,39 @@ export const ca: Dictionary = {
     backToWork: 'Tots els projectes seleccionats',
     nextCase: 'Cas pràctic següent',
   },
+  process: {
+    eyebrow: 'Com treballo',
+    title: 'La IA ajuda amb els esborranys. Jo en continuo sent responsable.',
+    subtitle:
+      'El lliurament assistit per IA és opcional. Abans de començar, acordem quines eines poden veure quin codi i què revisaré.',
+    steps: [
+      {
+        title: 'Especificació',
+        body: 'Acordem per escrit què vol dir «fet». L’aproveu vosaltres.',
+      },
+      {
+        title: 'Pla',
+        body: 'Divideixo la feina en passos petits que podeu veure abans que existeixi cap línia de codi.',
+      },
+      {
+        title: 'Construcció',
+        body: 'Els agents d’IA ajuden a redactar codi i proves dins de les eines i els límits de codi aprovats.',
+      },
+      {
+        title: 'Revisió',
+        body: 'Reviso el que es publica i deixo constància de les decisions i les comprovacions.',
+      },
+      {
+        title: 'Lliurament',
+        body: 'Les especificacions, les decisions i les notes de verificació es queden al vostre repositori.',
+      },
+    ],
+    dataBoundary:
+      'El codi i les dades del client es queden fora de les eines d’IA tret que n’hàgim acordat per escrit les eines i les dades permeses.',
+    proof:
+      'Aquest lloc es desenvolupa amb el mateix procés, i el repositori és públic: l’especificació actual, les decisions d’arquitectura i els registres de planificació anteriors.',
+    proofLinkLabel: 'Veure les especificacions i l’historial a GitHub',
+  },
   about: {
     eyebrow: 'Qui soc',
     title: 'Enginyer, constructor i operador',
@@ -136,10 +169,6 @@ export const ca: Dictionary = {
       'Monitoratge energètic IoT',
       'Anàlisi de factures',
     ],
-    // Home-page teaser; the full history lives on `/about/`.
-    teaser:
-      'Enginyer de programari principal i consultor a Sant Cugat del Vallès. Dotze anys construint i operant les plataformes que hi ha darrere de l’eficiència energètica europea: motors de compliment, observabilitat de mercat i flotes IoT a escala nacional.',
-    readMore: 'Llegeix la trajectòria completa',
     credentials:
       'Abast per escrit, decisions documentades i un traspàs que el vostre equip pot fer servir.',
   },

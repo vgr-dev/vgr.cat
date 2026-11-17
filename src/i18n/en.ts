@@ -97,6 +97,39 @@ export const en = {
     backToWork: 'All selected work',
     nextCase: 'Next case study',
   },
+  process: {
+    eyebrow: 'How I work',
+    title: 'AI helps with the drafting. I stay accountable.',
+    subtitle:
+      'AI-assisted delivery is opt-in. Before work starts, we agree which tools may see which code and what I will review.',
+    steps: [
+      {
+        title: 'Spec',
+        body: 'We agree in writing what "done" means. You approve it.',
+      },
+      {
+        title: 'Plan',
+        body: 'I break the work into small steps you can see before any code exists.',
+      },
+      {
+        title: 'Build',
+        body: 'AI agents help draft code and tests inside the approved tools and code boundaries.',
+      },
+      {
+        title: 'Review',
+        body: 'I review what ships and record the decisions and checks.',
+      },
+      {
+        title: 'Hand over',
+        body: 'Specs, decisions and verification notes stay in your repository.',
+      },
+    ],
+    dataBoundary:
+      'Client code and data stay outside AI tools unless we have agreed the tools and permitted data in writing.',
+    proof:
+      'This site is developed with the same process, and the repository is public: the current spec, architecture decisions and earlier planning records.',
+    proofLinkLabel: 'See the specs and history on GitHub',
+  },
   about: {
     eyebrow: 'About',
     title: 'Engineer, builder, and operator',
@@ -144,10 +177,6 @@ export const en = {
       'IoT energy monitoring',
       'Bill analytics',
     ],
-    // Home-page teaser; the full history lives on `/about/`.
-    teaser:
-      'Principal software engineer and consultant in Sant Cugat del Vallès. Twelve years building and operating the platforms behind European energy efficiency: compliance engines, market observability and nationwide IoT fleets.',
-    readMore: 'Read the full background',
     credentials:
       'Written scopes, documented decisions and a handover your team can use.',
   },

@@ -49,6 +49,13 @@ for (const path of HOME_PAGES) {
         .length,
     }));
 
+    // Printed so a run records the actual figures; a passing assertion alone does not show how much
+    // headroom is left. Logging only: no budget or assertion below changed.
+    console.log(
+      `page-weight ${path} desktop 1280×900: ${measured.height} px, ${measured.words} words, ` +
+        `${measured.cards} cards, tallest card ${measured.tallestCard} px`,
+    );
+
     expect(measured.height, 'document height at 1280×900').toBeLessThanOrEqual(
       HEIGHT_BUDGET,
     );
@@ -73,6 +80,8 @@ for (const path of HOME_PAGES) {
     const height = await page.evaluate(
       () => document.documentElement.scrollHeight,
     );
+    console.log(`page-weight ${path} mobile 390×844: ${height} px`);
+
     expect(height, 'document height at 390×844').toBeLessThanOrEqual(
       MOBILE_HEIGHT_BUDGET,
     );

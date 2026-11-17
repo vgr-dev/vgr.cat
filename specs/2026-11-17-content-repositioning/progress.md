@@ -1301,3 +1301,146 @@ built`; **`npm run test:e2e` → exit 0, `560 passed (2.5m)`** (the earlier 524 
   no rendering code changed after it.
 
 Step 7 Status line: `[!]` → `[x] … uncommitted`.
+
+## 2026-11-17: Step 8 — Sync docs and close out
+
+Commit: uncommitted
+
+Precondition: step 7 reconciled against git. `git log` showed `e850636` (signed, `feat(home): add the Ways to
+work together section with public prices`) and `4b4ed19`; the Status line for step 7 now carries `e850636` in
+place of `uncommitted`. The working tree was clean before this step started. Every earlier step (1–7) has a
+signed commit and a hash in the Status checklist. The gate ran with `npm audit --audit-level=critical`.
+
+This entry keeps **builder checks** (what was run, with output) apart from **owner items** (what only the owner
+can confirm). Nothing in the second list is done, and the spec stays `status: active`.
+
+### A. Builder checks (all run 2026-11-17)
+
+- `npm ci` → exit 0, no install-script warning (the `esbuild`/`workerd` approval from earlier today is in effect).
+- `npm audit --audit-level=critical` → exit 0; the report still lists `16 high severity vulnerabilities`, all the
+  one picomatch advisory GHSA-fc5q-39xc-vjpf. `npm view picomatch version` → `4.0.7` and `gh api
+/advisories/GHSA-fc5q-39xc-vjpf` still reports `first_patched_version: null`, so the threshold was **not**
+  restored to `high`. `npm audit --audit-level=high` fails and is expected to until a patched release exists.
+- `npm run format:check` → exit 0. `npm run lint` → exit 0.
+- `npm run check` → exit 0, `Result (66 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run test:e2e` → exit 0, `560 passed (2.5m)`.
+- Production `npm run build` after e2e → exit 0, `37 page(s) built`; `npm run check:production-env` → exit 0,
+  `no PUBLIC_TURNSTILE_SITE_KEY override; the committed sitekey is used and is not a test key.`
+- `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` → exit 0; `Read 102 files from the assets
+directory`; `Total Upload: 8.67 KiB / gzip: 3.22 KiB`; no warnings printed.
+
+### B. Documents synced
+
+- `AGENTS.md`: the verification-gate block now matches CI (adds `npm audit --audit-level=critical`,
+  `check:placeholders`, `test:e2e` and the production rebuild plus `check:production-env`), and its counts come
+  from the runs above: `astro check` **66 files** (was 62), **37 pages**, **102 assets** (unchanged), `560
+passed`. The site-size bullet now describes the home page order (Hero, Services, Selected work, How I work,
+  Ways to work together, CTA band, Contact; no About teaser band) and the four services and four case studies.
+  The `Dictionary` gotcha's pillar example is `'modernize'` instead of `'entity-resolution'`. Hard rule 2 gains
+  the branch convention (standard prefix, never `claude/`, reaches `main` through a PR, not enforced). A new
+  gotcha records the page-weight budgets, the 6,500 px raise and the current headroom.
+- `README.md`: the scripts table lists `lint`, `check:placeholders`, `check:production-env` and `test:e2e`, and
+  `check` is described as `wrangler types` then `astro check`; the CI row now lists the real `validate` steps
+  (including the audit at `critical`) and the `e2e` job; the Deploy row adds `check:production-env` and `types`,
+  which `deploy.yml` runs.
+- Not changed: historical evidence in this file, `.ai/plans/` (frozen), `spec.md`, and the body of `plan.md`.
+  Git history was not rewritten and no old copy was declared removed.
+
+### C. Inspection of what a PR would publish
+
+Scope: the branch is `feat/content-repositioning`, **21 commits** ahead of `origin/main` (`7c45ffc`, equal to
+the remote `main` per `gh api`), all `%G?` = `G`; `git diff --stat origin/main..HEAD` → `73 files changed, 5334
+insertions(+), 2229 deletions(-)`. `gh api repos/vgr-dev/vgr.cat/branches` lists only `main` and four Dependabot
+branches, so **this branch is not on the remote and no PR exists**; nothing below has been published.
+
+- **Final tree, secrets and addresses.** The added lines contain no token, key or password pattern, and the only
+  address is the public `contact@vgr.cat`. The only non-project URLs added are one European Commission news page
+  and one `eslint-plugin-astro` release page, both public references.
+- **Final tree, internal rates.** `git grep` of `HEAD` for the internal client rate, the market-rate comparison
+  and the pricing-rationale text found nothing. The public offer prices are the approved ones.
+- **Final tree, items for the owner to judge** (all in `specs/2026-11-17-content-repositioning/spec.md`, which
+  would be public): (1) D7's rule for reviewing the rates after a number of clients or months, which is internal
+  pricing strategy; (2) D1 names Brandes Energie among the "previously selected names", although no public copy
+  uses it; (3) the spec and progress files name the retired Topten Scout work; (4) the spec states that internal
+  client rates and unreleased third-party plans were removed from an earlier draft, which itself discloses that
+  they existed. None of these is a rate or a partner plan, so I did not remove them.
+- **History, a real finding.** Two earlier commits, `ccc0d31` and `e9fd4ac`, both only on this branch, contain in
+  the history of `spec.md` an **internal hourly client rate, market-rate comparison ranges and the rationale for
+  the public prices**, and `a9bd379` and the two earlier commits also touch an older revenue and team-size claim
+  (that claim was already public on `origin/main` since `87e2a6f`, so it is not new). They are absent from the
+  final tree, but pushing the branch would publish those commits' objects. The spec itself says the removal "does
+  not remove earlier Git objects or copies", and this plan authorises no history rewrite, so I changed nothing.
+  I did not copy the values into this file. Options for the owner before any push: authorise a rewrite of those
+  two commits; publish a fresh branch built from the final tree (which drops the step-by-step history); or accept
+  the exposure. This needs an explicit owner decision and, for a rewrite, explicit approval of `git rebase`.
+- **Commit messages.** A scan of all 21 commit bodies for currency amounts and `per hour` matched nothing.
+
+### D. Translations awaiting owner review (not reviewed; machine-assisted by me from `copy-en.md`)
+
+The same set applies to **Catalan (`ca`)** and **Spanish (`es`)**; each locale needs its own review.
+
+1. Service pages `src/content/services/{build,modernize,platform,energy}.{ca,es}.md` (title, summary, body).
+2. `services.*` in the dictionary: eyebrow, title, subtitle, the four pillar tags, `relatedWork`,
+   `noRelatedWork`, `engageLink`.
+3. `contact.*`: eyebrow, title, subtitle; the form labels, placeholders, submit button; the six `serviceTypes`;
+   `directContact.orDivider`, `calendarButton`, `emailDirect`, `locationLabel`, `locationValue`.
+4. Case studies `src/content/caseStudies/{topten-ecosystem,eu-inspection-tooling,banco-estado-iot,vgr-cat}.{ca,es}.md`
+   (frontmatter and bodies) and `caseStudies.*` (eyebrow, title, subtitle, three labels, `backToWork`).
+5. `site.*` (title, description, author, location, jobTitle), `nav.caseStudies` and `nav.bookCall`.
+6. `hero.*` (badge, title, highlight, subtitle, both CTAs, three metrics), `about.*` (eyebrow, title, five
+   paragraphs, three experience entries, ten competencies, headings, credentials), `ctaBand.*`, and
+   `footer.tagline`, `footer.builtWith`, `footer.sourceLabel`.
+7. `process.*` (eyebrow, title, subtitle, five steps, `dataBoundary`, `proof`, `proofLinkLabel`) and `engage.*`
+   (eyebrow, title, subtitle, three offers, four terms), the latter with the most legal-adjacent wording (VAT,
+   discovery credit, minimum term and notice, no 24/7 on-call).
+
+Strings retained unchanged from before (privacy, thanks, not-found, form errors) were not touched. Publication
+requires this review to be **complete**, not merely listed.
+
+### E. Owner items (not done by the builder)
+
+- **Attribution and technical facts.** Confirm permission, contracts and confidentiality for each named
+  organisation (Topten, Bush Energie, Banco Estado, Fundación Chile), the historical roles and dates in About,
+  the Topten Yii2/Laravel facts (D8), the inspection-tooling traceability statement (D9) and the Banco Estado work
+  delivered through Fundación Chile. The register in `spec.md` marks each as awaiting owner confirmation.
+- **Decisions that touch wording.** (1) One register for ca/es: formal (contact, hero, About, process, engage) vs
+  informal (service bodies). (2) The masculine job titles in ca/es. (3) The `2.500 €` number format versus the
+  Spanish convention of `2500 €`. (4) The vocabulary choices flagged in step 7. (5) `knowsLanguage` in the
+  structured data changed to English and Spanish only. (6) The CTA band promises a reply `usually within two
+business days` while the retained thanks page says `one or two`.
+- **Offer terms.** The prices and terms are the owner's proposals (D6, D7), not terms agreed with any customer.
+- **CV and LinkedIn follow-up (outside this repository, out of scope for the builder).** Align the headline and
+  location, and correct the bill-volume wording there (D5). Those profiles and any directory listing can still
+  carry the old title and claims. The builder touched no external account.
+- **AI-tool boundaries.** Choose the approved tools and code/data-sharing boundaries with each client before
+  relying on the `How I work` wording.
+- **Spec criterion that cannot be ticked as written.** The acceptance criterion "Existing desktop/mobile/word
+  budgets pass in every locale … Do not increase budgets to make the content fit" conflicts with the owner's
+  step 7 decision to raise the desktop height budget from 5,500 px to 6,500 px. The decision stands; the spec
+  text was not edited by me (acceptance criteria are the owner's to change), so the owner should amend or
+  annotate that criterion.
+- **Dependency audit.** The gate passes only at the owner-approved `critical` threshold. Restore `high` in `ci.yml`
+  and the docs when a patched picomatch exists.
+- **Publication.** Review the history finding above, then authorise any push or PR. `Deploy` runs automatically
+  after `CI` passes on `main`. Mark the spec `done` only after the owner confirms the live result.
+
+### F. Spec acceptance criteria: status
+
+None was ticked by the builder. Builder-side evidence exists for: dictionary parity and locale-aware links
+(`astro check`, the structure and identity specs); `modernize` and `platform` linking to Topten and service pages
+linking to the localised `#engage` section (structure spec); all six contact keys agreeing between the
+dictionaries, rendered options and the Worker's map (`contact-options.spec.ts`, with the stubbed-browser versus
+Worker distinction recorded in step 3); the repository references being clickable (`href` asserted; the target
+returned `HTTP 200`); and the gate, audit (at `critical`), e2e and dry-run, all above. The criteria that need the
+owner are the sign-off wording, attribution review, translation review, the budget criterion, the CV/LinkedIn
+record and publication.
+
+### Not verified
+
+- Anything in section E. Translation quality, third-party permission and the accuracy of the client statements are
+  not something a build can show.
+- The behaviour of `CI` and `Deploy` on GitHub with the new audit threshold, install-script approval and `e2e`
+  job: nothing was pushed.
+- Whether any copy of the removed material exists outside this repository.
+- A visual review of the new sections by eye.

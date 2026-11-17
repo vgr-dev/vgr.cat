@@ -502,3 +502,89 @@ ended in the state it started in; no history was changed. Recorded so the owner 
 - The ca/es subtitles are translations awaiting owner review (not a claim of professional proficiency).
 - Services, hero and about copy still mention market observability; they belong to steps 2 and 5.
 - `/work/topten-scout/` URLs will 404 by the recorded no-redirects decision.
+
+## 2026-11-17: Step 2 — Replace the service pillars and rewrite the four services
+
+Commit: uncommitted
+
+Precondition: step 1 reconciled against git. `git log` showed `3cc8197` (signed, `feat(content): retire the
+Topten Scout case study`) and `5e54652`; the Status line for step 1 now carries `3cc8197` in place of
+`uncommitted`. Working tree was clean before this step started.
+
+### Changes
+
+- `src/content.config.ts`: `pillar` enum is `build | modernize | platform | energy`.
+- `src/lib/content.ts`: `pillarOrder` is the same four values, in that order.
+- Deleted `src/content/services/{regtech,entity-resolution,infrastructure,iot}.{en,ca,es}.md`.
+- Created `src/content/services/{build,modernize,platform,energy}.{en,ca,es}.md` from `copy-en.md`
+  (title, summary and body per service; no editorial headings or notes pasted into bodies).
+- Re-tagged the case studies in all locales: `topten-ecosystem → platform`,
+  `eu-inspection-tooling → energy`, `banco-estado-iot → energy` (`git diff` shows nine `pillar:` lines
+  changed, three per case study).
+- `src/i18n/{en,ca,es}.ts`: `services.eyebrow/title/subtitle`, the four `pillars` keys and tags,
+  `services.relatedWork`, `services.noRelatedWork`; the pillar-key comment still reads correctly and was kept.
+  `services.readService` is unchanged (retain-existing rule).
+- Body links to the Topten and energy case studies use the locale-prefixed paths in `ca`/`es`
+  (`/ca/work/…`, `/es/work/…`) as the copy deck's rule 2 requires.
+
+### Recorded deviations
+
+- In `copy-en.md` the case-study link sits on the line directly after a paragraph, which Markdown renders as
+  part of that paragraph. I put it in its own paragraph (blank line before it) so it renders as a standalone
+  link line. The wording and targets are unchanged.
+- `ca`/`es` strings are my translations, not owner-reviewed. Flagged for owner review: all four service
+  pages, the four pillar tags and `services.*` in both locales. I used informal "tu/tú" for the singular
+  address, matching the existing `Descobreix`/`Descubre` buttons, and the plural "vostre/vuestro" in the
+  ESPR bullet where the deck addresses manufacturers and retailers. Please confirm that register.
+- The services `ca`/`es` tags and titles pick `Energia i normativa` / `Energía y normativa`,
+  `Rescat d’aplicacions heretades` / `Rescate de aplicaciones heredadas`. These are not in the deck's
+  locale tables, so they need review.
+- No new test file. The plan lists none for this step: `astro check` enforces the enum and cross-locale
+  `Dictionary` parity, and the existing e2e specs derive their routes from the content folders, so they
+  cover the four new `/services/<key>/` routes in all three locales (see e2e result below).
+
+### Verification (all run 2026-11-17)
+
+- `npm ci` → exit 0, `found 0 vulnerabilities`; the same two `allowScripts` warnings (`esbuild`, `workerd`),
+  unchanged and not approved.
+- `npm audit --audit-level=high` → exit 0, `found 0 vulnerabilities`.
+- `npm run format:check` → exit 0, `All matched files use Prettier code style!`.
+- `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (62 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `34 page(s) built`. `dist/{,ca/,es/}services/` each contain exactly
+  `build energy modernize platform`.
+- `npm run test:e2e` → exit 0, `368 passed (2.4m)`; no test edit was needed.
+- Rebuilt normally after e2e: `34 page(s) built`; `npm run check:production-env` → exit 0, committed sitekey
+  in use, not a test key.
+- Built-output check: `dist/services/modernize/index.html` links `/work/topten-ecosystem/`,
+  `dist/ca/services/modernize/index.html` links `/ca/work/topten-ecosystem/`,
+  `dist/es/services/modernize/index.html` links `/es/work/topten-ecosystem/`; the same holds for `platform`.
+  `build` and `modernize` pages display `No public case study is listed for this service yet.`; `platform`
+  and `energy` do not.
+
+### `rg -n 'entity-resolution|regtech|infrastructure|iot' src` — classification
+
+The command exits 0 with these remaining matches; none is a retired enum value, slug or content reference:
+
+- Stable case-study slug `banco-estado-iot`: `src/lib/content.ts` (comment and `caseStudyOrder`), the
+  `energy.*.md` links, the case-study `translationKey` lines.
+- Contact-form option keys `regtech`, `entityResolution`, `infrastructure`, `iot`: `src/worker/index.ts`
+  `SERVICE_TYPES` and `contact.form.serviceTypes` in `src/i18n/{en,ca,es}.ts`. **Deliberately retained until
+  step 3.**
+- Ordinary prose: the word `infrastructure` in `services.subtitle` (en) and `platform.en.md`, `compliance
+infrastructure` in the `ctaBand` title (step 5 rewrites it), `negligible infrastructure costs` in
+  `topten-ecosystem.en.md` (an unsourced claim step 4 removes), and `biblioteques`/`bibliotecas` in the
+  `eu-inspection-tooling` ca/es bodies (substring match on `iot`).
+
+### Not verified
+
+- `npx wrangler deploy --dry-run` was not run; step 2's Verify does not require it.
+- The Worker still accepts the old contact keys and the form still offers them; the mismatch with the new
+  services is expected until step 3.
+- Retired `/services/regtech/`, `/services/entity-resolution/`, `/services/infrastructure/` and
+  `/services/iot/` URLs (all locales) now 404 by the recorded no-redirects decision.
+- `build` and `modernize` have no related case study and show `noRelatedWork` until step 4. Home-page
+  service cards, hero and about copy still use the old positioning (step 5).
+- Visual rendering of the new service pages was not inspected in a browser beyond what the e2e a11y/structure
+  specs cover.

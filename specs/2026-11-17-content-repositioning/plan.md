@@ -10,8 +10,8 @@ Draft corrected after review on 2026-11-17. No implementation approval or comple
 <!-- [ ] todo | [~] in progress | [x] done | [-] deferred | [!] blocked; then `uncommitted`, a
 short commit hash, or the reason. The only part of this file that changes after sign-off. -->
 
-- [x] 1. Retire the Topten Scout case study — uncommitted
-- [ ] 2. Replace the service pillars and rewrite the four services
+- [x] 1. Retire the Topten Scout case study — 3cc8197
+- [x] 2. Replace the service pillars and rewrite the four services — uncommitted
 - [ ] 3. Align the contact form's focus options with the new services
 - [ ] 4. Rewrite the case studies and add "This website"
 - [ ] 5. Rewrite hero, meta, about, CTA band and footer

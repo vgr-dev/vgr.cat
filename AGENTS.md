@@ -24,7 +24,7 @@ committed `package-lock.json`.
 ```bash
 npm ci                                        # lockfile is authoritative; CI uses --ci
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
-npm run lint                                  # ESLint 9 + eslint-plugin-astro (34 a11y rules)
+npm run lint                                  # ESLint 10 + eslint-plugin-astro (31 a11y rules)
 npm run check                                 # wrangler types && astro check → expect "62 files, 0 errors, 0 warnings, 0 hints"
 npm run build                                 # astro check && astro build → 37 pages
 npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 102 files", no warnings
@@ -103,18 +103,24 @@ wrong, raise it with the user rather than silently reverting it.
 
 - **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
   `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
-- **The lint stack is ESLint 10 + `eslint-plugin-astro@^3` + `eslint-plugin-jsx-a11y-x`.** Plugin v3
+- **The lint stack is ESLint 10 + `eslint-plugin-astro@^3.2.1` + `eslint-plugin-jsx-a11y-x@^0.2.0`.** Plugin v3
   requires `eslint@>=10.0.0` and Node `^22.22.3 || ^24.16.0`, so `.nvmrc`'s `24` must resolve to a
   current 24.x (24.15 is too old and only warns). Upstream `eslint-plugin-jsx-a11y@6.10.2` still peers
   `eslint@^3 … ^9`, so the a11y configs use the maintained fork `eslint-plugin-jsx-a11y-x` — the Astro
-  plugin documents either as supported, so this is the recommended pairing, not a workaround. Do not
-  "solve" a peer conflict with `--legacy-peer-deps`. This stack also removed the old
-  `fast-glob → micromatch → braces` chain (`braces` has no patched release for CVE-2026-93687), so
-  `npm audit` is meant to report **0 vulnerabilities**, but **as of 2026-11-17 it reports 12** (11 moderate,
-  1 high; advisories on `astro`, `fast-uri` and `minimatch` among them) — unresolved, so do not claim a clean
-  audit until it is fixed. Astro's a11y rules still
-  appear under the `astro/jsx-a11y/*` namespace, 34 of them at error level, and `eslint .` does lint
-  `.astro` files (38 files, 33 of them `.astro`).
+  plugin documents either as supported, so this is the recommended pairing, not a workaround.
+  **Both minimums matter:** fork 0.1.1 peers only ESLint 8/9, and Astro plugin 3.1.0 does not load the
+  fork at all, silently leaving its recommended a11y config empty. Fork support starts in Astro plugin
+  3.2.0. Do not "solve" a peer conflict with `--legacy-peer-deps`.
+  Fork 0.2.0 still requests `minimatch@^10.2.5`, affected by
+  [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). The package-scoped override
+  selects `^11.0.5` (also used by ESLint), rather than suppressing the advisory or forcing a downgrade.
+  Remove that override when a compatible fork release declares a patched matcher range.
+  **Verified 2026-11-17:** plain `npm ci` succeeds and `npm audit --audit-level=high` reports
+  **0 vulnerabilities**, superseding the earlier recorded count of 12. The upstream recommended config
+  has **31**, not 34, active `astro/jsx-a11y/*` rules at error level. All are enabled; an invalid custom
+  label is rejected and a valid wildcard-matched control passes. No lint rules were disabled.
+  npm warns that `esbuild` and `workerd` install scripts are not covered by `allowScripts`; this is
+  separate from peer resolution. Do not silently change install-script approval policy.
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
   under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
   `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the

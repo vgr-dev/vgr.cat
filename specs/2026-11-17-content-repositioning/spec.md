@@ -4,174 +4,198 @@ created: 2026-11-17
 status-date: 2026-11-17
 ---
 
-# Content repositioning: from "EPREL specialist" to "senior builder with an energy niche"
+# Content repositioning: senior engineering with an energy specialism
 
 ## Goal
 
-Reposition vgr.cat so a Catalan, Spanish or EU company looking for a senior engineer recognises an
-offer it can buy. Today the site sells EU energy-regulation engineering (EPREL, market surveillance, GTIN
-resolution) almost exclusively. That is a narrow market, and the EPREL Services team's upcoming site
-(product search, retailer data and API, procurement exports, market monitoring, EPREL plus market data)
-will cover most of the "Data Intelligence" pillar and part of "RegTech". The new positioning:
+Help a buyer recognise a service they can buy from Victor Gonzalez: building a web product,
+modernising a legacy application, or taking part-time ownership of a production platform. Energy and
+EU product data remain a differentiating specialism, not a requirement for becoming a client.
 
-> A senior full-stack engineer and fractional tech lead who ships production software quickly, using AI agents
-> inside a spec-driven process where a human (me) approves every plan and reviews every change. My
-> specialism is energy and EU product data, but it is not the whole offer.
+The primary audience hypothesis is a small team with business-critical web software and no senior
+technical owner, in Spain or elsewhere in the EU. Founders, business owners and technical managers
+should understand the offer without understanding the tooling. This is a positioning hypothesis to
+test with enquiries and sales conversations, not a validated market-size or conversion claim.
 
-The AI angle is presented as a **delivery method with evidence** (this repository is public and shows
-specs, ADRs, verification logs, signed commits), not as a buzzword.
+> Build, modernise and run the software your business depends on.
+>
+> A senior full-stack engineer and fractional tech lead near Barcelona, with a background in energy
+> efficiency and EU product data. Small delivery steps, personal review and a documented handover.
 
-## Findings from the review
+AI is a delivery method explained after client work, not a promise of faster delivery. The public
+repository illustrates decisions, checks and workflow artifacts; it does not prove a speed advantage,
+universal human review or client outcomes.
 
-### Positioning
+## Review correction (2026-11-17)
 
-1. **The offer is too narrow for the target market.** Every service, the hero, the CTA band and the footer
-   say "energy efficiency / EPREL". A Barcelona SME that needs a back-office tool, a Laravel upgrade or
-   someone to keep its platform up will leave in five seconds.
-2. **Direct overlap with EPREL Services.** `entity-resolution` (GTIN matching, market observability,
-   price and availability tracking) is, more or less, their "EPREL & Market Data Integration" and "Market
-   Monitoring". `regtech` partially overlaps. Selling these as services competes with them.
-3. **Strongest evidence is not on the site:** how the work is done. Twelve years of experience is a
-   commodity claim. "AI-assisted, spec-driven, human-reviewed, with a public repo showing it" is not.
-4. **Missing proof from the CV:** energy-bill analytics tooling that processes 1,000+ bills a month per
-   client (document automation, a very sellable capability); the founder story is on About but not used
-   as a selling point (budgets, clients, small teams).
-5. **No engagement model.** A buyer cannot tell whether to ask for a project, a monthly retainer or an
-   audit. There is no "how we would work together".
+This revision supersedes the initial review narrative and draft copy. There are no implementation
+results yet. The previous draft mixed facts, assumptions and internal instructions, and treated a CV
+as verification even though one of its figures was known to be wrong.
 
-### Tone
-
-6. Copy reads like generic agency marketing: "Specialized Capabilities", "Proven Deliverables",
-   "Headquarters" (for a solo consultant), "Algorithmic Regulatory Validation", "Zero-Maintenance CI/CD",
-   "Bridge Built". It weakens trust, and in 2026 readers associate this register with AI-generated copy,
-   which is the opposite of the message.
-7. Clients and employers are anonymised ("a national public bank", "a Swiss energy-efficiency platform
-   operator"), while the CV and LinkedIn name them. Named work is far more credible.
-
-### Accuracy (must be fixed regardless of repositioning)
-
-8. **Job title differs across channels:** site "Principal Software Engineer & Consultant"; CV "Senior
-   Software Engineer Consultant · Remote Project Lead" and "Lead Platform Engineer and Consultant".
-   LinkedIn could not be read (it blocks automated fetches, HTTP 999), so check it by hand.
-9. **Topten scope:** the site says I architected Topten.eu, Topten.ch and the international instances
-   "from the ground up"; the CV says lead platform engineer for topten.ch plus 17 production sites.
-   Confirm which is accurate.
-10. **`eu-inspection-tooling` contradicts itself:** the outcome says "days to minutes per batch", the
-    impact says "hours ... to seconds". "Legally defensible" is a strong claim. Confirm both.
-11. **Unsupported metrics** in `topten-ecosystem`: onboarding "weeks to hours", "zero maintenance downtime",
-    "sub-second catalog response times", "negligible infrastructure costs", new categories "in days rather
-    than months". Keep only what can be backed up.
-12. Location: site "Sant Cugat del Vallès", CV "Barcelona". Both are fine; pick one primary form.
+- The current hero, services and CTA are energy-oriented; their effect on enquiries has not been measured.
+- Claims about five-second departures, buyer search vocabulary and readers identifying AI-written copy
+  were hypotheses, not research findings. They are not publication evidence.
+- Quantitative traffic, uptime, deployment, revenue and productivity claims are omitted from the new
+  copy until their definitions, dates, sources and permission to publish are established.
+- Existing client rates and unreleased third-party product plans have been removed from this working
+  document. This does not remove earlier Git objects or copies. No history rewrite is authorised;
+  review the complete branch and its history before any authorised push.
+- English copy, the home order and engagement terms are now specified in `copy-en.md`. Proposed changes
+  remain subject to human sign-off; this request to fix the documents is not implementation approval.
 
 ## Scope
 
-- Rewrite English copy in `src/i18n/en.ts` and `src/content/**/*.en.md` per `copy-en.md`.
-- Replace the four service pillars with: `build`, `modernize`, `platform`, `energy`.
-- Retire `entity-resolution` as a service; fold the remaining regulatory and IoT work into `energy`.
-- Reorder and retitle case studies; drop Topten Scout; add a case study for this website (the delivery
-  method, shown on a real project).
-- Show prices for the three engagement models.
-- Add two short home sections: **How I work** and **Ways to engage**.
-- Then translate to `ca` and `es` (after the English copy is approved).
+- Rewrite UI copy and the four services in English, then translate the approved English into Catalan
+  and Spanish. Implement all three locales together in each step to preserve dictionary and route parity.
+- Replace the pillars with `build`, `modernize`, `platform`, `energy`.
+- Retire product entity resolution as an advertised service. Energy work covers regulatory calculation
+  software, product-data readiness, monitoring and bill analytics within the service boundary below.
+- Remove Topten Scout. Publish the case studies in this order: Topten, inspection tooling, Banco Estado,
+  this website. The website is engineering-process evidence, not a substitute for a client result.
+- Associate Topten with both modernisation and platform services through explicit related-work mapping,
+  without duplicating the case study or changing its canonical `pillar: platform`.
+- Add compact How I work and Ways to work together home sections; remove the separate About teaser.
+  Keep Victor's name and specialism in the hero, and keep the About navigation link.
+- Show the three selected prices with scoped terms. Link service-detail visitors to the engagement
+  section, and make GitHub references real links.
+- Add verification for renamed contact options and the new section layout; do not weaken existing budgets.
 
 ## Non-goals
 
-- Visual redesign, new colours or layout overhaul.
-- Prices on the site (open question below).
-- Blog, newsletter, CMS.
+- Visual redesign, new colours, photography or layout overhaul.
+- Blog, newsletter, CMS, new tracking services or a separate pricing page without further approval.
+- Editing the CV or LinkedIn, undertaking outreach, obtaining client endorsements or publishing new
+  client metrics. These are owner follow-ups, not builder deliverables.
+- Dependency upgrades, production configuration changes, deployment, commits or pushes as part of
+  this document revision. A failing dependency audit must be resolved separately before release.
 
-## Relevant files
+## Decisions
 
-- `src/i18n/en.ts`, `ca.ts`, `es.ts`: all UI copy; `Dictionary` parity is enforced by `astro check`.
-- `src/content/services/*.md`, `src/content/caseStudies/*.md`: service and case-study bodies.
-- `src/content.config.ts`: the `pillar` enum must change with the new pillars.
-- `src/components/HomeSections.astro`: section order; the two new sections need small components.
-- `src/components/ContactForm.astro`, `src/worker/**`: the "Primary Focus" values (check whether the Worker
-  validates them before renaming; read `.github/instructions/worker.instructions.md`).
+These carry forward the recorded owner choices, with publication corrections from the review. The
+plan's sign-off remains blank. New offer clarifications are proposals to approve with the copy, not
+terms already agreed with any customer.
 
-## Constraints (do not touch)
+- **D1 Identity and attribution:** use Victor Gonzalez. The previously selected names are Topten,
+  Bush Energie, Brandes Energie, Banco Estado and Fundación Chile. The copy uses Topten, Bush Energie,
+  Banco Estado and Fundación Chile only where relevant. Do not add other clients, ministry names or
+  endorsements. Owner review of contracts, confidentiality and permission for each attribution remains
+  a release requirement; naming an organisation does not imply it endorses Victor's services.
+- **D2 Headline title:** `Senior Full-Stack Engineer & Fractional Tech Lead`. In Spanish/Catalan,
+  describe the part-time role as `tech lead a tiempo parcial` / `tech lead a temps parcial`.
+  This is the headline positioning, not a replacement for accurate historical role titles. Use
+  `Sant Cugat del Vallès, near Barcelona` as the canonical English location, with contextually shorter
+  references to Barcelona permitted. Update structured data as well as visible copy.
+- **D3 Service boundary:** do not advertise product search, retailer feeds or APIs, procurement exports,
+  market monitoring, GTIN matching, or combined registry/market-data integration as standalone services.
+  Do not name or compare an unreleased third-party offering, disclose its plans, or link to its
+  development URL in public copy or new public planning material. General data-pipeline engineering
+  is allowed outside these excluded product-data services.
+- **D4 Topten Scout:** remove the three content entries and their home/order references. Do not replace
+  them with a claim about why the underlying work is unavailable.
+- **D5 Bill analytics:** retain a qualitative description only. The earlier per-client volume claim was
+  incorrect; the corrected owner-reported scope is aggregate across clients. No volume is published
+  without dated processing evidence, a counting definition and permission. Correct the CV separately.
+- **D6 Public prices:** keep prices for all three engagement models. Prices are business decisions,
+  not validated market medians or evidence that the offer is cheap in a particular country.
+- **D7 Offers:** audit €2,500 fixed, up to five working days normally scheduled over one to two calendar
+  weeks; project reference rate €640 for an eight-hour day; discovery €1,280 for two working days;
+  fractional €2,400/month for four eight-hour days, three-month minimum (€7,200), then one month's notice.
+  The proposed audit scope is one agreed application, environment or technical plan, with a prioritised
+  report and walkthrough, not a penetration test or compliance certification. Discovery produces an
+  owned specification and a quote for the agreed scope; unresolved complexity is reported before
+  further paid work. If accepted, the fixed project total includes discovery and the €1,280 already
+  paid is credited once. The day rate is an estimating basis, not an additional charge on a fixed quote.
+  Scheduling, extra work, response expectations and any out-of-hours support require written agreement;
+  the retainer does not include 24/7 on-call. VAT, travel and third-party costs are stated separately
+  and agreed before they are incurred. Review rates after three clients or six months alongside lead
+  quality, proposal outcomes and actual effort; acceptance without negotiation alone is not proof of
+  underpricing.
+- **D8 Topten:** owner-confirmed architecture is a Yii2 platform behind Topten.eu and partner sites,
+  followed by a Laravel CMS live on Topten.ch and intended for country-by-country migration. Use this
+  as modernisation and operations evidence. Omit the corporate transaction timeline, employment-status
+  assumptions, automated failover and unsubstantiated scale/performance claims.
+- **D9 Inspection tooling:** describe the work qualitatively. The owner reports that results retain
+  input data, formula version and calculation. Do not claim measured time savings, immutable audit
+  trails, legal defensibility, regulatory approval or certification.
+- **D10 Publication and method:** owner approval of wording is not third-party permission. Public
+  workflow evidence is illustrative, including historical files under `.ai/plans/archive/`; do not
+  claim the current `specs/` layout existed for every historical change. Avoid universal signature,
+  speed, zero-defect, zero-downtime or security/accessibility-conformance claims.
 
-- Settled architecture in AGENTS.md (static output, CSP, Workers, no client framework).
-- No `TODO(copy)` / `REPLACE_ME` sentinels under `src/`.
-- Do not publish a comparison with, or a link to, the EPREL Services development URL.
+## Evidence and publication register
+
+Status dates below are 2026-11-17. A statement in an existing website or CV is not independent
+evidence. Private evidence stays outside this public repository; record only a non-sensitive
+description and the owner's publication decision here when available.
+
+| Claim or commitment                                                        | Source / evidence status                                                                                                                                                                                              | Publication treatment                                                                                                              |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Topten Yii2/Laravel work and migration scope                               | Owner statement D8; public relaunch corroborated by [Topten's announcement](https://www.topten.eu/private/article/new-topten-switzerland-website-successfully-launched), which does not prove authorship or framework | Qualitative draft; owner must confirm attribution and permission before release                                                    |
+| Fundación Chile / Banco Estado IoT work                                    | Existing case study and recorded owner attribution, not independent deployment records                                                                                                                                | Qualitative draft with Fundación Chile attribution; owner permission review required                                               |
+| Inspection-result traceability                                             | Owner statement D9; underlying client implementation not inspected in this repo                                                                                                                                       | Qualitative draft; owner must confirm the described fields actually exist and may be disclosed                                     |
+| Consultancy/founder history and historical role dates                      | Recorded owner history; no CV supplied in this review                                                                                                                                                                 | Keep qualitative history and role dates subject to owner review; no revenue/team/client counts                                     |
+| Traffic, pageviews, uptime, fleet size and monitored locations             | No dated analytics, monitoring definition or deployment inventory supplied                                                                                                                                            | Omitted, including from hero cards, metadata and structured data                                                                   |
+| Bill-processing volume                                                     | Earlier CV wording corrected by owner; no dated measurement supplied                                                                                                                                                  | Omitted; retain capability only                                                                                                    |
+| Years working remotely and current credentials                             | Not independently established; no current qualification/publication/membership evidence supplied                                                                                                                      | No duration, membership or textbook claim                                                                                          |
+| Working languages                                                          | English/Spanish delivery and welcoming Catalan enquiries are proposed service commitments, not externally tested proficiency levels                                                                                   | Owner must approve this offer before publication; agree delivery language with the client and do not claim fluency or a CEFR level |
+| AI use since August 2025                                                   | Recorded personal statement, not evidence of daily use or productivity gain                                                                                                                                           | Duration omitted; describe agreed method, review and tool/data boundaries                                                          |
+| Astro static output, three locales, public code and workflow configuration | `astro.config.mjs`, `src/i18n/config.ts`, `.github/workflows/ci.yml`, repository history                                                                                                                              | Publish qualitative implementation facts; no hardcoded page/rule/asset totals                                                      |
+| Automated checks                                                           | CI runs on PRs, `main` pushes and manual dispatch; dry-run is an additional local check                                                                                                                               | Describe these separately; no claim that every feature push runs CI                                                                |
+| ESPR / Digital Product Passport readiness                                  | [European Commission implementation overview](https://green-forum.ec.europa.eu/news/ecodesign-sustainable-products-regulation-moves-implementation-2026-07-02_en): phased, product-specific framework                 | Engineering preparation only; no universal deadline, legal advice or compliance guarantee                                          |
+| Prices and engagement boundaries                                           | Owner-selected amounts; clarifications in D7 proposed for sign-off                                                                                                                                                    | Publish only after copy/terms approval; no market-median comparison                                                                |
+| Response time, availability and AI-tool handling                           | Prospective service commitments, not historical performance evidence                                                                                                                                                  | Use bounded wording; agree schedule, tools and permitted data before access                                                        |
 
 ## Acceptance criteria
 
-- [ ] Hero, services, case studies, about, CTA band, contact and footer match the approved `copy-en.md`.
-- [ ] No service page offers GTIN resolution or market monitoring as a service.
-- [ ] Every metric on the site appears in the CV or is confirmed by me in this spec.
-- [ ] One job title and one location form used across site, CV and LinkedIn.
-- [ ] `ca` and `es` translated; `astro check` passes (dictionary parity).
-- [ ] Full verification gate from AGENTS.md passes; page count updated in AGENTS.md if it changes.
+- [ ] Human sign-off covers this spec, the complete English copy, related-work mapping and proposed terms.
+- [ ] Home, service, case-study, About, contact, footer and structured-data copy match `copy-en.md`;
+      retained strings follow its explicit retain-existing rule. No editorial instructions render as copy.
+- [ ] No excluded product-data service, unreleased partner name/URL, internal client rate or unsupported
+      quantitative/performance/legal claim is introduced in the site or new public planning material.
+- [ ] Owner review confirms every named attribution, historical role and client implementation statement
+      in the evidence register. Missing permission/evidence blocks that claim, not an invented substitute.
+- [ ] Headline title and canonical location are consistent across site metadata and visible identity;
+      historical titles and shorter geographic references remain semantically accurate.
+- [ ] Catalan and Spanish translations are reviewed by the owner before release; dictionary parity,
+      translated content routes and locale-aware links pass checks.
+- [ ] Modernisation and platform pages both link to Topten as related work; service pages link to the
+      localised home engagement section, and public repository references are clickable.
+- [ ] All six contact keys (`build`, `modernize`, `platform`, `energy`, `audit`, `other`) agree between
+      dictionaries, rendered options and the Worker's accepted map. Verification distinguishes stubbed
+      browser responses from actual Worker handling.
+- [ ] Existing desktop/mobile/word budgets pass in every locale, with explicit layout coverage for the
+      new engagement cards. Do not increase budgets to make the content fit.
+- [ ] Full repository gate, dependency audit, E2E and deployment dry-run pass with exact evidence in
+      `progress.md`; any failure stays blocked and counts are updated only from actual output.
+- [ ] Owner separately records CV/LinkedIn follow-up and confirms publication review before any authorised
+      push/deploy. Mark `done` only after the owner confirms the live result, not merely a local build.
 
-## Decisions (2026-11-17)
+## Owner follow-ups and outreach evaluation
 
-- **D1 Name and clients:** use "Victor Gonzalez" and name Topten, Bush Energie, Brandes Energie, Banco
-  Estado and Fundación Chile.
-- **D2 Title:** `Senior Full-Stack Engineer & Fractional Tech Lead`, used on the site, the CV and LinkedIn.
-  Reasoning: "full-stack" is the search term buyers use; "fractional tech lead" names a product an SME
-  can buy (part-time senior ownership) and is honest given the founder and team-lead history.
-  "Fractional CTO" was rejected because it overclaims. "Principal" was rejected because it is a
-  big-company ladder rung that means little to a small buyer. In `es`/`ca`, "fractional" is not common
-  usage: render it as "tech lead a tiempo parcial" / "tech lead a temps parcial".
-  LinkedIn headline (longer form): `Senior Full-Stack Engineer & Fractional Tech Lead · AI-assisted,
-  spec-driven delivery · Energy & EU product data · Barcelona`.
-- **D3 EPREL Services:** I sit on its consulting team representing Topten. So the site must not offer
-  anything EPREL Services sells: product search, retailer data/API, procurement exports, market
-  monitoring, or EPREL plus market-data integration. The `energy` service keeps only ESPR/DPP readiness,
-  regulation in code, energy monitoring and bill analytics. The site does not name EPREL Services while it
-  is unreleased. Once it is public, add the consulting role as a credential on About.
-- **D4 Topten Scout:** dropped (it is not publicly reachable). Delete
-  `src/content/caseStudies/topten-scout.{en,ca,es}.md`; the `entity-resolution` pillar goes with it.
-- **D5 Bill analytics:** 1,000+ bills a month **across all clients** (the CV's "per client" is wrong and
-  must be corrected there too). Not enough detail for a case study, so it is a line in the `energy`
-  service only.
-- **D6 Prices:** shown, for all three engagement models. Figures still needed (open question 1).
-- **Topten history (for accurate copy):** Topten started under Bush Energie, became Topten GmbH, and was
-  sold by Bush Energie to Brandes Energie about two years ago; it still operates under Brandes. VGR SpA
-  was my own consultancy and freelance vehicle in Chile. The CV's "Bush Energie" is correct.
-- **AI agents:** building with agents since August 2025.
+- Review the draft commercial clarifications, identity, client attribution and technical case-study facts.
+- Align CV/LinkedIn headline and location; correct the bill-volume wording there. This is not an
+  instruction for the builder to access or edit external accounts.
+- Select approved AI tools and code/data-sharing boundaries with each client; do not invent provider
+  training, retention, IP or data-residency guarantees. A procurement FAQ can follow once policy exists.
+- Consider an approved portrait and client quote as a separate enhancement. No invented testimonials,
+  implied endorsements, availability dates or local clients are added by this plan.
+- Use existing locale pages as outreach destinations. After launch, privately record enquiry source,
+  qualification, calls and proposals over a six-week review window using existing tools; do not add
+  tracking or claim a statistically established conversion gain. Revisit the audience hypothesis with
+  actual sales conversations, not pageviews alone.
 
-- **D7 Prices** (market data gathered 2026-11-17, small and vendor-heavy samples, so indicative only):
-  Spain senior full-stack freelance roughly €55–80/h, median about €65/h; Germany and Netherlands senior
-  contractors roughly €650–1,000/day. Current Topten rate is about 50 CHF/h, which is below both. Chosen:
-  **€640/day (€80/h)**: top of the Spanish range, bottom of the northern-EU range, so it is credible
-  locally and cheap for EU clients. All prices exclude VAT.
-  - Audit: **€2,500 fixed**, up to 5 days of work, written report. Priced below 5 × day rate on purpose,
-    as the entry offer.
-  - Project: **€640/day**; a paid spec phase of **€1,280** (2 days) produces a fixed quote, and that fee is
-    deducted if the project goes ahead.
-  - Fractional tech lead: **€2,400/month for 4 days** (€600/day for the commitment), 3-month minimum,
-    then a month's notice.
-  - Review the rates after the first 3 clients or 6 months. If every quote is accepted without
-    pushback, the rate is too low.
-- **D8 Topten scope:** I architected the Topten.eu platform (legacy Yii2, which still runs Topten.eu and
-  most partner sites) and a new Laravel CMS, live on Topten.ch and being rolled out to other countries.
-  This is also the flagship proof for the `modernize` service.
-- **D9 Inspection tooling:** no time-saving figure (not measured). Describe the change qualitatively.
-  Replace "legally defensible" with "reproducible": every result records its input data, formula version
-  and calculation.
-- **D10 EPREL Services wording:** cleared (no conflict raised from my side).
+## Relevant files and constraints
 
-## Open questions
+`src/i18n/{en,ca,es}.ts`, content collections and `src/content.config.ts`, `src/lib/content.ts`,
+`src/components/HomeSections.astro`, the service/detail templates, `PageShell.astro`, `SiteFooter.astro`,
+the contact Worker and form tests, and layout/page-weight tests are detailed in `plan.md`.
 
-None. Ready for `/spec-plan`.
+Settled static architecture, CSP, Workers routing, no client framework and the placeholder guard remain
+unchanged. Read the scoped source/Worker instructions before implementation. Retired service/Scout URLs
+may 404 under the recorded decision; no redirects are scheduled in this plan. This trades away possible
+existing links and indexing, and does not assert that the unpromoted site has none.
 
-## Resolved questions (kept for the record)
+## Approval state
 
-1. **Name and clients.** Can the site use "Victor Gonzalez" and name Topten, Brandes Energie, Banco
-   Estado and Fundación Chile? (Recommended: yes, matching the CV.)
-2. **Title.** Which one? Proposal: "Senior full-stack engineer & remote tech lead".
-3. **EPREL Services relationship.** Is it your employer's or a partner's product? If so, the `energy`
-   service can position you as the complement ("I integrate EPREL data into your own systems and prepare
-   your product data for ESPR / Digital Product Passport"), and could even refer clients to them once
-   they are live. If they are unrelated, keep the complement wording without naming them.
-4. **Topten Scout.** Keep it as a case study (it is past work, and it is proof), or drop it because it
-   is now the EPREL Services team's product territory, or confidential?
-5. **Bill-processing case study.** Facts for the Chilean tooling (client type, input formats, volume,
-   what it replaced, stack)? Without them it stays a one-line mention.
-6. **Other AI-era proof.** Any other project built with the agent workflow (internal tools, scripts, a
-   migration) you can describe, even anonymised?
-7. **Prices.** Show "from" prices or day rates for the three engagement models, or keep "ask me"?
-   (Recommended: a price range for the audit only, since it is the lowest-friction entry point.)
-8. **Topten scope and inspection-tooling metrics:** see findings 9 to 11.
+Draft revised after review. Commercial clarifications, copy, evidence/permission checks and translations
+still require owner approval. No implementation step is complete and no plan sign-off is implied.

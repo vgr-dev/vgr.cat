@@ -3,14 +3,14 @@
 Spec: `spec.md` · Copy source: `copy-en.md` (English is authoritative; `ca`/`es` are translations of it).
 Draft corrected after review on 2026-11-17. No implementation approval or completed step is implied.
 
-**Sign-off:** <!-- Human fills this in: "Approved by <name> on YYYY-MM-DD". Builders must not start while blank. -->
+**Sign-off:** Approved by Victor Gonzalez on 2026-11-17
 
 ## Status
 
 <!-- [ ] todo | [~] in progress | [x] done | [-] deferred | [!] blocked; then `uncommitted`, a
 short commit hash, or the reason. The only part of this file that changes after sign-off. -->
 
-- [ ] 1. Retire the Topten Scout case study
+- [x] 1. Retire the Topten Scout case study — uncommitted
 - [ ] 2. Replace the service pillars and rewrite the four services
 - [ ] 3. Align the contact form's focus options with the new services
 - [ ] 4. Rewrite the case studies and add "This website"

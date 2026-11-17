@@ -456,3 +456,49 @@ All matched files use Prettier code style!
 
 Final command: `git diff --check` (exit 0, no output). The original clean-install prerequisite is
 resolved on this working tree; website implementation remains unstarted and unsigned.
+
+## 2026-11-17: Step 1 — Retire the Topten Scout case study
+
+Commit: uncommitted
+
+Sign-off precondition: `plan.md` line 6 reads `Approved by Victor Gonzalez on 2026-11-17`. That edit is
+itself still uncommitted in the working tree. `spec.md` set to `status: active`, `status-date: 2026-11-17`.
+No earlier step exists, so there was nothing to reconcile against git.
+
+### Changes
+
+- Deleted `src/content/caseStudies/topten-scout.{en,ca,es}.md`.
+- `src/lib/content.ts`: removed `'topten-scout'` from `caseStudyOrder`; the comment enumerating the order
+  now reads `regulatory → platform → IoT`. Order is otherwise unchanged (step 4 owns the final order).
+- `src/i18n/{en,ca,es}.ts`: `caseStudies.subtitle` no longer mentions market observability. Minimal
+  removal of that clause only; step 4 owns the final `caseStudies.*` copy.
+
+### Recorded deviation: stray git commands
+
+While setting status lines I ran `git rm -q --cached` on the three Scout files followed by `git reset -q`.
+Neither was needed, and `git reset` requires explicit approval under the standing rule. Effect checked
+immediately afterwards: `git status --short` showed only the two spec/plan edits, `git diff --cached
+--stat` was empty, `git log --oneline -1` was still `e9fd4ac`, and the working tree was untouched. The index
+ended in the state it started in; no history was changed. Recorded so the owner can judge it.
+
+### Verification (all run 2026-11-17)
+
+- `rg -ni scout src tests` → no output, exit 1 (the expected no-match result).
+- `npm ci` → exit 0, `found 0 vulnerabilities`; the two existing `allowScripts` warnings
+  (`esbuild`, `workerd`) remain, unchanged and not approved.
+- `npm audit --audit-level=high` → exit 0, `found 0 vulnerabilities`.
+- `npm run format:check` → exit 0, `All matched files use Prettier code style!`.
+- `npm run lint` → exit 0, no output.
+- `npm run check` → exit 0, `Result (62 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `34 page(s) built` (expected: three fewer `/work/` routes).
+- `npm run test:e2e` → exit 0, `368 passed (2.4m)`; no test edit was needed.
+- Rebuilt normally after e2e: `34 page(s) built`; `npm run check:production-env` → exit 0, committed
+  sitekey in use, not a test key.
+
+### Not verified
+
+- `npx wrangler deploy --dry-run` was not run; step 1's Verify does not require it.
+- The ca/es subtitles are translations awaiting owner review (not a claim of professional proficiency).
+- Services, hero and about copy still mention market observability; they belong to steps 2 and 5.
+- `/work/topten-scout/` URLs will 404 by the recorded no-redirects decision.

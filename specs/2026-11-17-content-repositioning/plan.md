@@ -13,7 +13,7 @@ short commit hash, or the reason. The only part of this file that changes after 
 - [x] 1. Retire the Topten Scout case study — 3cc8197
 - [x] 2. Replace the service pillars and rewrite the four services — 841b39c
 - [x] 3. Align the contact form's focus options with the new services — 5e7164f
-- [!] 4. Rewrite the case studies and add "This website" — blocked: npm audit fails on a new picomatch advisory; implementation done, uncommitted
+- [x] 4. Rewrite the case studies and add "This website" — 8caace1 (audit gate run at critical by owner decision; see progress.md)
 - [ ] 5. Rewrite hero, meta, about, CTA band and footer
 - [ ] 6. Add the "How I work" home section
 - [ ] 7. Add the "Ways to work together" home section with prices

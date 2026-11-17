@@ -795,3 +795,92 @@ The audit failure blocks release and is not fixable inside this change. Options,
 (a) wait for an upstream `picomatch` release and re-run; (b) approve a separate, explicit change to how the
 audit gate treats this advisory, which AGENTS.md rule 5 forbids doing silently; (c) review whether the affected
 packages only run at build time. Steps 5–8 will hit the same failure until one of these is chosen.
+
+## 2026-11-17: Owner-directed fix for the dependency audit blocker (step 4 follow-up)
+
+Commit: uncommitted
+
+The owner asked for the npm issues to be fixed and chose, from the options offered, to **loosen the audit
+threshold to `critical`** and to approve the `esbuild` and `workerd` install scripts. The first was done; the
+second was **not** done (see below). Earlier entries are unchanged.
+
+### Investigation (read-only)
+
+- `gh api /advisories/GHSA-fc5q-39xc-vjpf`: severity `high`, CVSS 7.5, published 2026-10-19, **updated
+  2026-11-17T15:56:44Z**, vulnerable range `<= 4.0.7`, `first_patched_version: null`, not withdrawn. The
+  update on the day of the failure is the likely reason runs earlier that day reported 0 vulnerabilities; the
+  advisory's earlier content was not retrieved, so this is an inference.
+- `npm view picomatch versions`: the newest release is `4.0.7`, so there is nothing to upgrade to. The
+  installed copies are `4.0.7` (via `astro`, `vite`, `tinyglobby`, `fdir`, `@astrojs/internal-helpers`) and
+  `2.3.2` (via `unstorage → anymatch`).
+- `npm audit --json` metadata: `high: 16, critical: 0, total: 16`; all 16 are the one advisory propagated up
+  the tree. `astro` is a runtime `dependency`, so `--omit=dev` does not clear it either.
+- Exposure: `grep -rli picomatch` over `dist/`, `.wrangler/dry-run/` (the Worker bundle from step 3's dry-run)
+  and `src`, `astro.config.mjs`, `playwright.config.ts`, `scripts` each exited 1 (no match). The package is used
+  only for build-time globbing by Astro, Vite and the linters. The advisory needs an attacker to supply the glob
+  pattern; the patterns here are authored in this repository. This is analysis of this tree, not a claim that
+  the advisory is harmless elsewhere.
+
+### Changes
+
+- `.github/workflows/ci.yml`: the `Audit dependencies` step runs `npm audit --audit-level=critical`, with a
+  comment recording the reason and the advisory. The workflow name `CI`, the job names `validate` and `e2e`,
+  `permissions`, `concurrency` and every pinned Action are unchanged (parsed with Node `yaml`: `CI`,
+  jobs `validate,e2e`).
+- `.github/instructions/workflows.instructions.md`: the CI contract line says `critical`.
+- `AGENTS.md`: new gotcha "Dependency audit threshold is `critical`, not `high` (owner decision 2026-11-17)",
+  recording the advisory, why no override or `audit fix --force` can help, and the condition for restoring
+  `high`. The earlier dated "Verified 2026-11-17 … 0 vulnerabilities" record was left as written.
+- Not changed: `package.json`, `package-lock.json`, the `overrides` block, any dependency version, and
+  `allowScripts`. No suppression file, ignore list or custom audit script was added. `npm audit fix --force`
+  was not run.
+
+### Install-script approval: not done, owner re-confirmation needed
+
+The owner chose to approve `esbuild` and `workerd`. I had described that as "only makes the approval explicit"
+because the scripts "already run today". **That was wrong.** `npm help install-scripts` states that install
+commands silently _skip_ lifecycle scripts for any dependency with no matching `allowScripts` entry, and
+`npm install-scripts ls` lists exactly these two (`esbuild@0.28.2` and `workerd@1.20261117.1`, each
+`postinstall: node install.js`). The skipped scripts have not been running, and the whole gate and all e2e
+suites pass without them. Approving would therefore start running two postinstall scripts on every install,
+locally and in CI, a behaviour change. The owner approved on the basis of my incorrect description, and
+AGENTS.md says not to change this policy silently, so `package.json` was left untouched and the question is
+re-asked. By default npm writes version-pinned entries (`esbuild@0.28.2`), which need re-approval on every
+bump; `--no-allow-scripts-pin` writes name-only entries covering any future version.
+
+### Verification (all run 2026-11-17, after the change)
+
+- `npm ci` → exit 0 (the same two `allowScripts` warnings).
+- `npm audit --audit-level=critical` → exit 0; the report still lists `16 high severity vulnerabilities`.
+  `npm audit --audit-level=high` still exits 1 and is expected to until picomatch is patched.
+- `npm run format:check` → exit 0. `npm run lint` → exit 0.
+- `npm run check` → exit 0, `Result (63 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → exit 0, `0 placeholders remain.`
+- `npm run build` → exit 0, `37 page(s) built`.
+- `npm run test:e2e` was not re-run: nothing under `src/` or `tests/` changed since the 482-pass run recorded
+  in the step 4 entry; only CI configuration and documentation changed.
+
+### Not verified
+
+- The workflow was not executed on GitHub Actions: nothing was pushed, and `CI` only runs on pushes to `main`,
+  pull requests and manual dispatch. It was only parsed and formatted locally.
+- `plan.md` still reads `npm audit --audit-level=high` in its "Standard gate" and step 8 Verify text. Only
+  the Status checklist may change after sign-off, so I did not edit it. The gate for steps 4 onwards is run
+  at `critical` by the owner's decision; the owner should update the plan text if they want it to agree.
+- Whether upstream will publish a patched `picomatch`, and when.
+
+### Step 4 status
+
+With the gate run at the owner-approved `critical` threshold, every other Verify command for step 4 had
+already passed (see the step 4 entry). The step 4 Status line is therefore changed from `[!]` to
+`[x] … uncommitted`, with the threshold caveat above. Nothing is committed.
+
+### Correction (2026-11-17): step 4 was already committed
+
+When the entry above was written, `git status` showed the step 4 content and test changes as clean: the owner
+had committed them as `8caace1` (signed, `feat(content): rewrite the case studies and add the vgr.cat case`)
+and the blocked-state log as `83da336` (signed). The sentences above that say step 4 is `[x] … uncommitted`
+and that "nothing is committed" refer to the state I assumed, not the real one. The step 4 Status line now
+carries `8caace1`. The audit-threshold, `AGENTS.md`, `ci.yml` and workflow-instruction edits in this follow-up
+remain uncommitted. The `83da336` commit recorded step 4 as `[!]` blocked; this follow-up supersedes that, and
+the earlier entry is left as written.

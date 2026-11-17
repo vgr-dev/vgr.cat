@@ -34,16 +34,20 @@ npm ci
 
 ## Scripts
 
-| Script                 | What it does                                      |
-| ---------------------- | ------------------------------------------------- |
-| `npm run dev`          | Dev server at http://localhost:4321               |
-| `npm run start`        | Alias of `dev`                                    |
-| `npm run build`        | `astro check && astro build` → `dist/`            |
-| `npm run preview`      | Serve the built `dist/` locally                   |
-| `npm run check`        | `astro check` — TypeScript + `.astro` diagnostics |
-| `npm run format`       | Prettier, write                                   |
-| `npm run format:check` | Prettier, check only (used by CI)                 |
-| `npm run astro`        | Raw Astro CLI passthrough                         |
+| Script                         | What it does                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| `npm run dev`                  | Dev server at http://localhost:4321                                             |
+| `npm run start`                | Alias of `dev`                                                                  |
+| `npm run build`                | `astro check && astro build` → `dist/`                                          |
+| `npm run preview`              | Serve the built `dist/` locally                                                 |
+| `npm run check`                | `wrangler types`, then `astro check`                                            |
+| `npm run lint`                 | ESLint (used by CI)                                                             |
+| `npm run check:placeholders`   | Fails on leftover `TODO(copy)` / `REPLACE_ME` markers under `src/` (used by CI) |
+| `npm run check:production-env` | Refuses a Turnstile test sitekey (used by `Deploy`)                             |
+| `npm run test:e2e`             | Playwright suite on a test-key build (CI `e2e` job)                             |
+| `npm run format`               | Prettier, write                                                                 |
+| `npm run format:check`         | Prettier, check only (used by CI)                                               |
+| `npm run astro`                | Raw Astro CLI passthrough                                                       |
 
 `astro build` transpiles with esbuild and performs no type checking, which is why
 `check` is chained into `build`: a type error fails the build, and therefore CI.
@@ -134,10 +138,10 @@ render-blocking request.
 
 ## Continuous integration & deployment
 
-| Workflow | Trigger                              | Purpose                                                                                      |
-| -------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `CI`     | Pull request, push to `main`, manual | `npm ci` → `format:check` → `check` → `build`; uploads the `dist` artifact (7-day retention) |
-| `Deploy` | After `CI` passes on `main`, manual  | `npm ci` → `build` → `wrangler deploy` to production                                         |
+| Workflow | Trigger                              | Purpose                                                                                                                                                                                               |
+| -------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CI`     | Pull request, push to `main`, manual | `validate`: `npm ci` → `npm audit --audit-level=critical` → `format:check` → `check` → `lint` → `check:placeholders` → `build`, uploads the `dist` artifact (7-day retention); then `e2e`: Playwright |
+| `Deploy` | After `CI` passes on `main`, manual  | `npm ci` → `check:production-env` → `types` → `build` → `wrangler deploy` to production                                                                                                               |
 
 `Deploy` is gated on `CI`: it triggers on the `CI` workflow completing and only proceeds when that run
 concluded `success`, then deploys the exact commit `CI` validated. It runs against the `production`

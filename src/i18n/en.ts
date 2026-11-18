@@ -11,16 +11,17 @@
  */
 export const en = {
   site: {
-    title: 'VGR | Principal Software Engineer & Consultant',
+    title:
+      'Victor Gonzalez | Senior Full-Stack Engineer & Fractional Tech Lead',
     description:
-      'Full-stack engineering for energy-efficiency platforms: EU regulatory data systems, market surveillance tooling and nationwide IoT monitoring. 12+ years.',
-    author: 'VGR',
-    location: 'Sant Cugat del Vallès, Catalonia',
-    jobTitle: 'Principal Software Engineer & Consultant',
+      'Senior full-stack engineer and fractional tech lead near Barcelona. I build, modernise and run software, with a focus on energy and EU product data.',
+    author: 'Victor Gonzalez',
+    location: 'Sant Cugat del Vallès, near Barcelona',
+    jobTitle: 'Senior Full-Stack Engineer & Fractional Tech Lead',
   },
   nav: {
     services: 'Services',
-    caseStudies: 'Case Studies',
+    caseStudies: 'Selected work',
     about: 'About',
     contact: 'Contact',
     bookCall: 'Book a call',
@@ -38,137 +39,209 @@ export const en = {
     home: 'Home',
   },
   hero: {
-    badge: 'Available for European & Catalan software engineering and advisory',
-    title: 'Engineering the platforms behind',
-    titleHighlight: 'European energy efficiency',
+    badge:
+      'Sant Cugat del Vallès, near Barcelona · remote across the EU · English and Spanish; Catalan enquiries welcome',
+    title: 'Build, modernise and run',
+    titleHighlight: 'the software your business depends on.',
     subtitle:
-      '12+ years of end-to-end delivery in energy efficiency: EU compliance engines (EPREL, Ecodesign, ESPR), market-surveillance tooling, nationwide IoT fleets, and the multi-tenant platforms that operate them.',
-    ctaPrimary: 'Book a 30-min technical call',
-    ctaSecondary: 'Explore Case Studies',
+      "I'm Victor Gonzalez, a senior full-stack engineer and fractional tech lead. I help small teams ship products, improve legacy applications and keep production reliable. Energy and EU product data are my specialism.",
+    ctaPrimary: 'Book a 30-min call',
+    ctaSecondary: 'See selected work',
     metrics: [
       {
-        value: '12+',
-        label: 'Years building software for energy efficiency',
-      },
-      {
-        value: '1.5M+',
+        value: 'Build',
         label:
-          'Monthly visitors across the 17 multi-tenant production sites I operate',
+          'New products, internal tools and APIs, from a written spec to production.',
       },
       {
-        value: '200+',
-        label: 'Bank branches instrumented with IoT energy monitoring',
+        value: 'Modernise',
+        label:
+          'Legacy PHP, Python and JavaScript applications moved forward incrementally.',
+      },
+      {
+        value: 'Run',
+        label:
+          'Hosting, caching, monitoring, security and CI/CD for platforms where reliability matters.',
       },
     ],
   },
   services: {
-    eyebrow: 'Specialized Capabilities',
-    title:
-      'Full-stack engineering for energy data: from field sensors to European registries',
+    eyebrow: 'Services',
+    title: 'What I can take off your plate',
     subtitle:
-      'Regulatory engines, market observability, IoT monitoring and the platforms that run them. One engineer across the whole stack: ingest, model, validate, ship, operate.',
+      'One senior engineer across the whole path: the spec, the code, the infrastructure and the handover.',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
-      regtech: { tag: 'RegTech & Compliance' },
-      'entity-resolution': { tag: 'Data Intelligence' },
-      infrastructure: { tag: 'Cloud & Systems' },
-      iot: { tag: 'IoT & Field Data' },
+      build: { tag: 'New products' },
+      modernize: { tag: 'Legacy rescue' },
+      platform: { tag: 'Platform operations' },
+      energy: { tag: 'Energy & regulation' },
     },
     // Detail-page copy for `/services/<pillar>/`.
     readService: 'Explore this service',
-    relatedWork: 'Selected work in this pillar',
-    noRelatedWork:
-      'No published case study covers this pillar yet. The next one will be listed here.',
+    relatedWork: 'Related work',
+    noRelatedWork: 'No public case study is listed for this service yet.',
+    engageLink: 'See ways to work together',
   },
   caseStudies: {
-    eyebrow: 'Proven Deliverables',
-    title: 'Selected platforms and deployments',
+    eyebrow: 'Selected work',
+    title: 'Systems in production',
     subtitle:
-      'Systems in production: regulatory verification for European authorities, a pan-European product platform, market observability, and a nationwide IoT fleet.',
+      'Platforms and tools I have built or run, for organisations in Switzerland, the EU and Chile.',
     labels: {
-      problem: 'The Challenge',
-      approach: 'The Architecture',
-      outcome: 'Measurable Impact',
+      problem: 'Problem',
+      approach: 'What I built',
+      outcome: 'Result',
     },
     // Card affordance and `/work/<translationKey>/` navigation.
     readCase: 'Read the case study',
-    backToWork: 'All case studies',
+    backToWork: 'All selected work',
     nextCase: 'Next case study',
   },
-  about: {
-    eyebrow: 'Background & Track Record',
-    title:
-      'Full-stack engineering for energy efficiency, from field sensors to European registries',
-    paragraphs: [
-      'I am a principal software engineer and consultant based in Sant Cugat del Vallès (Barcelona). For 12+ years I have built and operated software for energy efficiency and sustainability: first as an engineer at a national innovation foundation, then as founder of my own consultancy, and now as lead engineer for a fleet of 17 multi-tenant production sites sustaining 99.99% annual uptime across Switzerland, Chile and the EU.',
-      'My work sits at both ends of the stack. In the field, I have instrumented hundreds of bank branches with IoT energy-monitoring fleets, wiring hardware, gateways and protocols into dashboards that facilities teams use daily. In regulatory data, I turn Ecodesign, Energy Labelling and ESPR obligations into verifiable software: EPREL integrations, tolerance formulas in code, and market-surveillance tooling that produces audit-ready evidence.',
-      'I am a full-stack engineer by temperament: PHP, Python, TypeScript and Go on the server; Vue, React and Next.js on the front; Docker, Kubernetes, CI/CD, Grafana and Prometheus underneath. I would rather own the whole path than hand off at an interface.',
-      'I have also run the business side. I founded and grew a consulting firm to $20k+ a month with a team of three to four engineers and five long-term clients, held a strategic partnership with a Swiss energy-efficiency firm, and carried the Topten platform through its acquisition by a larger Swiss energy company. That is why I am comfortable with stakeholders, budgets and timelines, not only code.',
+  process: {
+    eyebrow: 'How I work',
+    title: 'AI helps with the drafting. I stay accountable.',
+    subtitle:
+      'AI-assisted delivery is opt-in. Before work starts, we agree which tools may see which code and what I will review.',
+    steps: [
+      {
+        title: 'Spec',
+        body: 'We agree in writing what "done" means. You approve it.',
+      },
+      {
+        title: 'Plan',
+        body: 'I break the work into small steps you can see before any code exists.',
+      },
+      {
+        title: 'Build',
+        body: 'AI agents help draft code and tests inside the approved tools and code boundaries.',
+      },
+      {
+        title: 'Review',
+        body: 'I review what ships and record the decisions and checks.',
+      },
+      {
+        title: 'Hand over',
+        body: 'Specs, decisions and verification notes stay in your repository.',
+      },
     ],
-    experienceTitle: 'Where I have worked',
+    dataBoundary:
+      'Client code and data stay outside AI tools unless we have agreed the tools and permitted data in writing.',
+    proof:
+      'This site is developed with the same process, and the repository is public: the current spec, architecture decisions and earlier planning records.',
+    proofLinkLabel: 'See the specs and history on GitHub',
+  },
+  engage: {
+    eyebrow: 'Ways to work together',
+    title: 'Three ways to start',
+    subtitle: 'Each starts with a written scope.',
+    items: [
+      {
+        name: 'Audit or second opinion',
+        description:
+          'Review of one agreed application, environment or technical plan, with a prioritised report and walkthrough.',
+        price: '€2,500 fixed',
+        detail:
+          'Up to 5 working days, normally over 1–2 calendar weeks. Not a penetration test or compliance certification.',
+      },
+      {
+        name: 'Project',
+        description:
+          'A build or modernisation, starting with two days of paid discovery and a written spec.',
+        price: '€640 per day',
+        detail:
+          'Discovery is €1,280, credited once towards an accepted fixed project quote. You keep the spec if you stop.',
+      },
+      {
+        name: 'Fractional tech lead',
+        description:
+          'Four eight-hour days a month as your part-time tech lead or platform engineer.',
+        price: '€2,400 per month',
+        detail:
+          "Three-month minimum (€7,200), then one month's notice. Scheduling and response expectations agreed in writing.",
+      },
+    ],
+    terms: [
+      'Prices exclude VAT. Travel and third-party costs are agreed in writing before they are incurred.',
+      'The project day rate is an eight-hour estimating basis, not an extra charge on a fixed quote. Discovery produces a quote for the agreed scope; unresolved complexity is reported before further paid work. The fixed total includes discovery, with the €1,280 already paid deducted once.',
+      'Extra work, scheduling and response expectations require written agreement. The retainer does not include 24/7 on-call.',
+      'Working languages: English and Spanish. Catalan enquiries are welcome; we agree the delivery language in writing. Remote across the EU; on site in the Barcelona area.',
+    ],
+  },
+  about: {
+    eyebrow: 'About',
+    title: 'Engineer, builder, and operator',
+    paragraphs: [
+      "I'm Victor Gonzalez, a senior full-stack engineer and fractional tech lead based in Sant Cugat del Vallès, near Barcelona. I build, modernise and run production software, with a particular focus on energy and EU product data. I work remotely across the EU and on site in the Barcelona area. Today I lead platform engineering for Topten.",
+      'Before that, I founded and ran VGR SpA, my software consultancy in Chile, including work with Bush Energie in Switzerland. Running a business taught me what clients care about: budgets, deadlines and someone who answers the phone.',
+      "I'm a generalist by choice. PHP, Python and TypeScript are my main languages; I also work in Go and have used C#, Rust and Java. I'm as comfortable in a Laravel codebase as in a Grafana dashboard or a Linux host.",
+      'I use AI coding agents as part of a reviewed, spec-driven process. AI-assisted delivery is opt-in: we agree the tools and the code boundaries before work starts. The agents help draft code and tests; I review what ships and keep the decisions in the repository.',
+      'Most of my work has been in energy efficiency and sustainability, from IoT metering in bank branches to EU product regulation. It is the domain I know best, and the reason I care about software that is efficient to run as well as to write.',
+    ],
+    experienceTitle: 'Experience',
     experience: [
       {
         period: '2025 — present',
-        role: 'Principal Software Engineer & Consultant',
-        org: 'Swiss energy-efficiency platform operator · Chilean energy consultancy',
+        role: 'Lead Platform Engineer & Consultant',
+        org: 'Topten (Switzerland)',
         detail:
-          '17 multi-tenant production sites, 1.5M+ monthly visitors, 99.99% uptime.',
+          'Platform architecture, the Yii2-to-Laravel transition, and operations for a multilingual consumer product platform.',
       },
       {
         period: '2017 — 2025',
         role: 'Founder & Team Lead',
-        org: 'VGR SpA (CL)',
-        detail: 'Consultancy scaled to a team of 3–4 and 5+ long-term clients.',
+        org: 'VGR SpA (Chile)',
+        detail:
+          'Software delivery for energy, sustainability and product-data clients.',
       },
       {
         period: '2014 — 2017',
         role: 'Software Engineer',
-        org: 'National innovation foundation',
+        org: 'Fundación Chile',
         detail:
-          'IoT and energy-efficiency platforms for public and private clients.',
+          'IoT and energy-efficiency platforms, including work for Banco Estado.',
       },
     ],
-    techStackTitle: 'Core Technical Stack & Competencies',
+    techStackTitle: 'What I work with',
     competencies: [
-      'Regulatory codification (EPREL, Ecodesign, ESPR)',
-      'Entity resolution & GTIN/EAN disambiguation',
-      'Multi-tenant platform architecture',
-      'IoT fleets: gateways, MQTT, Express, time-series ingest',
-      'API design & automated ingest pipelines',
-      'Docker, Kubernetes, CI/CD, Grafana, Prometheus',
-      'PHP · Python · TypeScript · Go',
-      'Vue · React · Next.js · Tailwind',
+      'TypeScript, PHP, Python, Go',
+      'Laravel, Symfony, Django, Node',
+      'Vue, React, Astro, Tailwind',
+      'AWS, Cloudflare, Docker, Kubernetes, Linux',
+      'GitHub Actions, GitLab CI, Grafana, Prometheus',
+      'Spec-driven, AI-assisted delivery',
+      'Remote project management',
+      'EPREL, Ecodesign, ESPR / DPP',
+      'IoT energy monitoring',
+      'Bill analytics',
     ],
-    // Home-page teaser; the full history lives on `/about/`.
-    teaser:
-      'Principal software engineer and consultant in Sant Cugat del Vallès. Twelve years building and operating the platforms behind European energy efficiency: compliance engines, market observability and nationwide IoT fleets.',
-    readMore: 'Read the full background',
     credentials:
-      'IT project management diploma (PMBOK v6) and PMI member; co-author of a university textbook on agile and predictive delivery (2021).',
+      'Written scopes, documented decisions and a handover your team can use.',
   },
   contact: {
-    eyebrow: 'Work Together',
-    title: 'Let us discuss your technical roadmap or compliance infrastructure',
+    eyebrow: 'Contact',
+    title: 'Tell me what you need',
     subtitle:
-      'Available for software engineering, architectural review, technical auditing, speaking, and specialised contracts across Catalonia, Spain and the European Union.',
+      'Projects, audits and fractional tech-lead work. Remote across the EU, or on site in the Barcelona area. English and Spanish; Catalan enquiries welcome.',
     form: {
-      nameLabel: 'Your Name',
-      emailLabel: 'Professional Email',
-      emailHint: 'We reply to this address.',
-      organizationLabel: 'Organization / Institution',
-      organizationPlaceholder: 'Company, Agency, or NGO',
-      serviceTypeLabel: 'Primary Focus',
-      serviceTypePlaceholder: 'Select a focus area',
+      nameLabel: 'Your name',
+      emailLabel: 'Work email',
+      emailHint: 'I reply to this address.',
+      organizationLabel: 'Company or organisation',
+      organizationPlaceholder: 'Company, organisation, or your own name',
+      serviceTypeLabel: 'What do you need?',
+      serviceTypePlaceholder: 'Select a topic',
       serviceTypes: {
-        regtech: 'RegTech / EPREL Integration / ESPR Readiness',
-        entityResolution: 'Market Observability / Entity Resolution',
-        infrastructure: 'Multi-Tenant Architecture / Tooling',
-        iot: 'IoT Monitoring / Field Instrumentation',
-        advisory: 'Technical Advisory / Speaking / Other',
+        build: 'New product or internal tool',
+        modernize: 'Legacy modernisation',
+        platform: 'Platform reliability and operations',
+        energy: 'Energy or EU product data',
+        audit: 'Audit or second opinion',
+        other: 'Something else',
       },
-      messageLabel: 'Project Overview & Objectives',
+      messageLabel: 'What are you trying to do?',
       messageHint: 'Up to 2,000 characters.',
-      submitButton: 'Send Inquiry',
+      submitButton: 'Send message',
       submitting: 'Submitting...',
       stillSending: 'Still sending…',
       noJsNotice:
@@ -203,11 +276,11 @@ export const en = {
       turnstile: 'Protected by Cloudflare Turnstile.',
     },
     directContact: {
-      orDivider: 'or schedule directly',
-      calendarButton: 'Book a 30-min technical call',
-      emailDirect: 'Direct Email',
-      locationLabel: 'Headquarters',
-      locationValue: 'Sant Cugat del Vallès, Barcelona, Catalonia',
+      orDivider: 'or book directly',
+      calendarButton: 'Book a 30-min call',
+      emailDirect: 'Email',
+      locationLabel: 'Based in',
+      locationValue: 'Sant Cugat del Vallès, near Barcelona',
       timezone: 'Central European Time (CET/CEST)',
     },
   },
@@ -264,16 +337,17 @@ export const en = {
     ],
   },
   ctaBand: {
-    title: 'Have a platform, a registry or a fleet that needs engineering?',
-    body: 'Twelve years of end-to-end delivery for European energy-efficiency software — from EPREL compliance engines to nationwide IoT fleets.',
-    primary: 'Book a 30-min technical call',
-    secondary: 'See the case studies',
+    title: 'Something to build, fix or keep running?',
+    body: 'Tell me what you are trying to do. I reply personally, usually within two business days.',
+    primary: 'Book a 30-min call',
+    secondary: 'See selected work',
   },
   footer: {
     tagline:
-      'Full-stack engineering for energy efficiency: from field sensors to European registries.',
+      'Senior full-stack engineer and fractional tech lead near Barcelona. Energy and EU product data, with AI-assisted delivery and review built into the process.',
     builtWith:
-      'Engineered with Astro & Tailwind. Hosted on Cloudflare Workers.',
+      'Built with Astro and Tailwind, hosted on Cloudflare Workers, using a reviewed, spec-driven process.',
+    sourceLabel: 'View the source on GitHub',
     sectionsLabel: 'Sections',
     contactLabel: 'Contact',
     languageLabel: 'Language',

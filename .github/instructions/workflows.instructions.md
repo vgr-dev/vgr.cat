@@ -43,7 +43,7 @@ major would execute arbitrary code with it (audit M-2, 2026-10-19).
 
 ## The CI contract
 
-`CI` runs, in order: `npm ci` (never `install`) → `npm audit --audit-level=high` → `npm run format:check` →
+`CI` runs, in order: `npm ci` (never `install`) → `npm audit --audit-level=critical` → `npm run format:check` →
 `npm run check` → `npm run lint` → `npm run check:placeholders` → `npm run build`.
 
 - `.github/workflows/*.yml` **is** covered by `npm run format:check`. Format before committing.

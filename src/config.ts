@@ -22,3 +22,10 @@ export const bookingUrl = 'https://calendar.app.google/3dd7SXGnZqUZsWXm6';
 
 /** Public contact address. Mirrors the Worker's `CONTACT_DESTINATION` variable. */
 export const contactEmail = 'contact@vgr.cat';
+
+/**
+ * The public source repository. One constant for every link to it (the footer now, the process
+ * section's proof line later), so the destination cannot drift between components and is never
+ * duplicated in the translated dictionaries.
+ */
+export const repositoryUrl = 'https://github.com/vgr-dev/vgr.cat';

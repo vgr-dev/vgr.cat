@@ -38,13 +38,19 @@ const ALLOWED_FIELDS = new Set([
 
 const FROM = { email: 'noreply@vgr.cat', name: 'vgr.cat' };
 
-/** Accepted `serviceType` keys, mapped to the label used in the notification. */
-const SERVICE_TYPES: Record<string, string> = {
-  regtech: 'RegTech / EPREL Integration / ESPR Readiness',
-  entityResolution: 'Market Observability / Entity Resolution',
-  infrastructure: 'Multi-Tenant Architecture / Tooling',
-  iot: 'IoT Monitoring / Field Instrumentation',
-  advisory: 'Technical Advisory / Speaking / Other',
+/**
+ * Accepted `serviceType` keys, mapped to the label used in the notification. The keys and the
+ * English labels must match `contact.form.serviceTypes` in the dictionaries.
+ *
+ * Exported for `tests/contact-options.spec.ts` only; nothing else imports it.
+ */
+export const SERVICE_TYPES: Record<string, string> = {
+  build: 'New product or internal tool',
+  modernize: 'Legacy modernisation',
+  platform: 'Platform reliability and operations',
+  energy: 'Energy or EU product data',
+  audit: 'Audit or second opinion',
+  other: 'Something else',
 };
 
 const THANKS_PATH: Record<string, string> = {

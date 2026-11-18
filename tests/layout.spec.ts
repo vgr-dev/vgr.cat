@@ -11,6 +11,8 @@ const PROSE_GRIDS = [
   '#work article dl > div',
   '#contact dl > div',
   'main section dl > div',
+  // The offer cards are plain `article`s in a grid, not `dl` rows, so no selector above reaches them.
+  '#engage .grid > *',
 ];
 
 for (const route of ROUTES) {
@@ -84,6 +86,26 @@ for (const route of HOME_ROUTES) {
         cell.width,
         `${cell.selector} measured ${cell.width}px at 640px`,
       ).toBeGreaterThanOrEqual(280);
+    }
+  });
+}
+
+for (const route of HOME_ROUTES) {
+  test(`all three offer cards are laid out at 640px on ${route.path}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 640, height: 900 });
+    await page.goto(route.path);
+
+    const cards = page.locator('#engage .grid > article');
+    await expect(cards, 'the engage section carries three offers').toHaveCount(
+      3,
+    );
+    const widths = await cards.evaluateAll((nodes) =>
+      nodes.map((node) => node.getBoundingClientRect().width),
+    );
+    for (const width of widths) {
+      expect(width, 'offer card width at 640px').toBeGreaterThanOrEqual(280);
     }
   });
 }

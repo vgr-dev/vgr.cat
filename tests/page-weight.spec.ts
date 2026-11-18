@@ -24,7 +24,15 @@ import { expect, test } from '@playwright/test';
 const DESKTOP = { width: 1280, height: 900 };
 const MOBILE = { width: 390, height: 844 };
 
-const HEIGHT_BUDGET = 5_500;
+/**
+ * Raised from 5,500 px to 6,500 px on 2026-11-17 by the owner's decision (step 7 of
+ * `specs/2026-11-17-content-repositioning/`). The "Ways to work together" section, with three priced
+ * offers and their terms, adds 782-868 px, and the pages measured 5,832 / 6,232 / 6,242 px with it
+ * (`/`, `/ca/`, `/es/`). The assertion below is unchanged, and so are the mobile, word and card
+ * budgets; the original 5,500 px "scannable in three seconds" target no longer applies to the desktop
+ * height.
+ */
+const HEIGHT_BUDGET = 6_500;
 const MOBILE_HEIGHT_BUDGET = 12_000;
 const WORD_BUDGET = 1_700;
 const CARD_BUDGET = 340;
@@ -48,6 +56,13 @@ for (const path of HOME_PAGES) {
       cards: document.querySelectorAll('#services article, #work article')
         .length,
     }));
+
+    // Printed so a run records the actual figures; a passing assertion alone does not show how much
+    // headroom is left. Logging only: no budget or assertion below changed.
+    console.log(
+      `page-weight ${path} desktop 1280×900: ${measured.height} px, ${measured.words} words, ` +
+        `${measured.cards} cards, tallest card ${measured.tallestCard} px`,
+    );
 
     expect(measured.height, 'document height at 1280×900').toBeLessThanOrEqual(
       HEIGHT_BUDGET,
@@ -73,6 +88,8 @@ for (const path of HOME_PAGES) {
     const height = await page.evaluate(
       () => document.documentElement.scrollHeight,
     );
+    console.log(`page-weight ${path} mobile 390×844: ${height} px`);
+
     expect(height, 'document height at 390×844').toBeLessThanOrEqual(
       MOBILE_HEIGHT_BUDGET,
     );

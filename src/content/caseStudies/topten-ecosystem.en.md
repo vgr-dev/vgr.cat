@@ -1,35 +1,30 @@
 ---
 translationKey: topten-ecosystem
 locale: en
-title: 'Architecting the Pan-European Topten Infrastructure'
-summary: 'A scalable multi-tenant platform powering Topten.eu, Topten.ch, and international instances with centralized data pipelines and streamlined analyst workflows.'
-problem: 'Managing independent country portals across Europe with diverging national criteria, language requirements, and disconnected codebases created massive operational overhead.'
-approach: 'Architected a consolidated multi-tenant platform with centralized data modeling, modular criteria engines, and bespoke internal onboarding tools.'
-outcome: 'Unified operations across European and Swiss portals, slashed analyst maintenance hours, and achieved sub-second catalog response times with zero maintenance downtime.'
-pillar: infrastructure
+title: 'Topten: a European product platform, from Yii2 to Laravel'
+summary: 'A multilingual product platform, with national sites that differ in language, criteria and content, and a country-by-country path from Yii2 to Laravel.'
+problem: 'National Topten sites needed their own criteria, languages and content, while the shared platform was replaced.'
+approach: 'I architected the Topten.eu platform on Yii2, which still runs Topten.eu and most partner sites. I later architected a new Laravel CMS, launched on Topten.ch and designed so other countries can move onto it one at a time.'
+outcome: 'Topten.eu and most partner sites continue on the Yii2 platform. The Laravel CMS is live on Topten.ch and is the path for other countries, one country at a time.'
+pillar: platform
 ---
 
-Topten is a leading European consumer initiative that tracks and presents the most energy-efficient products on the market, guiding consumers, corporate procurement teams, and policymakers.
+Topten is a consumer platform for energy-efficient products. Its national sites have different
+languages, selection criteria and content, creating both shared engineering needs and local ones.
 
-## The Challenge
+## Problem
 
-As Topten expanded from national pilots into a recognized European benchmark across multiple domains (Topten.eu, Topten.ch, and several partner sites), the technical stack suffered from growing pains:
+The sites were growing in different directions on a shared platform. Each country needed local
+criteria and content, and the platform had to keep serving readers while it was replaced.
 
-- **Fragmented Instances:** Each regional portal had divergent selection criteria, product categories, and localized datasets.
-- **Analyst Bottlenecks:** Research analysts spent excessive time manually formatting spreadsheets and wrestling with complex backends rather than assessing product data.
-- **Infrastructure Overhead:** Maintaining disparate servers and codebases drained development capacity and increased operational vulnerability.
+## What I built
 
-## The Architecture
+I architected the Topten.eu platform on Yii2, which still runs Topten.eu and most partner sites. I
+then architected a new Laravel CMS, launched on Topten.ch and designed so other countries can move
+onto it one at a time.
 
-As Principal Software Engineer, I redesigned the platform architecture from the ground up:
+## Result
 
-- **Multi-Tenant Foundation:** Consolidated disparate deployments into a unified, modular architecture. A single core engine handles database modeling, API layers, and business logic, while supporting tenant-specific criteria, branding, and multilingual localized content.
-- **Bespoke Internal Tooling & Onboarding:** Replaced fragmented workflows with intuitive administrative tools designed around the exact operational lifecycle of a Topten analyst. Onboarding new team members dropped from weeks to hours.
-- **Robust Ingestion & Caching:** Designed resilient data pipelines to sync catalog updates, benchmark thresholds, and supplier feeds, backed by aggressive edge caching that delivers sub-second load times even during traffic surges.
-- **CI/CD Automation:** Standardized testing and deployment workflows using modern continuous integration, ensuring changes to one portal never disrupt sibling instances.
-
-## Measurable Impact
-
-- **Operational Efficiency:** Domain researchers can update benchmarks, approve product submissions, and publish new categories without engineering intervention.
-- **High Availability & Speed:** The platform handles heavy consumer and B2B traffic reliably with negligible infrastructure costs.
-- **Platform Agility:** Adding new countries, partner organizations, or emerging product categories (such as heat pumps or commercial refrigeration) can now be configured in days rather than engineered from scratch over months.
+Topten.eu and most partner sites continue on the Yii2 platform. The Laravel CMS is live on
+Topten.ch and is the path for other countries, one country at a time. The migration can move country
+by country rather than as a single rewrite.

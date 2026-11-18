@@ -2,19 +2,20 @@ import type { Dictionary } from './en';
 
 export const ca: Dictionary = {
   site: {
-    title: 'VGR | Enginyer Principal de Programari i Consultor',
+    title:
+      'Victor Gonzalez | Enginyer full-stack sènior i tech lead a temps parcial',
     description:
-      'Enginyeria full-stack per a plataformes d’eficiència energètica: dades normatives europees, supervisió de mercat i monitoratge IoT. Més de 12 anys.',
-    author: 'VGR',
-    location: 'Sant Cugat del Vallès, Catalunya',
-    jobTitle: 'Enginyer Principal de Programari i Consultor',
+      'Enginyer full-stack sènior i tech lead a temps parcial a prop de Barcelona. Construeixo, modernitzo i opero programari, amb focus en energia i dades de producte de la UE.',
+    author: 'Victor Gonzalez',
+    location: 'Sant Cugat del Vallès, a prop de Barcelona',
+    jobTitle: 'Enginyer full-stack sènior i tech lead a temps parcial',
   },
   nav: {
     services: 'Serveis',
-    caseStudies: 'Casos pràctics',
+    caseStudies: 'Projectes seleccionats',
     about: 'Qui soc',
     contact: 'Contacte',
-    bookCall: 'Concertar una trucada',
+    bookCall: 'Reservar una trucada',
   },
   header: {
     brand: 'vgr.cat',
@@ -30,139 +31,209 @@ export const ca: Dictionary = {
   },
   hero: {
     badge:
-      'Disponible per a enginyeria de programari i assessorament a Europa i Catalunya',
-    title: 'Enginyeria de les plataformes que fan possible la',
-    titleHighlight: 'transició energètica europea',
+      'Sant Cugat del Vallès, a prop de Barcelona · en remot arreu de la UE · anglès i castellà; consultes en català benvingudes',
+    title: 'Construir, modernitzar i operar',
+    titleHighlight: 'el programari del qual depèn el vostre negoci.',
     subtitle:
-      'Més de 12 anys de lliurament d’extrem a extrem en eficiència energètica: motors de compliment normatiu europeu (EPREL, Ecodesign, ESPR), eines de supervisió de mercat, flotes IoT a escala nacional i les plataformes multi-tenant que les operen.',
-    ctaPrimary: 'Concertar una trucada tècnica de 30 minuts',
-    ctaSecondary: 'Explorar els casos pràctics',
+      'Soc Victor Gonzalez, enginyer full-stack sènior i tech lead a temps parcial. Ajudo equips petits a llançar productes, a millorar aplicacions heretades i a mantenir la producció fiable. L’energia i les dades de producte de la UE són la meva especialitat.',
+    ctaPrimary: 'Reservar una trucada de 30 minuts',
+    ctaSecondary: 'Veure els projectes seleccionats',
     metrics: [
       {
-        value: '12+',
-        label: 'Anys construint programari per a l’eficiència energètica',
-      },
-      {
-        value: '1,5 M+',
+        value: 'Construir',
         label:
-          'Visitants mensuals als 17 llocs multi-tenant en producció que opero',
+          'Productes nous, eines internes i API, d’una especificació escrita a producció.',
       },
       {
-        value: '200+',
-        label: 'Oficines bancàries instrumentades amb monitoratge IoT',
+        value: 'Modernitzar',
+        label:
+          'Aplicacions heretades en PHP, Python i JavaScript actualitzades de manera incremental.',
+      },
+      {
+        value: 'Operar',
+        label:
+          'Allotjament, memòria cau, monitoratge, seguretat i CI/CD per a plataformes on la fiabilitat importa.',
       },
     ],
   },
   services: {
-    eyebrow: 'Capacitats especialitzades',
-    title:
-      'Enginyeria full-stack de dades energètiques: dels sensors de camp als registres europeus',
+    eyebrow: 'Serveis',
+    title: 'El que et puc treure de sobre',
     subtitle:
-      'Motors normatius, observabilitat de mercat, monitoratge IoT i les plataformes que els fan funcionar. Una sola persona per a tot l’stack: ingesta, model, validació, desplegament i operació.',
+      'Una sola persona sènior per a tot el camí: l’especificació, el codi, la infraestructura i el traspàs.',
     // Keys mirror the collection `pillar` enum, so `entry.data.pillar` indexes this directly.
     pillars: {
-      regtech: { tag: 'RegTech i compliment normatiu' },
-      'entity-resolution': { tag: 'Intel·ligència de dades' },
-      infrastructure: { tag: 'Núvol i sistemes' },
-      iot: { tag: 'IoT i dades de camp' },
+      build: { tag: 'Nous productes' },
+      modernize: { tag: 'Rescat d’aplicacions heretades' },
+      platform: { tag: 'Operació de plataformes' },
+      energy: { tag: 'Energia i normativa' },
     },
     // Detail-page copy for `/services/<pillar>/`.
     readService: 'Descobreix aquest servei',
-    relatedWork: 'Treballs seleccionats en aquest àmbit',
+    relatedWork: 'Treballs relacionats',
     noRelatedWork:
-      'Encara no hi ha cap cas pràctic publicat en aquest àmbit. El pròxim es llistarà aquí.',
+      'Encara no hi ha cap cas pràctic públic llistat per a aquest servei.',
+    engageLink: 'Veure les formes de treballar junts',
   },
   caseStudies: {
-    eyebrow: 'Projectes executats',
-    title: 'Plataformes i desplegaments seleccionats',
+    eyebrow: 'Projectes seleccionats',
+    title: 'Sistemes en producció',
     subtitle:
-      'Sistemes en producció: verificació normativa per a autoritats europees, una plataforma de producte paneuropea, observabilitat de mercat i una flota IoT a escala nacional.',
+      'Plataformes i eines que he construït o operat, per a organitzacions a Suïssa, la UE i Xile.',
     labels: {
-      problem: 'El repte',
-      approach: 'L’arquitectura',
-      outcome: 'Impacte mesurable',
+      problem: 'El problema',
+      approach: 'Què he construït',
+      outcome: 'El resultat',
     },
     // Card affordance and `/work/<translationKey>/` navigation.
     readCase: 'Llegeix el cas pràctic',
-    backToWork: 'Tots els casos pràctics',
+    backToWork: 'Tots els projectes seleccionats',
     nextCase: 'Cas pràctic següent',
   },
-  about: {
-    eyebrow: 'Trajectòria i experiència',
-    title:
-      'Enginyeria full-stack per a l’eficiència energètica, dels sensors de camp als registres europeus',
-    paragraphs: [
-      'Soc enginyer principal de programari i consultor, amb seu a Sant Cugat del Vallès (Barcelona). Fa més de 12 anys que construeixo i opero programari per a l’eficiència energètica i la sostenibilitat: primer com a enginyer en una fundació nacional d’innovació, després com a fundador de la meva pròpia consultora i ara com a enginyer principal d’una flota de 17 llocs multi-tenant en producció que sostenen un 99,99 % de disponibilitat anual a Suïssa, Xile i la UE.',
-      'La meva feina se situa als dos extrems de l’stack. Al camp, he instrumentat centenars d’oficines bancàries amb flotes de monitoratge energètic IoT, connectant maquinari, gateways i protocols amb quadres de comandament que els equips de manteniment fan servir cada dia. En dades normatives, converteixo les obligacions d’Ecodesign, etiquetatge energètic i ESPR en programari verificable: integracions amb EPREL, fórmules de tolerància en codi i eines de supervisió de mercat que produeixen evidència auditable.',
-      'Soc enginyer full-stack per temperament: PHP, Python, TypeScript i Go al servidor; Vue, React i Next.js al frontal; Docker, Kubernetes, CI/CD, Grafana i Prometheus a sota. Prefereixo ser responsable de tot el camí que no pas passar la feina en una interfície.',
-      'També he portat la part de negoci. Vaig fundar i fer créixer una consultora fins als 20.000 USD al mes amb un equip de tres o quatre enginyers i cinc clients de llarg termini, vaig mantenir una aliança estratègica amb una empresa suïssa d’eficiència energètica i vaig acompanyar la plataforma Topten fins a la seva adquisició per una empresa suïssa més gran del mateix sector. Per això em sento còmode amb les parts interessades, els pressupostos i els terminis, no només amb el codi.',
+  process: {
+    eyebrow: 'Com treballo',
+    title: 'La IA ajuda amb els esborranys. Jo en continuo sent responsable.',
+    subtitle:
+      'El lliurament assistit per IA és opcional. Abans de començar, acordem quines eines poden veure quin codi i què revisaré.',
+    steps: [
+      {
+        title: 'Especificació',
+        body: 'Acordem per escrit què vol dir «fet». L’aproveu vosaltres.',
+      },
+      {
+        title: 'Pla',
+        body: 'Divideixo la feina en passos petits que podeu veure abans que existeixi cap línia de codi.',
+      },
+      {
+        title: 'Construcció',
+        body: 'Els agents d’IA ajuden a redactar codi i proves dins de les eines i els límits de codi aprovats.',
+      },
+      {
+        title: 'Revisió',
+        body: 'Reviso el que es publica i deixo constància de les decisions i les comprovacions.',
+      },
+      {
+        title: 'Lliurament',
+        body: 'Les especificacions, les decisions i les notes de verificació es queden al vostre repositori.',
+      },
     ],
-    experienceTitle: 'On he treballat',
+    dataBoundary:
+      'El codi i les dades del client es queden fora de les eines d’IA tret que n’hàgim acordat per escrit les eines i les dades permeses.',
+    proof:
+      'Aquest lloc es desenvolupa amb el mateix procés, i el repositori és públic: l’especificació actual, les decisions d’arquitectura i els registres de planificació anteriors.',
+    proofLinkLabel: 'Veure les especificacions i l’historial a GitHub',
+  },
+  engage: {
+    eyebrow: 'Formes de treballar junts',
+    title: 'Tres maneres de començar',
+    subtitle: 'Cada una comença amb un abast per escrit.',
+    items: [
+      {
+        name: 'Auditoria o segona opinió',
+        description:
+          'Revisió d’una aplicació, un entorn o un pla tècnic acordats, amb un informe prioritzat i una sessió de presentació.',
+        price: '2.500 € preu fix',
+        detail:
+          'Fins a 5 dies laborables, normalment repartits en 1–2 setmanes naturals. No és una prova d’intrusió ni una certificació de compliment.',
+      },
+      {
+        name: 'Projecte',
+        description:
+          'Una construcció o una modernització que comença amb dos dies de descobriment de pagament i una especificació escrita.',
+        price: '640 € per dia',
+        detail:
+          'El descobriment costa 1.280 € i s’abona una sola vegada a un pressupost tancat de projecte acceptat. Si ho deixeu, us quedeu l’especificació.',
+      },
+      {
+        name: 'Tech lead a temps parcial',
+        description:
+          'Quatre dies de vuit hores al mes com a tech lead o enginyer de plataforma a temps parcial.',
+        price: '2.400 € al mes',
+        detail:
+          'Mínim de tres mesos (7.200 €), després un mes de preavís. Els horaris i les expectatives de resposta s’acorden per escrit.',
+      },
+    ],
+    terms: [
+      'Els preus no inclouen l’IVA. Els viatges i els costos de tercers s’acorden per escrit abans d’incórrer-hi.',
+      'La tarifa diària del projecte és una base d’estimació de vuit hores, no un càrrec addicional sobre un pressupost tancat. El descobriment produeix un pressupost per a l’abast acordat; la complexitat no resolta es comunica abans de continuar amb feina de pagament. El total tancat inclou el descobriment, descomptant una sola vegada els 1.280 € ja pagats.',
+      'El treball addicional, els horaris i les expectatives de resposta requereixen un acord per escrit. La iguala no inclou guàrdia 24/7.',
+      'Llengües de treball: anglès i castellà. Les consultes en català són benvingudes; acordem per escrit la llengua de lliurament. En remot arreu de la UE; presencialment a l’àrea de Barcelona.',
+    ],
+  },
+  about: {
+    eyebrow: 'Qui soc',
+    title: 'Enginyer, constructor i operador',
+    paragraphs: [
+      'Soc Victor Gonzalez, enginyer full-stack sènior i tech lead a temps parcial, amb seu a Sant Cugat del Vallès, a prop de Barcelona. Construeixo, modernitzo i opero programari en producció, amb un focus especial en energia i dades de producte de la UE. Treballo en remot arreu de la UE i presencialment a l’àrea de Barcelona. Actualment lidero l’enginyeria de plataforma de Topten.',
+      'Abans d’això, vaig fundar i dirigir VGR SpA, la meva consultora de programari a Xile, incloent-hi feina amb Bush Energie a Suïssa. Dirigir un negoci em va ensenyar què els importa als clients: pressupostos, terminis i algú que respongui el telèfon.',
+      'Soc generalista per elecció. PHP, Python i TypeScript són els meus llenguatges principals; també treballo amb Go i he fet servir C#, Rust i Java. Em moc igual de bé en una base de codi Laravel que en un quadre de comandament de Grafana o en un servidor Linux.',
+      'Faig servir agents de codificació amb IA com a part d’un procés revisat i guiat per especificacions. El lliurament assistit per IA és opcional: acordem les eines i els límits del codi abans de començar. Els agents ajuden a redactar codi i proves; jo reviso el que es publica i conservo les decisions al repositori.',
+      'Gran part de la meva feina ha estat en eficiència energètica i sostenibilitat, des del mesurament IoT en oficines bancàries fins a la normativa europea de producte. És el domini que conec millor i el motiu pel qual m’importa un programari que sigui eficient d’executar i també d’escriure.',
+    ],
+    experienceTitle: 'Experiència',
     experience: [
       {
         period: '2025 — actualitat',
-        role: 'Enginyer Principal de Programari i Consultor',
-        org: 'Operador suís de plataformes d’eficiència energètica · consultora xilena d’eficiència energètica',
+        role: 'Enginyer líder de plataforma i consultor',
+        org: 'Topten (Suïssa)',
         detail:
-          '17 llocs multi-tenant en producció, 1,5 M+ visitants mensuals, 99,99 % de disponibilitat.',
+          'Arquitectura de plataforma, la transició de Yii2 a Laravel i l’operació d’una plataforma de producte de consum multilingüe.',
       },
       {
         period: '2017 — 2025',
         role: 'Fundador i cap d’equip',
-        org: 'VGR SpA (CL)',
+        org: 'VGR SpA (Xile)',
         detail:
-          'Consultora escalada a un equip de 3–4 persones i 5+ clients de llarg termini.',
+          'Lliurament de programari per a clients d’energia, sostenibilitat i dades de producte.',
       },
       {
         period: '2014 — 2017',
         role: 'Enginyer de programari',
-        org: 'Fundació nacional d’innovació',
+        org: 'Fundación Chile',
         detail:
-          'Plataformes IoT i d’eficiència energètica per a clients públics i privats.',
+          'Plataformes IoT i d’eficiència energètica, incloent-hi feina per a Banco Estado.',
       },
     ],
-    techStackTitle: 'Competències i stack tècnic principal',
+    techStackTitle: 'Amb què treballo',
     competencies: [
-      'Codificació normativa (EPREL, Ecodesign, ESPR)',
-      'Resolució d’entitats i desambiguació de GTIN/EAN',
-      'Arquitectura de plataformes multi-tenant',
-      'Flotes IoT: gateways, MQTT, Express, ingesta de sèries temporals',
-      'Disseny d’APIs i canonades d’ingesta automatitzada',
-      'Docker, Kubernetes, CI/CD, Grafana, Prometheus',
-      'PHP · Python · TypeScript · Go',
-      'Vue · React · Next.js · Tailwind',
+      'TypeScript, PHP, Python, Go',
+      'Laravel, Symfony, Django, Node',
+      'Vue, React, Astro, Tailwind',
+      'AWS, Cloudflare, Docker, Kubernetes, Linux',
+      'GitHub Actions, GitLab CI, Grafana, Prometheus',
+      'Lliurament guiat per especificacions i assistit per IA',
+      'Gestió remota de projectes',
+      'EPREL, Ecodesign, ESPR / DPP',
+      'Monitoratge energètic IoT',
+      'Anàlisi de factures',
     ],
-    // Home-page teaser; the full history lives on `/about/`.
-    teaser:
-      'Enginyer de programari principal i consultor a Sant Cugat del Vallès. Dotze anys construint i operant les plataformes que hi ha darrere de l’eficiència energètica europea: motors de compliment, observabilitat de mercat i flotes IoT a escala nacional.',
-    readMore: 'Llegeix la trajectòria completa',
     credentials:
-      'Diploma en direcció de projectes TI (PMBOK v6) i membre de PMI; coautor d’un manual universitari sobre lliurament àgil i predictiu (2021).',
+      'Abast per escrit, decisions documentades i un traspàs que el vostre equip pot fer servir.',
   },
   contact: {
-    eyebrow: 'Treballem plegats',
-    title:
-      'Parlem del vostre full de ruta tècnic o de la vostra infraestructura de compliment normatiu',
+    eyebrow: 'Contacte',
+    title: 'Expliqueu-me què necessiteu',
     subtitle:
-      'Disponible per a enginyeria de programari, revisió arquitectònica, auditories tècniques, ponències i contractes especialitzats a Catalunya, Espanya i la Unió Europea.',
+      'Projectes, auditories i feina de direcció tècnica a temps parcial. En remot arreu de la UE o presencialment a l’àrea de Barcelona. Anglès i castellà; les consultes en català són benvingudes.',
     form: {
-      nameLabel: 'Nom',
-      emailLabel: 'Correu electrònic professional',
+      nameLabel: 'El vostre nom',
+      emailLabel: 'Correu electrònic de feina',
       emailHint: 'Hi responc a aquesta adreça.',
-      organizationLabel: 'Organització o institució',
-      organizationPlaceholder: 'Empresa, agència o entitat',
-      serviceTypeLabel: 'Àmbit principal',
-      serviceTypePlaceholder: 'Trieu un àmbit',
+      organizationLabel: 'Empresa o organització',
+      organizationPlaceholder: 'Empresa, organització o el vostre nom',
+      serviceTypeLabel: 'Què necessiteu?',
+      serviceTypePlaceholder: 'Trieu un tema',
       serviceTypes: {
-        regtech: 'RegTech / integració EPREL / preparació per a ESPR',
-        entityResolution: 'Observabilitat de mercat / resolució d’entitats',
-        infrastructure: 'Arquitectura multi-tenant / eines internes',
-        iot: 'Monitoratge IoT / instrumentació de camp',
-        advisory: 'Assessorament tècnic / ponències / altres',
+        build: 'Producte nou o eina interna',
+        modernize: 'Modernització d’aplicacions heretades',
+        platform: 'Fiabilitat i operació de plataformes',
+        energy: 'Energia o dades de producte de la UE',
+        audit: 'Auditoria o segona opinió',
+        other: 'Una altra cosa',
       },
-      messageLabel: 'Resum del projecte i objectius',
+      messageLabel: 'Què voleu aconseguir?',
       messageHint: 'Fins a 2.000 caràcters.',
-      submitButton: 'Enviar la consulta',
+      submitButton: 'Enviar el missatge',
       submitting: 'S’està enviant...',
       stillSending: 'L’enviament continua…',
       noJsNotice:
@@ -196,11 +267,11 @@ export const ca: Dictionary = {
       turnstile: 'Protegit per Cloudflare Turnstile.',
     },
     directContact: {
-      orDivider: 'o bé, concertar directament',
-      calendarButton: 'Concertar una trucada tècnica de 30 minuts',
-      emailDirect: 'Correu directe',
-      locationLabel: 'Seu',
-      locationValue: 'Sant Cugat del Vallès, Barcelona, Catalunya',
+      orDivider: 'o reserveu directament',
+      calendarButton: 'Reservar una trucada de 30 minuts',
+      emailDirect: 'Correu electrònic',
+      locationLabel: 'Amb seu a',
+      locationValue: 'Sant Cugat del Vallès, a prop de Barcelona',
       timezone: 'Hora d’Europa Central (CET/CEST)',
     },
   },
@@ -254,17 +325,17 @@ export const ca: Dictionary = {
     ],
   },
   ctaBand: {
-    title:
-      'Tens una plataforma, un registre o una flota que necessita enginyeria?',
-    body: 'Dotze anys d’entrega end-to-end en programari europeu d’eficiència energètica: des de motors de compliment EPREL fins a flotes IoT a escala nacional.',
-    primary: 'Concertar una trucada tècnica de 30 min',
-    secondary: 'Veure els casos pràctics',
+    title: 'Alguna cosa per construir, arreglar o mantenir en marxa?',
+    body: 'Expliqueu-me què voleu aconseguir. Responc personalment, normalment en dos dies laborables.',
+    primary: 'Reservar una trucada de 30 minuts',
+    secondary: 'Veure els projectes seleccionats',
   },
   footer: {
     tagline:
-      'Enginyeria full-stack per a l’eficiència energètica: dels sensors de camp als registres europeus.',
+      'Enginyer full-stack sènior i tech lead a temps parcial a prop de Barcelona. Energia i dades de producte de la UE, amb lliurament assistit per IA i revisió integrats en el procés.',
     builtWith:
-      'Desenvolupat amb Astro i Tailwind. Allotjat a Cloudflare Workers.',
+      'Fet amb Astro i Tailwind, allotjat a Cloudflare Workers, amb un procés revisat i guiat per especificacions.',
+    sourceLabel: 'Veure el codi font a GitHub',
     sectionsLabel: 'Seccions',
     contactLabel: 'Contacte',
     languageLabel: 'Idioma',

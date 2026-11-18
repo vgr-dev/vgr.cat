@@ -3,14 +3,16 @@ import Container from './Container.astro';
 import Hero from './Hero.astro';
 import ServiceCard from './ServiceCard.astro';
 import CaseStudy from './CaseStudy.astro';
+import ProcessSection from './ProcessSection.astro';
+import EngageSection from './EngageSection.astro';
 import CtaBand from './CtaBand.astro';
 import ContactSection from './ContactSection.astro';
 import ContactForm from './ContactForm.astro';
 import { useTranslations } from '../i18n';
-import { bookingUrl, contactEmail } from '../config';
+import { bookingUrl, contactEmail, repositoryUrl } from '../config';
 import { localizedPath, type Locale } from '../i18n/config';
 import { getCaseStudies, getServices } from '../lib/content';
-import { aboutPath, caseStudyPath, servicePath } from '../lib/paths';
+import { caseStudyPath, servicePath } from '../lib/paths';
 
 interface Props {
   lang: Locale;
@@ -26,7 +28,6 @@ const t = useTranslations(lang);
  */
 const services = await getServices(lang);
 const caseStudies = await getCaseStudies(lang);
-const aboutHref = localizedPath(lang, aboutPath());
 ---
 
 <Hero
@@ -84,19 +85,24 @@ const aboutHref = localizedPath(lang, aboutPath());
   </div>
 </Container>
 
-<section class="bg-band band-edge" data-reveal>
-  <Container class="py-[var(--space-section)]">
-    <p class="text-sm font-medium text-accent-ink">{t.about.eyebrow}</p>
-    <h2 class="mt-2 text-2xl font-semibold">{t.about.title}</h2>
-    <p class="mt-4 max-w-2xl text-muted">{t.about.teaser}</p>
-    <a
-      href={aboutHref}
-      class="mt-4 inline-block py-1 text-sm font-medium text-accent-ink hover:underline"
-    >
-      {t.about.readMore}
-    </a>
-  </Container>
-</section>
+<ProcessSection
+  eyebrow={t.process.eyebrow}
+  title={t.process.title}
+  subtitle={t.process.subtitle}
+  steps={t.process.steps}
+  dataBoundary={t.process.dataBoundary}
+  proof={t.process.proof}
+  proofLinkLabel={t.process.proofLinkLabel}
+  proofHref={repositoryUrl}
+/>
+
+<EngageSection
+  eyebrow={t.engage.eyebrow}
+  title={t.engage.title}
+  subtitle={t.engage.subtitle}
+  items={t.engage.items}
+  terms={t.engage.terms}
+/>
 
 <CtaBand
   title={t.ctaBand.title}

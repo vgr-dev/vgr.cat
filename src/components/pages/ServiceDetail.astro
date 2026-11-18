@@ -78,7 +78,13 @@ const home = localizedPath(lang, '/');
     <p class="mt-4 max-w-2xl text-muted">{t.services.noRelatedWork}</p>
   )}
 
-  <div class="mt-12 border-t border-border pt-8">
+  <div class="mt-12 flex flex-wrap items-center gap-4 border-t border-border pt-8">
     <Button href={bookingUrl}>{t.contact.directContact.calendarButton}</Button>
+    <a
+      href={`${home}#engage`}
+      class="py-2 text-sm font-medium hover:text-accent"
+    >
+      {t.services.engageLink}
+    </a>
   </div>
 </Container>

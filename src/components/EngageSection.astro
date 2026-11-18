@@ -1,0 +1,59 @@
+---
+/**
+ * "Ways to work together": three offers with their public prices and the terms that scope them.
+ *
+ * Prices are display strings from the dictionary, never computed here: `€2,500` in English and
+ * `2.500 €` in Catalan and Spanish are different typography, and a formatter would have to guess the
+ * locale's habit. The cards are not links (there is nothing to open), so they use the card surface
+ * without `Card.astro`'s stretched-link behaviour.
+ *
+ * Deliberately outside the teaser-height rule that `page-weight.spec.ts` applies to service and
+ * case-study cards: these cards carry a price and its scope, which is not a teaser.
+ */
+import Container from './Container.astro';
+
+interface Offer {
+  name: string;
+  description: string;
+  price: string;
+  detail: string;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  items: Offer[];
+  terms: string[];
+}
+
+const { eyebrow, title, subtitle, items, terms } = Astro.props;
+---
+
+<Container
+  as="section"
+  id="engage"
+  class="py-[var(--space-section)]"
+  data-reveal
+>
+  <p class="text-sm font-medium text-accent">{eyebrow}</p>
+  <h2 class="mt-2 text-2xl font-semibold">{title}</h2>
+  <p class="mt-4 max-w-2xl text-muted">{subtitle}</p>
+
+  <div class="mt-8 grid gap-4 lg:grid-cols-3">
+    {items.map((item) => (
+      <article class="flex flex-col rounded-lg border border-border bg-surface p-6">
+        <h3 class="text-lg font-semibold">{item.name}</h3>
+        <p class="mt-2 font-display text-2xl font-semibold">{item.price}</p>
+        <p class="mt-3 text-muted">{item.description}</p>
+        <p class="mt-3 text-sm text-muted">{item.detail}</p>
+      </article>
+    ))}
+  </div>
+
+  <ul class="mt-8 grid max-w-3xl list-disc gap-2 pl-5 text-sm text-muted">
+    {terms.map((term) => (
+      <li>{term}</li>
+    ))}
+  </ul>
+</Container>

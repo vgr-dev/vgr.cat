@@ -23,10 +23,14 @@ committed `package-lock.json`.
 
 ```bash
 npm ci                                        # lockfile is authoritative; CI uses --ci
+npm audit --audit-level=critical              # CI's threshold, see "Dependency audit threshold" below
 npm run format:check                          # Prettier (also covers .github/workflows/*.yml)
-npm run lint                                  # ESLint 9 + eslint-plugin-astro (34 a11y rules)
-npm run check                                 # wrangler types && astro check → expect "62 files, 0 errors, 0 warnings, 0 hints"
+npm run lint                                  # ESLint 10 + eslint-plugin-astro (31 a11y rules)
+npm run check                                 # wrangler types && astro check → expect "66 files, 0 errors, 0 warnings, 0 hints"
+npm run check:placeholders                    # fails on any TODO(copy) / REPLACE_ME under src/
 npm run build                                 # astro check && astro build → 37 pages
+npm run test:e2e                              # Playwright; builds with the Turnstile TEST key first → ends with "560 passed"
+npm run build && npm run check:production-env # rebuild for production: e2e leaves a test-key dist/
 npx wrangler deploy --dry-run --outdir=.wrangler/dry-run   # expect exit 0, "Read 102 files", no warnings
 ```
 
@@ -56,7 +60,10 @@ Use `npx astro dev stop` / `npx astro preview stop` to shut servers down — the
    removed while working solo, because it added ceremony without a second reviewer; required **signed
    commits** were kept, so `commit.gpgsign` must stay on (`git log --format='%G?'` must report `G`).
    `CI` still runs on push and on pull requests, and a branch + PR is still the right shape for a change
-   that wants review — it is simply no longer mandatory, and nothing gates a merge.
+   that wants review — it is simply no longer mandatory, and nothing gates a merge. **Branch convention
+   (owner decision, 2026-11-17):** work happens on a branch with a standard prefix (`feat/`, `fix/`,
+   `docs/`, `chore/`), **never** a `claude/` prefix, and reaches `main` through a PR. Nothing enforces this;
+   it is a convention to follow.
 3. **Never run destructive production commands.** In particular `npx wrangler rollback` republishes an
    older version to live `vgr.cat`. `wrangler secret put/delete` also deploy immediately. Ask first.
 4. **Never commit secrets.** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are repository secrets;
@@ -103,18 +110,52 @@ wrong, raise it with the user rather than silently reverting it.
 
 - **`@astrojs/check@0.9.10` caps TypeScript at `^6.0.0`.** A TypeScript 7 major bump fails `npm ci` with
   `ERESOLVE`. Do not "fix" it with `--legacy-peer-deps` — close the Dependabot PR instead.
-- **The lint stack is ESLint 10 + `eslint-plugin-astro@^3` + `eslint-plugin-jsx-a11y-x`.** Plugin v3
+- **The lint stack is ESLint 10 + `eslint-plugin-astro@^3.2.1` + `eslint-plugin-jsx-a11y-x@^0.2.0`.** Plugin v3
   requires `eslint@>=10.0.0` and Node `^22.22.3 || ^24.16.0`, so `.nvmrc`'s `24` must resolve to a
   current 24.x (24.15 is too old and only warns). Upstream `eslint-plugin-jsx-a11y@6.10.2` still peers
   `eslint@^3 … ^9`, so the a11y configs use the maintained fork `eslint-plugin-jsx-a11y-x` — the Astro
-  plugin documents either as supported, so this is the recommended pairing, not a workaround. Do not
-  "solve" a peer conflict with `--legacy-peer-deps`. This stack also removed the old
-  `fast-glob → micromatch → braces` chain (`braces` has no patched release for CVE-2026-93687), so
-  `npm audit` is meant to report **0 vulnerabilities**, but **as of 2026-11-17 it reports 12** (11 moderate,
-  1 high; advisories on `astro`, `fast-uri` and `minimatch` among them) — unresolved, so do not claim a clean
-  audit until it is fixed. Astro's a11y rules still
-  appear under the `astro/jsx-a11y/*` namespace, 34 of them at error level, and `eslint .` does lint
-  `.astro` files (38 files, 33 of them `.astro`).
+  plugin documents either as supported, so this is the recommended pairing, not a workaround.
+  **Both minimums matter:** fork 0.1.1 peers only ESLint 8/9, and Astro plugin 3.1.0 does not load the
+  fork at all, silently leaving its recommended a11y config empty. Fork support starts in Astro plugin
+  3.2.0. Do not "solve" a peer conflict with `--legacy-peer-deps`.
+  Fork 0.2.0 still requests `minimatch@^10.2.5`, affected by
+  [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). The package-scoped override
+  selects `^11.0.5` (also used by ESLint), rather than suppressing the advisory or forcing a downgrade.
+  Remove that override when a compatible fork release declares a patched matcher range.
+  **Verified 2026-11-17:** plain `npm ci` succeeds and `npm audit --audit-level=high` reports
+  **0 vulnerabilities**, superseding the earlier recorded count of 12. The upstream recommended config
+  has **31**, not 34, active `astro/jsx-a11y/*` rules at error level. All are enabled; an invalid custom
+  label is rejected and a valid wildcard-matched control passes. No lint rules were disabled.
+  npm warns that `esbuild` and `workerd` install scripts are not covered by `allowScripts`; this is
+  separate from peer resolution. Do not silently change install-script approval policy.
+  **Resolved 2026-11-17 by owner decision:** `package.json` now carries
+  `"allowScripts": { "esbuild@0.28.2": true, "workerd@1.20261117.1": true }`, written by
+  `npm install-scripts approve esbuild workerd`. npm skips unapproved install scripts, so before this the two
+  `postinstall: node install.js` scripts were **not** running; both are the standard esbuild-style installer
+  (verify the platform binary package, optionally link it, fall back to fetching the tarball from
+  `registry.npmjs.org`). The entries are **version-pinned** (npm's default), so a Dependabot bump of either
+  package brings the `not yet covered by allowScripts` warning back and the new version's script is skipped
+  until someone reviews it and re-runs `npm install-scripts approve <pkg>`. Do not widen this to name-only
+  entries or `--all` without asking, and run `npm install-scripts prune` to drop entries for versions no
+  longer installed.
+- **Dependency audit threshold is `critical`, not `high` (owner decision 2026-11-17).** Later that day the
+  advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (picomatch ReDoS,
+  affected range `<=4.0.7`, `first_patched_version: null`, latest published release `4.0.7`) turned
+  `npm audit --audit-level=high` from 0 into **16 high findings**, all that one advisory propagated through
+  `astro`, `vite`, `tinyglobby`, `@astrojs/check`, `eslint-plugin-astro` and others, with no lockfile change.
+  No package override can fix it, and `npm audit fix --force` would downgrade Astro to 5.3.0, so do not run
+  it. picomatch is not in `dist/`, the Worker bundle or this repository's own source; it only globs at build
+  time, so the exposure is build-tooling only. The gate in `ci.yml` and the CI contract in
+  `.github/instructions/workflows.instructions.md` therefore use `--audit-level=critical`, which still
+  fails on any critical advisory but **no longer on high ones**. **Restore `--audit-level=high`** in both
+  places when `npm view picomatch version` shows a release above `4.0.7` and the audit is clean again.
+- **The home pages have a page-weight budget, and it was raised once by the owner.**
+  `tests/page-weight.spec.ts` asserts, per locale at 1280×900, a **6,500 px** document height (raised from
+  5,500 px on 2026-11-17 by owner decision when the "Ways to work together" section was added), at most
+  1,700 words, a **340 px** tallest service/case-study card, and **12,000 px** at 390×844. After the
+  repositioning the pages measured 5,832 / 6,232 / 6,242 px (`/`, `/ca/`, `/es/`), so the longest page has
+  about 260 px of headroom, and the tests print the figures. Do **not** raise a threshold or remove an
+  assertion to make copy fit; stop and ask.
 - **The whole site is small.** `src/` holds the layout (`BaseLayout.astro`), the typed dictionaries
   under `i18n/` (`en.ts`, `ca.ts`, `es.ts`, `config.ts`, `index.ts`), the Content Collections in
   `content/{services,caseStudies}/**/*.{en,ca,es}.md` with their schema in `content.config.ts`, the
@@ -125,8 +166,15 @@ wrong, raise it with the user rather than silently reverting it.
   `/services/<translationKey>/`, twelve `/work/<translationKey>/`, three `/privacy/`, three
   `/contact/thanks/` and one `404.html` — **37 prerendered files**, emitted alongside `robots.txt`,
   `favicon.*`, `og/og-default.png`, `sitemap-*.xml`, `_headers` and the hashed `_astro/*` bundle.
-  `astro check` reports **62 files** (the modules it checks, not the pages) and the dry-run reads
+  The **home page** is, in order: Hero, Services (`#services`), Selected work (`#work`), How I work
+  (`#how-i-work`), Ways to work together (`#engage`), the CTA band and Contact (`#contact`). There is no
+  About teaser band; `/about/` is reached from the header and footer. The four services are `build`,
+  `modernize`, `platform` and `energy`, and the four case studies are `topten-ecosystem`,
+  `eu-inspection-tooling`, `banco-estado-iot` and `vgr-cat`.
+  `astro check` reports **66 files** (the modules it checks, not the pages) and the dry-run reads
   **102 assets** from `dist/`; both numbers are expected, so don't go hunting for a missing page.
+  Measured 2026-11-17 after the repositioning: the `astro check` count was 62 before it, and the asset count
+  is unchanged at 102.
 - **Worker and contact-form traps live in `.github/instructions/worker.instructions.md`** — read it before
   touching `src/worker/`, `src/components/ContactForm.astro`, the Turnstile or rate-limiter config, or the
   `send_email` bindings. Three that bite hardest: `assets.run_worker_first` is mandatory, the Turnstile secret
@@ -151,7 +199,7 @@ wrong, raise it with the user rather than silently reverting it.
   `: Dictionary`, so a missing _or_ extra key fails `astro check` in either direction — that is the
   cross-locale parity guarantee. Do **not** add a const assertion to `en`: it would give every value a
   literal type and no translation could satisfy the contract (this broke the dev server on 2026-10-16).
-  Pillar keys mirror the collection `pillar` enum (`'entity-resolution'`), so
+  Pillar keys mirror the collection `pillar` enum (`'modernize'`), so
   `t.services.pillars[entry.data.pillar]` indexes directly, with no mapping table.
 - **The `TODO(copy)` guard is unconditional now.** `scripts/check-placeholders.mjs` fails on any
   `TODO(copy)` or `REPLACE_ME` under `src/`, and `ci.yml` runs it on every push with no escape-hatch
@@ -181,7 +229,9 @@ wrong, raise it with the user rather than silently reverting it.
 
 Spec-driven, per `docs/adr/0001-agent-workflow.md`. Work lives in `specs/<YYYY-MM-DD>-<slug>/`
 (`spec.md` → `plan.md` → `progress.md`, plus `review.md` for large reviews), handed off between the global
-architect / builder / reviewer roles. Copy `specs/_template/` to start one, and check `specs/` for
+architect / builder / reviewer roles. `plan.md` opens with a `## Status` checklist (one line per step,
+with `uncommitted` or the commit hash) — the only part of a plan edited after sign-off
+(`docs/adr/0002-plan-status-checklist.md`). Copy `specs/_template/` to start one, and check `specs/` for
 `status: active` work before starting. `stale-after-days: 14`.
 
 `.ai/plans/` is **frozen history**: `archive/` holds the completed plans and decision records this file

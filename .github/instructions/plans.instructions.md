@@ -24,7 +24,8 @@ This repository records evidence; it does not assert it.
 
 - Capture the **exact command and its output**. State explicitly what you did _not_ verify, and why.
 - "Recorded deviations", "Correction" and "Deferred" notes are the expected norm, not noise. Write them.
-- **Never tick a checkbox for partial work.** Mark it deferred and say what is missing.
+- **Never tick a checkbox for partial work.** Mark it deferred and say what is missing. This includes
+  the `## Status` checklist in a spec's `plan.md` (see `docs/adr/0002-plan-status-checklist.md`).
 - **Never rewrite an earlier recorded command output** to match a new path, name, or state. Doing so
   falsifies the record. Add a dated correction note instead and explain the discrepancy.
 - A plan may be archived with deliberately-deferred criteria only with explicit user confirmation, and the
@@ -35,7 +36,7 @@ This repository records evidence; it does not assert it.
 Append this footer when moving a plan to `archive/`:
 
 ```markdown
----
+***
 
 ## Archive Metadata
 

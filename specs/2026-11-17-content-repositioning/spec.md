@@ -1,7 +1,7 @@
 ---
-status: active # draft | active | done | abandoned
+status: done # draft | active | done | abandoned
 created: 2026-11-17
-status-date: 2026-11-17
+status-date: 2026-11-18
 ---
 
 # Content repositioning: senior engineering with an energy specialism
@@ -180,10 +180,11 @@ register was written; they are superseded by that decision.
 - [x] Full repository gate, dependency audit, E2E and deployment dry-run pass with exact evidence in
       `progress.md`; any failure stays blocked and counts are updated only from actual output. The reviewer
       re-ran the gate on 2026-11-17; the audit passes at the owner-approved `critical` threshold.
-- [ ] Owner records the CV/LinkedIn follow-up and confirms publication review before any authorised
+- [x] Owner records the CV/LinkedIn follow-up and confirms publication review before any authorised
       push/deploy; mark `done` only after the owner confirms the live result. CV/LinkedIn is deferred
-      (2026-11-18), publication review is confirmed and the history exposure accepted (2026-11-18); the
-      live result is not yet confirmed, so this box stays open.
+      (2026-11-18), publication review is confirmed and the history exposure accepted (2026-11-18). The
+      owner confirmed the live result on 2026-11-18 after PR #15 merged, CI passed and Deploy succeeded;
+      the deployed pages were checked at https://vgr.cat.
 
 ## Owner follow-ups and outreach evaluation
 
@@ -216,6 +217,5 @@ existing links and indexing, and does not assert that the unpromoted site has no
 The owner signed off the plan on 2026-11-17 and confirmed that sign-off on 2026-11-18. Steps 1–8 are
 complete with signed commits and were verified by the reviewer. English copy, Catalan and Spanish
 content, attribution permissions, related-work mapping and offer terms are owner-approved. The
-CV/LinkedIn follow-up is deferred and the pre-existing history exposure is accepted. The spec remains
-`active` until the owner confirms the live result after an authorised push and deploy; only then does it
-become `done`.
+CV/LinkedIn follow-up is deferred and the pre-existing history exposure is accepted. PR #15 merged on
+2026-11-18, CI passed, Deploy succeeded, and the owner confirmed the live result; the spec is `done`.

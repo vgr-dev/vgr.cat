@@ -28,9 +28,10 @@ universal human review or client outcomes.
 
 ## Review correction (2026-11-17)
 
-This revision supersedes the initial review narrative and draft copy. There are no implementation
-results yet. The previous draft mixed facts, assumptions and internal instructions, and treated a CV
-as verification even though one of its figures was known to be wrong.
+This revision supersedes the initial review narrative and draft copy. There were no implementation
+results when this correction was written; steps 1–8 are now complete (see `plan.md`). The previous
+draft mixed facts, assumptions and internal instructions, and treated a CV as verification even though
+one of its figures was known to be wrong.
 
 - The current hero, services and CTA are energy-oriented; their effect on enquiries has not been measured.
 - Claims about five-second departures, buyer search vocabulary and readers identifying AI-written copy
@@ -38,10 +39,11 @@ as verification even though one of its figures was known to be wrong.
 - Quantitative traffic, uptime, deployment, revenue and productivity claims are omitted from the new
   copy until their definitions, dates, sources and permission to publish are established.
 - Existing client rates and unreleased third-party product plans have been removed from this working
-  document. This does not remove earlier Git objects or copies. No history rewrite is authorised;
-  review the complete branch and its history before any authorised push.
-- English copy, the home order and engagement terms are now specified in `copy-en.md`. Proposed changes
-  remain subject to human sign-off; this request to fix the documents is not implementation approval.
+  document. This does not remove earlier Git objects or copies. The owner accepted that history exposure
+  on 2026-11-18; no history rewrite was performed.
+- English copy, the home order and engagement terms are specified in `copy-en.md`. The owner signed off
+  the plan on 2026-11-17, approved the English copy and translations on 2026-11-18, and implementation
+  followed that approval.
 
 ## Scope
 
@@ -71,15 +73,15 @@ as verification even though one of its figures was known to be wrong.
 
 ## Decisions
 
-These carry forward the recorded owner choices, with publication corrections from the review. The
-plan's sign-off remains blank. New offer clarifications are proposals to approve with the copy, not
-terms already agreed with any customer.
+These carry forward the recorded owner choices, with publication corrections from the review. The owner
+signed off the plan on 2026-11-17 and confirmed that sign-off on 2026-11-18. The offer clarifications are
+approved public terms, not terms already agreed with any customer.
 
 - **D1 Identity and attribution:** use Victor Gonzalez. The previously selected names are Topten,
   Bush Energie, Brandes Energie, Banco Estado and Fundación Chile. The copy uses Topten, Bush Energie,
   Banco Estado and Fundación Chile only where relevant. Do not add other clients, ministry names or
-  endorsements. Owner review of contracts, confidentiality and permission for each attribution remains
-  a release requirement; naming an organisation does not imply it endorses Victor's services.
+  endorsements. The owner confirmed contracts, confidentiality and permission for each attribution on
+  2026-11-18; naming an organisation does not imply it endorses Victor's services.
 - **D2 Headline title:** `Senior Full-Stack Engineer & Fractional Tech Lead`. In Spanish/Catalan,
   describe the part-time role as `tech lead a tiempo parcial` / `tech lead a temps parcial`.
   This is the headline positioning, not a replacement for accurate historical role titles. Use
@@ -128,6 +130,10 @@ Status dates below are 2026-11-17. A statement in an existing website or CV is n
 evidence. Private evidence stays outside this public repository; record only a non-sensitive
 description and the owner's publication decision here when available.
 
+Owner status (2026-11-18): attribution and publication are permitted, the history exposure is accepted,
+and the sign-off is confirmed. The “owner must confirm” entries below record the status when this
+register was written; they are superseded by that decision.
+
 | Claim or commitment                                                        | Source / evidence status                                                                                                                                                                                              | Publication treatment                                                                                                              |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Topten Yii2/Laravel work and migration scope                               | Owner statement D8; public relaunch corroborated by [Topten's announcement](https://www.topten.eu/private/article/new-topten-switzerland-website-successfully-launched), which does not prove authorship or framework | Qualitative draft; owner must confirm attribution and permission before release                                                    |
@@ -147,34 +153,44 @@ description and the owner's publication decision here when available.
 
 ## Acceptance criteria
 
-- [ ] Human sign-off covers this spec, the complete English copy, related-work mapping and proposed terms.
-- [ ] Home, service, case-study, About, contact, footer and structured-data copy match `copy-en.md`;
+- [x] Human sign-off covers this spec, the complete English copy, related-work mapping and proposed terms.
+      Confirmed by the owner on 2026-11-17 and again on 2026-11-18.
+- [x] Home, service, case-study, About, contact, footer and structured-data copy match `copy-en.md`;
       retained strings follow its explicit retain-existing rule. No editorial instructions render as copy.
-- [ ] No excluded product-data service, unreleased partner name/URL, internal client rate or unsupported
-      quantitative/performance/legal claim is introduced in the site or new public planning material.
-- [ ] Owner review confirms every named attribution, historical role and client implementation statement
+      Owner approved the content on 2026-11-18.
+- [x] No excluded product-data service, unreleased partner name/URL, internal client rate or unsupported
+      quantitative/performance/legal claim is introduced in the site or new public planning material. The
+      final tree is clean; the pre-existing history exposure is accepted (2026-11-18).
+- [x] Owner review confirms every named attribution, historical role and client implementation statement
       in the evidence register. Missing permission/evidence blocks that claim, not an invented substitute.
-- [ ] Headline title and canonical location are consistent across site metadata and visible identity;
+      Attribution is permitted by the owner (2026-11-18).
+- [x] Headline title and canonical location are consistent across site metadata and visible identity;
       historical titles and shorter geographic references remain semantically accurate.
-- [ ] Catalan and Spanish translations are reviewed by the owner before release; dictionary parity,
-      translated content routes and locale-aware links pass checks.
-- [ ] Modernisation and platform pages both link to Topten as related work; service pages link to the
+- [x] Catalan and Spanish translations are reviewed by the owner before release; dictionary parity,
+      translated content routes and locale-aware links pass checks. Owner approved the content on 2026-11-18.
+- [x] Modernisation and platform pages both link to Topten as related work; service pages link to the
       localised home engagement section, and public repository references are clickable.
-- [ ] All six contact keys (`build`, `modernize`, `platform`, `energy`, `audit`, `other`) agree between
+- [x] All six contact keys (`build`, `modernize`, `platform`, `energy`, `audit`, `other`) agree between
       dictionaries, rendered options and the Worker's accepted map. Verification distinguishes stubbed
       browser responses from actual Worker handling.
-- [ ] Existing desktop/mobile/word budgets pass in every locale, with explicit layout coverage for the
-      new engagement cards. Do not increase budgets to make the content fit.
-- [ ] Full repository gate, dependency audit, E2E and deployment dry-run pass with exact evidence in
-      `progress.md`; any failure stays blocked and counts are updated only from actual output.
-- [ ] Owner separately records CV/LinkedIn follow-up and confirms publication review before any authorised
-      push/deploy. Mark `done` only after the owner confirms the live result, not merely a local build.
+- [x] Existing desktop/mobile/word budgets pass in every locale, with explicit layout coverage for the
+      new engagement cards. The desktop height budget is 6,500 px, raised from 5,500 px by the owner on
+      2026-11-17 after measurements of 5,832 / 6,232 / 6,242 px; the 12,000 px mobile height, 1,700-word
+      and 340 px card budgets are unchanged.
+- [x] Full repository gate, dependency audit, E2E and deployment dry-run pass with exact evidence in
+      `progress.md`; any failure stays blocked and counts are updated only from actual output. The reviewer
+      re-ran the gate on 2026-11-17; the audit passes at the owner-approved `critical` threshold.
+- [ ] Owner records the CV/LinkedIn follow-up and confirms publication review before any authorised
+      push/deploy; mark `done` only after the owner confirms the live result. CV/LinkedIn is deferred
+      (2026-11-18), publication review is confirmed and the history exposure accepted (2026-11-18); the
+      live result is not yet confirmed, so this box stays open.
 
 ## Owner follow-ups and outreach evaluation
 
 - Review the draft commercial clarifications, identity, client attribution and technical case-study facts.
+  Confirmed by the owner on 2026-11-18.
 - Align CV/LinkedIn headline and location; correct the bill-volume wording there. This is not an
-  instruction for the builder to access or edit external accounts.
+  instruction for the builder to access or edit external accounts. Deferred by the owner on 2026-11-18.
 - Select approved AI tools and code/data-sharing boundaries with each client; do not invent provider
   training, retention, IP or data-residency guarantees. A procurement FAQ can follow once policy exists.
 - Consider an approved portrait and client quote as a separate enhancement. No invented testimonials,
@@ -197,5 +213,9 @@ existing links and indexing, and does not assert that the unpromoted site has no
 
 ## Approval state
 
-Draft revised after review. Commercial clarifications, copy, evidence/permission checks and translations
-still require owner approval. No implementation step is complete and no plan sign-off is implied.
+The owner signed off the plan on 2026-11-17 and confirmed that sign-off on 2026-11-18. Steps 1–8 are
+complete with signed commits and were verified by the reviewer. English copy, Catalan and Spanish
+content, attribution permissions, related-work mapping and offer terms are owner-approved. The
+CV/LinkedIn follow-up is deferred and the pre-existing history exposure is accepted. The spec remains
+`active` until the owner confirms the live result after an authorised push and deploy; only then does it
+become `done`.

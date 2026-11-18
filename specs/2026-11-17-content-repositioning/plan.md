@@ -17,7 +17,7 @@ short commit hash, or the reason. The only part of this file that changes after 
 - [x] 5. Rewrite hero, meta, about, CTA band and footer — a9bd379
 - [x] 6. Add the "How I work" home section — cf72215
 - [x] 7. Add the "Ways to work together" home section with prices — e850636
-- [x] 8. Sync docs and close out — uncommitted
+- [x] 8. Sync docs and close out — c165dff
 
 ## Ground rules for every step
 

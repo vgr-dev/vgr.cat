@@ -2,14 +2,14 @@
 
 - **Date:** 2026-11-17
 - **Reviewer:** reviewer role (`spec-review`)
-- **Spec:** `specs/2026-11-17-content-repositioning/spec.md` (`status: active`)
+- **Spec:** `specs/2026-11-17-content-repositioning/spec.md` (`status: done`)
+- **Closed:** 2026-11-18 after live confirmation
 - **Scope reviewed:** `origin/main..HEAD` on `feat/content-repositioning`, 23 commits, plus the working tree
 - **Verdict:** **PASS** (2026-11-18; originally PASS WITH CHANGES before the owner decisions below)
 
 The implementation is complete, the gate passes, and the new home sections and locale-aware links behave as
-specified. The owner resolved the document and approval actions on 2026-11-18; the remaining visual suggestions
-are non-blocking. The spec stays `active` only until the live result is confirmed, and this review does not mark
-it `done`.
+specified. The owner resolved the document and approval actions on 2026-11-18, and the deployed result was
+confirmed later that day. The visual suggestions below remain non-blocking.
 
 ## Code and standards findings
 
@@ -48,6 +48,8 @@ close out the content-repositioning plan`) is in `git log` and the working tree 
    module would avoid exposing an internal on the Worker entry. Optional.
 
 ## Owner actions required before `done` or any push
+
+> Resolved 2026-11-18: see **Owner decisions** and **Post-deploy confirmation** below.
 
 These are not builder defects. `progress.md` already lists most of them; they are repeated here because the
 review cannot pass the corresponding acceptance criteria.
@@ -110,9 +112,8 @@ each. A screenshot of `/es/services/modernize/` at 1280 px shows the 126 px rela
 
 ## Next action
 
-The builder/owner should decide on suggestions 1–2 (visual) and, if accepted, make them in a follow-up step with
-the same gate. The owner should then resolve items 1–6 above, especially the stale spec narrative and the budget
-criterion, review the translations and attributions, and only then authorize a push and mark the spec `done`.
+Superseded by **Post-deploy confirmation** below: the owner resolved the open items, PR #15 merged, CI and
+Deploy passed, and the live result was confirmed on 2026-11-18.
 
 ## Recommended manual smoke test
 
@@ -132,6 +133,32 @@ npm run preview
 4. Toggle dark mode on `/` and confirm the offer cards, prices and terms keep readable contrast.
 5. Do not submit the contact form in this smoke test: a real submission needs production keys, and the local
    suite stubs `/api/contact`.
+
+## Post-deploy confirmation (2026-11-18)
+
+The branch merged as PR #15 (`ff47c42`), CI run 44277840630 passed, and Deploy run 44278314434 succeeded.
+
+Live checks against `https://vgr.cat` using curl and HTML parsing:
+
+- `/`, `/ca/`, `/es/`, `/es/services/modernize/` and `/ca/services/modernize/` return HTTP 200; canonical URLs
+  and `lang` attributes are correct.
+- Home pages contain three offer cards and four terms, in the planned order
+  (`services → work → how-i-work → engage → contact`), with the approved prices in each locale
+  (`€2,500 / €640 / €2,400` and `2.500 € / 640 € / 2.400 €`).
+- Contact options are `build, modernize, platform, energy, audit, other` in all three locales; structured data
+  reports `knowsLanguage` as `["en","es"]`; each home page has two public GitHub repository links.
+- Service pages link to `/es/#engage` and `/ca/#engage`; `/work/topten-ecosystem/`,
+  `/es/work/topten-ecosystem/`, `/ca/work/vgr-cat/` and `/es/services/energy/` return HTTP 200.
+- The retired `/services/entity-resolution/`, `/services/infrastructure/` and `/services/iot/` return HTTP 404,
+  and the sitemap contains no retired service routes.
+- The CSP meta tag is present with the Turnstile and Cloudflare Web Analytics origins. The Worker answers
+  `GET /api/contact` with HTTP 405, and the response headers include HSTS, COOP, CORP, `X-Content-Type-Options`,
+  `X-Frame-Options` and Referrer-Policy.
+
+Playwright could not navigate to the public host from this environment (external navigation timed out), so the
+live checks above used the served HTML rather than a browser. The local production build had already passed the
+browser, CSP, console, overflow and dark-mode checks recorded earlier. The owner confirmed the live result.
+Verdict remains **PASS**; the spec is `done`.
 
 ## Owner confirmation (2026-11-18)
 
@@ -172,5 +199,6 @@ The owner also asked for the spec edits, which are now applied:
   budgets are unchanged.
 - Acceptance criteria 1–10 are ticked with dated evidence. Criterion 11 stays open only for live confirmation.
 
-With those changes the review verdict is **PASS**. The spec remains `active` until the deployed result is
-confirmed, per its own final criterion. This section supersedes the owner-actions list and **Next action** above.
+With those changes the review verdict is **PASS**. The deployed result was confirmed on 2026-11-18 (see
+**Post-deploy confirmation** below), so the spec is `done`. This section supersedes the owner-actions list and
+**Next action** above.

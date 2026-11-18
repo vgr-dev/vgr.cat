@@ -1444,3 +1444,62 @@ record and publication.
   job: nothing was pushed.
 - Whether any copy of the removed material exists outside this repository.
 - A visual review of the new sections by eye.
+
+## 2026-11-18: Close-out after merge and deploy
+
+Commit: uncommitted
+
+Scope: documentation only, on `docs/spec-closeout`. `spec.md` set to `status: done` (`status-date: 2026-11-18`), the
+last acceptance criterion ticked, and `review.md` given a post-deploy section. No `src/`, test, workflow,
+dependency or configuration edits.
+
+### Correction: the `Commit: uncommitted` lines above
+
+Every earlier entry in this file says `Commit: uncommitted` because it was written before its commit existed. Those
+lines are historical and were left as recorded. The resulting commits, taken from the `plan.md` Status checklist and
+`git log`:
+
+| Step                                 | Commit    |
+| ------------------------------------ | --------- |
+| 1 Retire the Topten Scout case study | `3cc8197` |
+| 2 Service pillars and four services  | `841b39c` |
+| 3 Contact form focus options         | `5e7164f` |
+| 4 Case studies and "This website"    | `8caace1` |
+| 5 Hero, meta, about, CTA, footer     | `a9bd379` |
+| 6 "How I work" section               | `cf72215` |
+| 7 "Ways to work together" section    | `e850636` |
+| 8 Docs sync and close-out            | `c165dff` |
+
+The "Not verified" list in step 8 says nothing had been pushed and that `CI`/`Deploy` behaviour was unconfirmed.
+That was true when written and is superseded below.
+
+### Merge and deploy (read with `gh`)
+
+- PR #15 `feat(content): reposition vgr.cat around build, modernise and run` is `MERGED`; merge commit `ff47c42`.
+- `gh run view 44277840630` (`CI`, push on `main`, head `ff47c421c5368a7cd9b4d96eb831d1c4fd5a4513`) →
+  `success`; jobs `validate` and `e2e` both `success`.
+- `gh run view 44278314434` (`Deploy`, `workflow_run`, same head SHA) → `success`.
+- PR #15 has no review comments, issue comments or reviews, and its check-runs are all `success`.
+
+### Local re-run of the gate on `docs/spec-closeout` (same tree as `main` plus these docs)
+
+- `npm run format:check` → "All matched files use Prettier code style!"
+- `npm run lint` → no output, exit 0.
+- `npm run check` → `Result (66 files): 0 errors, 0 warnings, 0 hints`.
+- `npm run check:placeholders` → "0 placeholders remain."
+- `npm run build` → "37 page(s) built".
+- `npm run check:production-env` → "no PUBLIC_TURNSTILE_SITE_KEY override; the committed sitekey is used and is not a
+  test key."
+- `npx wrangler deploy --dry-run --outdir=.wrangler/dry-run` → exit 0 (bindings listed, "--dry-run: exiting now.").
+- `npm audit --audit-level=critical` → exit 0; `npm audit --audit-level=high` → exit 1 with 16 high findings, all
+  `GHSA-fc5q-39xc-vjpf` (picomatch `<=4.0.7`). `npm view picomatch version` → `4.0.7`, still the latest release,
+  so the `critical` threshold stays and `AGENTS.md` is unchanged. Restore `high` when a release above `4.0.7`
+  appears.
+- `npx wrangler whoami` → "Not logged in. Your auth token has expired", which matches `AGENTS.md`.
+
+### Not verified
+
+- `npm run test:e2e` was not re-run locally; its result is the `e2e` job on run `44277840630` above.
+- The KiloCode findings the owner mentioned. No KiloCode output is in the PR, its check-runs or the IDE
+  diagnostics (`getDiagnostics` returned `[]`), so nothing was fixed against them. They need to be supplied.
+- The deployed site in a real browser; the live checks recorded in `review.md` used the served HTML only.

@@ -5,7 +5,7 @@
  * *test* sitekey (`1x00000000000000000000AA`) for automated runs, since a test key
  * works on any domain including localhost.
  */
-const PRODUCTION_SITE_KEY = '0x4AAAAAAFX7NYXtXTGajTgb';
+const PRODUCTION_SITE_KEY = '0x4AAAAAAGPHi96wZq5N-xcv';
 
 export const turnstileSiteKey =
   import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || PRODUCTION_SITE_KEY;
